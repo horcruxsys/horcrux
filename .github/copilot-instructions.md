@@ -21,6 +21,10 @@ Horcrux is a **modern, high-performance, memory-safe, and developer-friendly bui
 
 ## 📖 Code Style Guide
 
+**Important:** For comprehensive coding standards, see [docs/coding-standards.md](../docs/coding-standards.md).
+
+This section provides a quick reference. For detailed guidelines on all aspects of C++23 development, testing, concurrency, and more, refer to the full coding standards document.
+
 ### C++23 Conventions
 
 #### Naming Conventions
