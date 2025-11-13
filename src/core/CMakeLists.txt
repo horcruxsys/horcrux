@@ -16,7 +16,13 @@ set_target_properties(horcrux PROPERTIES
 
 # Compiler-specific options
 target_compile_options(horcrux PRIVATE
-    $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra -Wpedantic
+        -Werror=return-type
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
         -Wall -Wextra -Wpedantic
         -Werror=return-type
     >
