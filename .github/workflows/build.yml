@@ -1,0 +1,192 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+  CCACHE_DIR: ${{ github.workspace }}/.ccache
+
+jobs:
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install clang-format and clang-tidy
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main"
+          sudo apt-get update
+          sudo apt-get install -y clang-format-17 clang-tidy-17
+          sudo ln -sf /usr/bin/clang-format-17 /usr/bin/clang-format
+          sudo ln -sf /usr/bin/clang-tidy-17 /usr/bin/clang-tidy
+
+      - name: Check clang-format
+        run: |
+          # Check if there are any C++ source files to format
+          if find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) | grep -q .; then
+            echo "Running clang-format check..."
+            find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) \
+              -not -path "./build/*" -not -path "./third_party/*" | \
+              xargs clang-format --dry-run --Werror
+          else
+            echo "No C++ source files found. Skipping clang-format check."
+          fi
+
+      - name: Run clang-tidy
+        run: |
+          # Check if there are any C++ source files to lint
+          if find . -type f \( -name "*.cpp" -o -name "*.cc" \) | grep -q .; then
+            echo "Running clang-tidy check..."
+            # This will be enabled once we have a compile_commands.json
+            echo "clang-tidy will be enabled once CMake build is set up"
+          else
+            echo "No C++ source files found. Skipping clang-tidy check."
+          fi
+
+  build:
+    name: Build (${{ matrix.os }}, ${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+        compiler:
+          - { name: gcc, version: 13, cc: gcc-13, cxx: g++-13 }
+          - { name: clang, version: 17, cc: clang-17, cxx: clang++-17 }
+        exclude:
+          # GCC 13 not available on Ubuntu 24.04 default repos
+          - os: ubuntu-24.04
+            compiler: { name: gcc, version: 13 }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.CCACHE_DIR }}
+            build/_deps
+          key: ${{ runner.os }}-${{ matrix.compiler.name }}-${{ matrix.compiler.version }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.compiler.name }}-${{ matrix.compiler.version }}-
+            ${{ runner.os }}-${{ matrix.compiler.name }}-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          
+          # Install build tools
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            ccache \
+            git
+          
+          # Install compilers
+          if [ "${{ matrix.compiler.name }}" = "gcc" ]; then
+            sudo apt-get install -y ${{ matrix.compiler.cxx }}
+          else
+            wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+            if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
+              sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main"
+            else
+              sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-17 main"
+            fi
+            sudo apt-get update
+            sudo apt-get install -y ${{ matrix.compiler.cxx }}
+          fi
+          
+          # Verify installations
+          cmake --version
+          ninja --version
+          ${{ matrix.compiler.cxx }} --version
+
+      - name: Configure CMake
+        env:
+          CC: ${{ matrix.compiler.cc }}
+          CXX: ${{ matrix.compiler.cxx }}
+        run: |
+          # Check if CMakeLists.txt exists
+          if [ -f "CMakeLists.txt" ]; then
+            echo "Found CMakeLists.txt, configuring build..."
+            cmake -B build \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+              -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cxx }} \
+              -DCMAKE_C_COMPILER=${{ matrix.compiler.cc }} \
+              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          else
+            echo "No CMakeLists.txt found yet. Creating placeholder build directory."
+            mkdir -p build
+            echo "Build system will be configured once CMakeLists.txt is added."
+          fi
+
+      - name: Build
+        run: |
+          if [ -f "build/build.ninja" ] || [ -f "build/Makefile" ]; then
+            echo "Building project..."
+            cmake --build build --config ${{ env.BUILD_TYPE }} -j $(nproc)
+          else
+            echo "No build files generated. Skipping build step."
+            echo "This is expected for a project without source code yet."
+          fi
+
+      - name: Run tests
+        run: |
+          if [ -f "build/build.ninja" ] || [ -f "build/Makefile" ]; then
+            echo "Running tests..."
+            cd build
+            ctest --output-on-failure --build-config ${{ env.BUILD_TYPE }} || echo "No tests configured yet"
+          else
+            echo "No tests to run yet. Tests will be added as the project develops."
+          fi
+
+      - name: Upload build artifacts
+        if: always() && matrix.os == 'ubuntu-22.04' && matrix.compiler.name == 'clang'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.compiler.name }}-${{ matrix.compiler.version }}
+          path: |
+            build/horcrux*
+            build/**/*.a
+            build/**/*.so
+            build/compile_commands.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Show ccache statistics
+        run: |
+          ccache --show-stats || echo "ccache statistics not available"
+
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint, build]
+    if: always()
+    steps:
+      - name: Check CI status
+        run: |
+          if [ "${{ needs.lint.result }}" = "success" ] && [ "${{ needs.build.result }}" = "success" ]; then
+            echo "✅ All CI checks passed!"
+            exit 0
+          else
+            echo "❌ Some CI checks failed"
+            echo "Lint: ${{ needs.lint.result }}"
+            echo "Build: ${{ needs.build.result }}"
+            exit 1
+          fi
