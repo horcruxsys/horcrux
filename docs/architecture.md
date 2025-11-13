@@ -436,20 +436,27 @@ public:
 The local cache stores artifacts on the developer's machine:
 
 - **Location**: `~/.cache/horcrux/` or `$HORCRUX_CACHE_DIR`
-- **Structure**: Two-level directory hierarchy based on hash prefix
+- **Storage Engine**: RocksDB for high-performance persistence
+- **Structure**: Content-addressable storage with efficient key-value access
 - **Eviction**: LRU (least recently used) when size exceeds limit
-- **Metadata**: SQLite database for fast lookups
+- **Metadata**: SQLite for small structured metadata (project manifests, configuration history)
 
 ```
 ~/.cache/horcrux/
-├── artifacts/
-│   ├── ab/
-│   │   └── cd1234.tar.gz
-│   ├── ef/
-│   │   └── 5678ab.tar.gz
-├── metadata.db
+├── rocksdb/           # Primary storage for cache, DAGs, artifacts
+│   ├── cache/         # Build artifact cache
+│   ├── dag/           # Dependency graph persistence
+│   └── artifacts/     # Artifact metadata and references
+├── metadata.db        # SQLite for project manifests, config history
 └── config.json
 ```
+
+**RocksDB Benefits**:
+- **High throughput**: Optimized for write-heavy workloads (cache updates)
+- **Efficient compaction**: Automatically manages disk space with LSM-tree
+- **Range queries**: Fast iteration over hash prefixes for cache management
+- **Atomic transactions**: Ensures consistency for multi-key updates
+- **Column families**: Separate storage for cache, DAGs, and artifacts
 
 ##### Remote Cache
 
@@ -477,19 +484,52 @@ public:
 ```
 
 **Flow**:
-1. Check local cache
+1. Check local cache (RocksDB)
 2. If miss, check remote cache
 3. If miss, execute task
-4. Store result in local cache
+4. Store result in local cache (RocksDB with atomic writes)
 5. Upload to remote cache (async)
+
+##### Persistence Strategy
+
+**RocksDB as Primary Storage**:
+
+RocksDB serves as the primary persistence engine for performance-critical data:
+
+- **Build cache**: Stores compiled artifacts, object files, and build outputs
+- **Dependency DAGs**: Persists build graphs for fast daemon restarts
+- **Artifact metadata**: Tracks artifact hashes, sizes, and access times
+
+**Why RocksDB**:
+- **Write-optimized**: LSM-tree architecture handles frequent cache updates efficiently
+- **Concurrent access**: Multiple threads can read/write simultaneously
+- **Compaction**: Automatic background cleanup maintains performance
+- **Crash recovery**: Write-ahead log ensures data consistency
+- **Efficient storage**: Compression and bloom filters reduce disk usage
+
+**SQLite for Metadata**:
+
+SQLite handles small, structured data where relational queries are beneficial:
+
+- **Project manifests**: Configuration files, workspace settings
+- **Configuration history**: Audit log of build configuration changes
+- **Local indexing**: BUILD file locations, target indexes for quick searches
+
+**Why SQLite for metadata**:
+- **ACID transactions**: Ensures configuration consistency
+- **SQL queries**: Relational queries for complex metadata searches
+- **Low overhead**: Lightweight for small datasets (<10 MB typical)
+- **Zero configuration**: Embedded database, no server needed
 
 #### Performance Characteristics
 
 - **Hash computation**: O(n) where n = file size, parallelized across files
-- **Cache lookup**: O(1) average case with hash table
+- **Cache lookup**: O(log n) average with RocksDB LSM-tree, effectively O(1) with bloom filters
+- **Cache write**: O(log n) amortized with LSM-tree compaction
 - **Local cache I/O**: Limited by disk bandwidth (~500 MB/s SSD)
 - **Remote cache I/O**: Limited by network bandwidth (varies)
 - **Cache hit rate**: Target >90% for incremental builds
+- **RocksDB compaction**: Background process, minimal impact on foreground operations
 
 ### Language Adapters
 
@@ -809,8 +849,8 @@ message BuildEvent {
    ├─ Hash tool version
    └─ Combine hashes
    ↓
-3. Check local cache
-   ├─ Lookup by hash in SQLite
+3. Check local cache (RocksDB)
+   ├─ Lookup by hash in cache column family
    └─ If found → return cached artifact
    ↓
 4. Check remote cache (if configured)
@@ -820,7 +860,8 @@ message BuildEvent {
 5. Cache miss → execute task
    ↓
 6. Store result
-   ├─ Store in local cache
+   ├─ Store in local cache (RocksDB)
+   ├─ Update dependency DAG (RocksDB)
    └─ Upload to remote cache (async)
 ```
 
@@ -872,7 +913,8 @@ message BuildEvent {
 - **abseil-cpp**: Core utilities and data structures
 - **gRPC**: RPC framework for daemon communication
 - **Protocol Buffers**: Serialization for IPC
-- **SQLite**: Metadata storage for local cache
+- **RocksDB**: Primary persistence engine for build cache, dependency DAGs, and artifact storage
+- **SQLite**: Small structured metadata (project manifests, configuration history, local indexing)
 - **zstd**: Fast compression for cache artifacts
 - **xxHash**: Fast non-cryptographic hashing
 - **OpenSSL**: Cryptographic hashing (SHA-256)
