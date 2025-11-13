@@ -15,10 +15,15 @@ env:
   BUILD_TYPE: Release
   CCACHE_DIR: ${{ github.workspace }}/.ccache
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Code Quality Checks
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,6 +63,8 @@ jobs:
   build:
     name: Build (${{ matrix.os }}, ${{ matrix.compiler }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -176,6 +183,7 @@ jobs:
   status:
     name: CI Status
     runs-on: ubuntu-latest
+    permissions: {}
     needs: [lint, build]
     if: always()
     steps:
