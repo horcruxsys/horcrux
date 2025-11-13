@@ -155,7 +155,19 @@ sudo cmake --install .
 
 ## Coding Standards
 
-### C++ Guidelines
+**For comprehensive coding standards, see [docs/coding-standards.md](../docs/coding-standards.md).**
+
+This document covers all aspects of C++23 development for Horcrux, including:
+- Project-wide C++23 conventions (RAII, smart pointers, const correctness, error handling)
+- Naming conventions and code organization
+- Memory safety and concurrency policies
+- Testing requirements (unit + integration + benchmarks)
+- No global mutable state policy
+- Threading and coroutine guidelines
+- Performance optimization strategies
+- Complete code review checklist
+
+### Quick Reference
 
 1. **Modern C++23** - Use modern C++ features appropriately
    - Prefer `std::expected` over exceptions for error handling
