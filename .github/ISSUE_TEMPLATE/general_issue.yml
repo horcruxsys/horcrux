@@ -1,0 +1,144 @@
+name: 🧩 General Issue
+description: Use this template to report a bug, request a feature, or suggest an improvement.
+title: "[ISSUE]: "
+labels: ["needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for contributing to Horcrux! Please fill out this form to help us understand and address your issue effectively.
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of issue are you reporting?
+      options:
+        - Bug Report
+        - Feature Request
+        - Enhancement
+        - Documentation
+        - Performance
+        - Question
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a clear and concise description of the issue or feature request.
+      placeholder: Describe what you're reporting or requesting...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce (for bugs)
+      description: If reporting a bug, please provide detailed steps to reproduce the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Run command '...'
+        3. See error '...'
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe the expected behavior...
+    validations:
+      required: false
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened...
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Please provide information about your environment.
+      placeholder: |
+        - OS: [e.g., Ubuntu 22.04, macOS 14, Windows 11]
+        - Compiler: [e.g., GCC 13.2, Clang 17, MSVC 2022]
+        - CMake version: [e.g., 3.28]
+        - Horcrux version/commit: [e.g., v0.1.0 or commit hash]
+      value: |
+        - OS: 
+        - Compiler: 
+        - CMake version: 
+        - Horcrux version: 
+    validations:
+      required: false
+
+  - type: textarea
+    id: code-sample
+    attributes:
+      label: Code Sample / BUILD File
+      description: If applicable, provide a minimal code sample or BUILD file that demonstrates the issue.
+      placeholder: |
+        ```cpp
+        // Your code here
+        ```
+        
+        or
+        
+        ```python
+        # Your BUILD file here
+        ```
+      render: cpp
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Messages / Logs
+      description: Include any relevant error messages, stack traces, or logs.
+      placeholder: Paste error messages or logs here...
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution (optional)
+      description: If you have ideas on how to fix or implement this, please share them.
+      placeholder: Describe your proposed solution...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or information about the issue here.
+      placeholder: Any additional information...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following before submitting.
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have read the [Contributing Guidelines](https://github.com/horcruxsys/horcrux/blob/main/CONTRIBUTING.md)
+          required: true
+        - label: I have read the [Code of Conduct](https://github.com/horcruxsys/horcrux/blob/main/CODE_OF_CONDUCT.md)
+          required: true
+        - label: This issue is related to Horcrux (not a third-party tool)
+          required: true
