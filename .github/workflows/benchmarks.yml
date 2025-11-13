@@ -1,0 +1,241 @@
+name: Benchmarks
+
+on:
+  pull_request:
+    branches: [ production ]
+    paths:
+      - 'src/**'
+      - 'benchmarks/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/benchmarks.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILD_TYPE: Release
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            g++-13 \
+            git
+          
+          # Verify installations
+          cmake --version
+          ninja --version
+          g++-13 --version
+
+      - name: Configure CMake
+        env:
+          CC: gcc-13
+          CXX: g++-13
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_CXX_COMPILER=g++-13 \
+            -DCMAKE_C_COMPILER=gcc-13 \
+            -DHORCRUX_BUILD_BENCHMARKS=ON
+
+      - name: Build project and benchmarks
+        run: |
+          cmake --build build --config ${{ env.BUILD_TYPE }} -j $(nproc)
+
+      - name: Run dependency resolution benchmarks
+        run: |
+          cd build
+          ./bin/dependency_resolution_bench \
+            --benchmark_format=json \
+            --benchmark_out=dependency_resolution_results.json \
+            --benchmark_min_time=0.5s
+          
+          # Also output to console for immediate viewing
+          ./bin/dependency_resolution_bench --benchmark_min_time=0.5s
+
+      - name: Run cache lookup benchmarks
+        run: |
+          cd build
+          ./bin/cache_lookup_bench \
+            --benchmark_format=json \
+            --benchmark_out=cache_lookup_results.json \
+            --benchmark_min_time=0.5s
+          
+          ./bin/cache_lookup_bench --benchmark_min_time=0.5s
+
+      - name: Run task scheduling benchmarks
+        run: |
+          cd build
+          ./bin/task_scheduling_bench \
+            --benchmark_format=json \
+            --benchmark_out=task_scheduling_results.json \
+            --benchmark_min_time=0.5s
+          
+          ./bin/task_scheduling_bench --benchmark_min_time=0.5s
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            build/dependency_resolution_results.json
+            build/cache_lookup_results.json
+            build/task_scheduling_results.json
+          retention-days: 30
+
+      - name: Create benchmark summary
+        run: |
+          echo "# 📊 Benchmark Results" > benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          echo "Benchmarks completed successfully! Results are available as artifacts." >> benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          echo "## Quick Summary" >> benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          
+          # Extract and display key metrics from JSON results
+          echo "### Dependency Resolution" >> benchmark_summary.md
+          echo "\`\`\`" >> benchmark_summary.md
+          cd build
+          if [ -f dependency_resolution_results.json ]; then
+            python3 -c "
+          import json
+          import sys
+          with open('dependency_resolution_results.json') as f:
+              data = json.load(f)
+              for bench in data.get('benchmarks', []):
+                  name = bench.get('name', 'Unknown')
+                  time = bench.get('cpu_time', 0)
+                  unit = bench.get('time_unit', 'ns')
+                  print(f'{name}: {time:.2f} {unit}')
+          " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
+          fi
+          cd ..
+          echo "\`\`\`" >> benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          
+          echo "### Cache Lookup" >> benchmark_summary.md
+          echo "\`\`\`" >> benchmark_summary.md
+          cd build
+          if [ -f cache_lookup_results.json ]; then
+            python3 -c "
+          import json
+          import sys
+          with open('cache_lookup_results.json') as f:
+              data = json.load(f)
+              for bench in data.get('benchmarks', [])[:5]:  # First 5 only
+                  name = bench.get('name', 'Unknown')
+                  time = bench.get('cpu_time', 0)
+                  unit = bench.get('time_unit', 'ns')
+                  print(f'{name}: {time:.2f} {unit}')
+          " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
+          fi
+          cd ..
+          echo "\`\`\`" >> benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          
+          echo "### Task Scheduling" >> benchmark_summary.md
+          echo "\`\`\`" >> benchmark_summary.md
+          cd build
+          if [ -f task_scheduling_results.json ]; then
+            python3 -c "
+          import json
+          import sys
+          with open('task_scheduling_results.json') as f:
+              data = json.load(f)
+              for bench in data.get('benchmarks', [])[:5]:  # First 5 only
+                  name = bench.get('name', 'Unknown')
+                  time = bench.get('cpu_time', 0)
+                  unit = bench.get('time_unit', 'ns')
+                  print(f'{name}: {time:.2f} {unit}')
+          " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
+          fi
+          cd ..
+          echo "\`\`\`" >> benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          
+          echo "---" >> benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          echo "📦 **Download full results:** Check the 'Artifacts' section above for detailed JSON files." >> benchmark_summary.md
+          echo "" >> benchmark_summary.md
+          echo "🔍 **To run locally:**" >> benchmark_summary.md
+          echo "\`\`\`bash" >> benchmark_summary.md
+          echo "cmake -B build -DHORCRUX_BUILD_BENCHMARKS=ON" >> benchmark_summary.md
+          echo "cmake --build build" >> benchmark_summary.md
+          echo "cd build && cmake --build . --target run_benchmarks" >> benchmark_summary.md
+          echo "\`\`\`" >> benchmark_summary.md
+
+      - name: Comment PR with benchmark results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('benchmark_summary.md', 'utf8');
+            
+            // Find existing benchmark comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('📊 Benchmark Results')
+            );
+            
+            const commentBody = summary + '\n\n---\n*This comment is automatically updated when benchmarks are re-run.*';
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+      - name: Store baseline metrics
+        if: github.ref == 'refs/heads/production'
+        run: |
+          mkdir -p benchmark_baselines
+          cp build/dependency_resolution_results.json benchmark_baselines/
+          cp build/cache_lookup_results.json benchmark_baselines/
+          cp build/task_scheduling_results.json benchmark_baselines/
+          
+          # In a real implementation, these would be committed to a separate branch
+          # or stored in an external storage system
+          echo "Baseline metrics stored for commit ${{ github.sha }}"
