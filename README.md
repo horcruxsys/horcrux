@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![C++23](https://img.shields.io/badge/C%2B%2B-23-blue.svg)](https://en.cppreference.com/w/cpp/23)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/horcruxsys/horcrux/actions)
+[![Build Status](https://github.com/horcruxsys/horcrux/actions/workflows/build.yml/badge.svg)](https://github.com/horcruxsys/horcrux/actions/workflows/build.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-purple.svg)](CODE_OF_CONDUCT.md)
 
