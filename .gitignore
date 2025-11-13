@@ -75,3 +75,6 @@ coverage/
 *.tmp
 *.bak
 *.log
+
+# CodeQL
+_codeql_*

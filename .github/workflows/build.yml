@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ production ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ production ]
   workflow_dispatch:
 
 concurrency:
@@ -105,6 +105,11 @@ jobs:
           
           # Install compilers
           if [ "${{ matrix.compiler.name }}" = "gcc" ]; then
+            # Add toolchain PPA for GCC 13 on Ubuntu 22.04
+            if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
+              sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+              sudo apt-get update
+            fi
             sudo apt-get install -y ${{ matrix.compiler.cxx }}
           else
             wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
