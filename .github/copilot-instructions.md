@@ -310,7 +310,7 @@ Horcrux follows best practices from [opensource.guide](https://opensource.guide/
 
 - **Respectful and inclusive community**
 - **Zero tolerance for harassment**
-- **Report violations to**: conduct@horcruxsys.org
+- **Report violations to**: horcrux@myyahoo.com
 - **See CODE_OF_CONDUCT.md** for full details
 
 ### Documentation Requirements
