@@ -29,7 +29,7 @@ void print_usage() {
 
 } // namespace horcrux
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   using namespace horcrux;
 
   if (argc < 2) {
@@ -51,8 +51,7 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Horcrux v" << VERSION << " (bootstrap)\n";
   std::cout << "Command '" << command << "' is not yet implemented.\n";
-  std::cout
-      << "This is a minimal bootstrap build to set up the build system.\n";
+  std::cout << "This is a minimal bootstrap build to set up the build system.\n";
 
   return 0;
 }

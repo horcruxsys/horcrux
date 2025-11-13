@@ -2,14 +2,14 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include <benchmark/benchmark.h>
-
 #include <algorithm>
 #include <random>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#include <benchmark/benchmark.h>
 
 namespace horcrux::bench {
 
@@ -22,12 +22,11 @@ struct MockTarget {
 // Simple mock dependency resolver
 class MockDependencyResolver {
 public:
-  explicit MockDependencyResolver(
-      const std::unordered_map<std::string, MockTarget> &targets)
-      : targets_(targets) {}
+  explicit MockDependencyResolver(const std::unordered_map<std::string, MockTarget>& targets)
+      : targets_(targets) {
+  }
 
-  auto resolve(const std::string &target_name) const
-      -> std::vector<std::string> {
+  auto resolve(const std::string& target_name) const -> std::vector<std::string> {
     std::vector<std::string> resolved;
     std::unordered_set<std::string> visited;
     resolve_recursive(target_name, resolved, visited);
@@ -35,9 +34,8 @@ public:
   }
 
 private:
-  void resolve_recursive(const std::string &target_name,
-                         std::vector<std::string> &resolved,
-                         std::unordered_set<std::string> &visited) const {
+  void resolve_recursive(const std::string& target_name, std::vector<std::string>& resolved,
+                         std::unordered_set<std::string>& visited) const {
     if (visited.contains(target_name)) {
       return;
     }
@@ -49,15 +47,15 @@ private:
       return;
     }
 
-    const auto &target = it->second;
-    for (const auto &dep : target.dependencies) {
+    const auto& target = it->second;
+    for (const auto& dep : target.dependencies) {
       resolve_recursive(dep, resolved, visited);
     }
 
     resolved.push_back(target_name);
   }
 
-  const std::unordered_map<std::string, MockTarget> &targets_;
+  const std::unordered_map<std::string, MockTarget>& targets_;
 };
 
 // Generate a mock dependency graph with controlled complexity
@@ -65,8 +63,7 @@ auto generate_mock_graph(int num_targets, int avg_deps_per_target)
     -> std::unordered_map<std::string, MockTarget> {
   std::unordered_map<std::string, MockTarget> targets;
   std::mt19937 rng(42); // Fixed seed for reproducibility
-  std::uniform_int_distribution<int> dep_count_dist(0,
-                                                     avg_deps_per_target * 2);
+  std::uniform_int_distribution<int> dep_count_dist(0, avg_deps_per_target * 2);
 
   // Create targets
   for (int i = 0; i < num_targets; ++i) {
@@ -91,7 +88,7 @@ auto generate_mock_graph(int num_targets, int avg_deps_per_target)
 }
 
 // Benchmark: Small dependency graph (10 targets, 2 deps avg)
-static void BM_DependencyResolution_Small(benchmark::State &state) {
+static void BM_DependencyResolution_Small(benchmark::State& state) {
   const auto targets = generate_mock_graph(10, 2);
   const MockDependencyResolver resolver(targets);
 
@@ -104,7 +101,7 @@ static void BM_DependencyResolution_Small(benchmark::State &state) {
 }
 
 // Benchmark: Medium dependency graph (100 targets, 5 deps avg)
-static void BM_DependencyResolution_Medium(benchmark::State &state) {
+static void BM_DependencyResolution_Medium(benchmark::State& state) {
   const auto targets = generate_mock_graph(100, 5);
   const MockDependencyResolver resolver(targets);
 
@@ -117,7 +114,7 @@ static void BM_DependencyResolution_Medium(benchmark::State &state) {
 }
 
 // Benchmark: Large dependency graph (1000 targets, 10 deps avg)
-static void BM_DependencyResolution_Large(benchmark::State &state) {
+static void BM_DependencyResolution_Large(benchmark::State& state) {
   const auto targets = generate_mock_graph(1000, 10);
   const MockDependencyResolver resolver(targets);
 
@@ -130,7 +127,7 @@ static void BM_DependencyResolution_Large(benchmark::State &state) {
 }
 
 // Benchmark: Deep dependency chain (linear chain of 100 targets)
-static void BM_DependencyResolution_DeepChain(benchmark::State &state) {
+static void BM_DependencyResolution_DeepChain(benchmark::State& state) {
   std::unordered_map<std::string, MockTarget> targets;
 
   // Create a linear dependency chain: target_99 -> target_98 -> ... -> target_0
@@ -155,7 +152,7 @@ static void BM_DependencyResolution_DeepChain(benchmark::State &state) {
 }
 
 // Benchmark: Wide dependency tree (one target depends on many)
-static void BM_DependencyResolution_WideTree(benchmark::State &state) {
+static void BM_DependencyResolution_WideTree(benchmark::State& state) {
   std::unordered_map<std::string, MockTarget> targets;
 
   // Create 100 leaf targets with no dependencies

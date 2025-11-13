@@ -2,14 +2,14 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include <benchmark/benchmark.h>
-
 #include <array>
 #include <cstdint>
 #include <optional>
 #include <random>
 #include <string>
 #include <unordered_map>
+
+#include <benchmark/benchmark.h>
 
 namespace horcrux::bench {
 
@@ -27,7 +27,7 @@ struct MockArtifact {
 auto generate_hash(int seed) -> Hash {
   Hash hash{};
   std::mt19937 rng(seed);
-  for (auto &byte : hash) {
+  for (auto& byte : hash) {
     byte = static_cast<uint8_t>(rng() % 256);
   }
   return hash;
@@ -35,7 +35,7 @@ auto generate_hash(int seed) -> Hash {
 
 // Hash function for std::array
 struct HashArrayHasher {
-  auto operator()(const Hash &hash) const -> size_t {
+  auto operator()(const Hash& hash) const -> size_t {
     size_t result = 0;
     for (size_t i = 0; i < 8; ++i) {
       result ^= static_cast<size_t>(hash[i]) << (i * 8);
@@ -47,11 +47,11 @@ struct HashArrayHasher {
 // Mock in-memory cache
 class MockMemoryCache {
 public:
-  void insert(const Hash &hash, const MockArtifact &artifact) {
+  void insert(const Hash& hash, const MockArtifact& artifact) {
     cache_[hash] = artifact;
   }
 
-  auto lookup(const Hash &hash) const -> std::optional<MockArtifact> {
+  auto lookup(const Hash& hash) const -> std::optional<MockArtifact> {
     auto it = cache_.find(hash);
     if (it != cache_.end()) {
       return it->second;
@@ -59,7 +59,9 @@ public:
     return std::nullopt;
   }
 
-  auto size() const -> size_t { return cache_.size(); }
+  auto size() const -> size_t {
+    return cache_.size();
+  }
 
 private:
   std::unordered_map<Hash, MockArtifact, HashArrayHasher> cache_;
@@ -71,10 +73,9 @@ auto generate_mock_cache(int num_entries) -> MockMemoryCache {
 
   for (int i = 0; i < num_entries; ++i) {
     Hash hash = generate_hash(i);
-    MockArtifact artifact{
-        .content = "artifact_content_" + std::to_string(i),
-        .size = static_cast<size_t>(1024 * (i % 100 + 1)),
-        .timestamp = 1700000000 + i};
+    MockArtifact artifact{.content = "artifact_content_" + std::to_string(i),
+                          .size = static_cast<size_t>(1024 * (i % 100 + 1)),
+                          .timestamp = 1700000000 + i};
     cache.insert(hash, artifact);
   }
 
@@ -82,7 +83,7 @@ auto generate_mock_cache(int num_entries) -> MockMemoryCache {
 }
 
 // Benchmark: Cache hit - small cache (100 entries)
-static void BM_CacheLookup_Hit_Small(benchmark::State &state) {
+static void BM_CacheLookup_Hit_Small(benchmark::State& state) {
   const auto cache = generate_mock_cache(100);
   const Hash lookup_hash = generate_hash(50); // Known entry
 
@@ -96,7 +97,7 @@ static void BM_CacheLookup_Hit_Small(benchmark::State &state) {
 }
 
 // Benchmark: Cache hit - medium cache (10,000 entries)
-static void BM_CacheLookup_Hit_Medium(benchmark::State &state) {
+static void BM_CacheLookup_Hit_Medium(benchmark::State& state) {
   const auto cache = generate_mock_cache(10000);
   const Hash lookup_hash = generate_hash(5000); // Known entry
 
@@ -110,7 +111,7 @@ static void BM_CacheLookup_Hit_Medium(benchmark::State &state) {
 }
 
 // Benchmark: Cache hit - large cache (1,000,000 entries)
-static void BM_CacheLookup_Hit_Large(benchmark::State &state) {
+static void BM_CacheLookup_Hit_Large(benchmark::State& state) {
   const auto cache = generate_mock_cache(1000000);
   const Hash lookup_hash = generate_hash(500000); // Known entry
 
@@ -124,7 +125,7 @@ static void BM_CacheLookup_Hit_Large(benchmark::State &state) {
 }
 
 // Benchmark: Cache miss - small cache (100 entries)
-static void BM_CacheLookup_Miss_Small(benchmark::State &state) {
+static void BM_CacheLookup_Miss_Small(benchmark::State& state) {
   const auto cache = generate_mock_cache(100);
   const Hash lookup_hash = generate_hash(999999); // Unknown entry
 
@@ -138,7 +139,7 @@ static void BM_CacheLookup_Miss_Small(benchmark::State &state) {
 }
 
 // Benchmark: Cache miss - medium cache (10,000 entries)
-static void BM_CacheLookup_Miss_Medium(benchmark::State &state) {
+static void BM_CacheLookup_Miss_Medium(benchmark::State& state) {
   const auto cache = generate_mock_cache(10000);
   const Hash lookup_hash = generate_hash(999999); // Unknown entry
 
@@ -152,7 +153,7 @@ static void BM_CacheLookup_Miss_Medium(benchmark::State &state) {
 }
 
 // Benchmark: Cache miss - large cache (1,000,000 entries)
-static void BM_CacheLookup_Miss_Large(benchmark::State &state) {
+static void BM_CacheLookup_Miss_Large(benchmark::State& state) {
   const auto cache = generate_mock_cache(1000000);
   const Hash lookup_hash = generate_hash(999999); // Unknown entry
 
@@ -166,7 +167,7 @@ static void BM_CacheLookup_Miss_Large(benchmark::State &state) {
 }
 
 // Benchmark: Random lookups with 90% hit rate
-static void BM_CacheLookup_MixedHitRate(benchmark::State &state) {
+static void BM_CacheLookup_MixedHitRate(benchmark::State& state) {
   const int cache_size = 10000;
   const auto cache = generate_mock_cache(cache_size);
 
@@ -188,7 +189,7 @@ static void BM_CacheLookup_MixedHitRate(benchmark::State &state) {
 }
 
 // Benchmark: Sequential access pattern
-static void BM_CacheLookup_Sequential(benchmark::State &state) {
+static void BM_CacheLookup_Sequential(benchmark::State& state) {
   const int cache_size = 10000;
   const auto cache = generate_mock_cache(cache_size);
 
