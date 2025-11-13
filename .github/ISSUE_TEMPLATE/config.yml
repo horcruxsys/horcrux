@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/horcruxsys/horcrux/discussions
+    about: Ask questions, share ideas, and discuss Horcrux with the community
+  - name: 📖 Documentation
+    url: https://github.com/horcruxsys/horcrux/blob/main/README.md
+    about: Read the comprehensive documentation and getting started guide
+  - name: 🤝 Contributing Guide
+    url: https://github.com/horcruxsys/horcrux/blob/main/CONTRIBUTING.md
+    about: Learn how to contribute to Horcrux
