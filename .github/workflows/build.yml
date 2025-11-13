@@ -43,7 +43,7 @@ jobs:
           if find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) | grep -q .; then
             echo "Running clang-format check..."
             find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) \
-              -not -path "./build/*" -not -path "./third_party/*" | \
+              -not -path "./build/*" -not -path "./third_party/*" -not -path "./_deps/*" | \
               xargs clang-format --dry-run --Werror
           else
             echo "No C++ source files found. Skipping clang-format check."
