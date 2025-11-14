@@ -157,6 +157,8 @@ sudo cmake --install .
 
 **For comprehensive coding standards, see [docs/coding-standards.md](../docs/coding-standards.md).**
 
+**For AI-assisted development, see [.github/copilot-instructions.md](.github/copilot-instructions.md).**
+
 This document covers all aspects of C++23 development for Horcrux, including:
 - Project-wide C++23 conventions (RAII, smart pointers, const correctness, error handling)
 - Naming conventions and code organization
