@@ -11,6 +11,7 @@ The Horcrux Core library provides the fundamental data structures and algorithms
 Represents a single build target in the dependency graph.
 
 **Key Features:**
+
 - Immutable design for thread-safety
 - Label-based identification (e.g., `//src/app:main`)
 - Type classification (e.g., `cc_binary`, `cc_library`, `py_test`)
@@ -19,6 +20,7 @@ Represents a single build target in the dependency graph.
 - Content-based hashing for cache keys
 
 **Example:**
+
 ```cpp
 #include "build_node.h"
 
@@ -44,17 +46,20 @@ auto hash = lib_node.compute_hash();  // For caching
 Represents a directed dependency relationship between two nodes.
 
 **Key Features:**
+
 - Typed dependencies (Build, Data, Tool, Test)
 - Immutable once created
 - Lightweight representation
 
 **Dependency Types:**
+
 - `Build`: Direct build dependency (e.g., library dependency)
 - `Data`: Runtime data dependency (e.g., config files)
 - `Tool`: Tool dependency (e.g., code generator)
 - `Test`: Test-only dependency
 
 **Example:**
+
 ```cpp
 #include "build_edge.h"
 
@@ -73,6 +78,7 @@ BuildEdge edge(
 Immutable DAG representing the complete build dependency structure.
 
 **Key Features:**
+
 - Builder pattern for construction
 - Automatic cycle detection
 - Topological sorting
@@ -82,6 +88,7 @@ Immutable DAG representing the complete build dependency structure.
 - Thread-safe once constructed
 
 **Example:**
+
 ```cpp
 #include "build_graph.h"
 
@@ -152,6 +159,7 @@ if (!result) {
 ### Immutability
 
 Once a `BuildGraph` is constructed via `build()`, it cannot be modified. This ensures:
+
 - Thread-safety without locks
 - No race conditions
 - Reproducible behavior
@@ -160,6 +168,7 @@ Once a `BuildGraph` is constructed via `build()`, it cannot be modified. This en
 ### Determinism
 
 All operations are deterministic:
+
 - Hash computation uses sorted attributes
 - Serialization produces consistent output
 - Topological sort is stable
@@ -183,6 +192,7 @@ All operations are deterministic:
 | Cycle Detection | O(V + E) | O(V) |
 
 Where:
+
 - V = number of vertices (nodes)
 - E = number of edges
 - d = out-degree of a node
@@ -210,6 +220,7 @@ ctest -R build_graph_test --output-on-failure
 ```
 
 Test categories:
+
 - Node creation and properties
 - Edge creation and equality
 - Builder validation (duplicates, cycles, missing nodes)

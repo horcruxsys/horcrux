@@ -336,7 +336,7 @@ auto BuildGraph::serialize() const -> std::expected<std::string, GraphError> {
     return oss.str();
 }
 
-auto BuildGraph::deserialize(const std::string& json) 
+auto BuildGraph::deserialize(const std::string& json)
     -> std::expected<BuildGraph, GraphError> {
     // Simplified deserialization - in production use a proper JSON library
     // For now, return an error as this is a placeholder
