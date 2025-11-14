@@ -312,11 +312,41 @@ For detailed coding standards, see our [Contributing Guide](CONTRIBUTING.md#codi
 
 ## 🧪 Benchmark Philosophy
 
-Horcrux will define a **Build Benchmark Suite (HBB)**:
+Horcrux defines a **Build Benchmark Suite (HBB)** with automated performance tracking:
 
 - Measures **correctness**, **rebuild time**, **cache efficiency**, and **memory usage**.
 - Compares against **Bazel**, **Buck2**, **Ninja**, and **CMake**.
-- Benchmarks will be **automated** to ensure consistent regression tracking.
+- Benchmarks are **automated** via CI to ensure consistent regression tracking.
+
+### Running Benchmarks
+
+Build and run benchmarks locally:
+
+```bash
+# Configure with benchmarks enabled
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DHORCRUX_BUILD_BENCHMARKS=ON
+cmake --build build
+
+# Run all benchmarks
+cd build && cmake --build . --target run_benchmarks
+
+# Or run individual benchmarks
+./build/bin/dependency_resolution_bench
+./build/bin/cache_lookup_bench
+./build/bin/task_scheduling_bench
+```
+
+See [benchmarks/README.md](benchmarks/README.md) for detailed documentation.
+
+### Current Metrics
+
+The benchmark suite currently tracks:
+
+- **Dependency Resolution Time**: DAG construction and dependency traversal performance
+- **Cache Lookup Latency**: In-memory cache performance with various sizes and patterns
+- **Task Scheduling Overhead**: Priority queue operations and task management
+
+Results are automatically collected and posted on pull requests.
 
 ## 🗺️ Roadmap
 

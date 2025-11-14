@@ -56,6 +56,13 @@ message(STATUS "Output directory: ${CMAKE_BINARY_DIR}")
 # Add subdirectories
 add_subdirectory(src/core)
 
+# Optional: Add benchmarks (disabled by default for faster builds)
+option(HORCRUX_BUILD_BENCHMARKS "Build benchmark executables" ON)
+if(HORCRUX_BUILD_BENCHMARKS)
+    message(STATUS "Building benchmarks")
+    add_subdirectory(benchmarks)
+endif()
+
 # Installation rules
 install(TARGETS horcrux
     RUNTIME DESTINATION bin

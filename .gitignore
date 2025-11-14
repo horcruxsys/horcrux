@@ -65,6 +65,12 @@ coverage/
 # Sanitizer outputs
 *.san
 
+# Benchmark results
+*_results.json
+benchmark_results/
+benchmark_baselines/
+benchmark_summary.md
+
 # Package files
 *.deb
 *.rpm
