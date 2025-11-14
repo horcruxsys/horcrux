@@ -63,8 +63,8 @@ auto BuildGraph::Builder::add_edge(BuildEdge edge) -> tl::expected<void, GraphEr
   return {};
 }
 
-auto BuildGraph::Builder::would_create_cycle(const std::string& from, const std::string& to) const
-    -> bool {
+auto BuildGraph::Builder::would_create_cycle(const std::string& from,
+                                             const std::string& to) const -> bool {
   // Check if adding edge from->to would create a cycle
   // This happens if there's already a path from 'to' to 'from'
   std::unordered_set<Label> visited;

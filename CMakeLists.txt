@@ -50,6 +50,7 @@ endif()
 include(FetchContent)
 
 # tl::expected for C++23 std::expected polyfill
+set(EXPECTED_BUILD_TESTS OFF CACHE BOOL "Disable tl::expected tests" FORCE)
 FetchContent_Declare(
     tl_expected
     GIT_REPOSITORY https://github.com/TartanLlama/expected.git
