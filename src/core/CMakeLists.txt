@@ -70,6 +70,35 @@ target_compile_options(horcrux PRIVATE
     >
 )
 
+# Create example executable (optional)
+option(HORCRUX_BUILD_EXAMPLES "Build example programs" ON)
+if(HORCRUX_BUILD_EXAMPLES)
+    add_executable(build_graph_example
+        example.cpp
+    )
+    
+    target_link_libraries(build_graph_example PRIVATE horcrux_core)
+    
+    target_compile_options(build_graph_example PRIVATE
+        $<$<CXX_COMPILER_ID:GNU>:
+            -std=c++23
+            -Wall -Wextra -Wpedantic
+        >
+        $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+            -std=c++23
+            -Wall -Wextra -Wpedantic
+        >
+        $<$<CXX_COMPILER_ID:MSVC>:
+            /W4 /permissive-
+        >
+    )
+    
+    set_target_properties(build_graph_example PROPERTIES
+        OUTPUT_NAME build_graph_example
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/examples
+    )
+endif()
+
 # Installation
 install(TARGETS horcrux horcrux_core
     RUNTIME DESTINATION bin
