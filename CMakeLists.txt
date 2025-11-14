@@ -56,6 +56,13 @@ message(STATUS "Output directory: ${CMAKE_BINARY_DIR}")
 # Add subdirectories
 add_subdirectory(src/core)
 
+# Optional: Add tests (enabled by default)
+option(HORCRUX_BUILD_TESTS "Build unit tests" ON)
+if(HORCRUX_BUILD_TESTS)
+    message(STATUS "Building tests")
+    add_subdirectory(tests)
+endif()
+
 # Optional: Add benchmarks (disabled by default for faster builds)
 option(HORCRUX_BUILD_BENCHMARKS "Build benchmark executables" ON)
 if(HORCRUX_BUILD_BENCHMARKS)
