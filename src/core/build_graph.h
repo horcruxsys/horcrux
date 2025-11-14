@@ -4,13 +4,14 @@
 
 #pragma once
 
-#include <expected>
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#include <tl/expected.hpp>
 
 #include "build_edge.h"
 #include "build_node.h"
@@ -54,16 +55,16 @@ public:
     /// @brief Add a node to the graph
     /// @param node The node to add (will be moved)
     /// @return Empty expected on success, or error if node already exists
-    auto add_node(BuildNode node) -> std::expected<void, GraphError>;
+    auto add_node(BuildNode node) -> tl::expected<void, GraphError>;
 
     /// @brief Add an edge to the graph
     /// @param edge The edge to add (will be moved)
     /// @return Empty expected on success, or error if cycle would be created
-    auto add_edge(BuildEdge edge) -> std::expected<void, GraphError>;
+    auto add_edge(BuildEdge edge) -> tl::expected<void, GraphError>;
 
     /// @brief Build the immutable graph
     /// @return The constructed BuildGraph or error if validation fails
-    [[nodiscard]] auto build() -> std::expected<BuildGraph, GraphError>;
+    [[nodiscard]] auto build() -> tl::expected<BuildGraph, GraphError>;
 
   private:
     std::unordered_map<Label, std::unique_ptr<BuildNode>> nodes_;
@@ -108,19 +109,19 @@ public:
   /// @param label The node label
   /// @return Vector of labels of direct dependencies
   [[nodiscard]] auto get_dependencies(const Label& label) const
-      -> std::expected<std::vector<Label>, GraphError>;
+      -> tl::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get all transitive dependencies of a node
   /// @param label The node label
   /// @return Vector of labels of all transitive dependencies in topological order
   [[nodiscard]] auto get_transitive_dependencies(const Label& label) const
-      -> std::expected<std::vector<Label>, GraphError>;
+      -> tl::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get direct dependents of a node (reverse dependencies)
   /// @param label The node label
   /// @return Vector of labels of direct dependents
   [[nodiscard]] auto get_dependents(const Label& label) const
-      -> std::expected<std::vector<Label>, GraphError>;
+      -> tl::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get topological order of all nodes
   /// @return Vector of labels in topological order
@@ -138,13 +139,13 @@ public:
 
   /// @brief Serialize the graph to JSON format
   /// @return JSON string representation or error
-  [[nodiscard]] auto serialize() const -> std::expected<std::string, GraphError>;
+  [[nodiscard]] auto serialize() const -> tl::expected<std::string, GraphError>;
 
   /// @brief Deserialize a graph from JSON format
   /// @param json JSON string representation
   /// @return BuildGraph or error
   [[nodiscard]] static auto deserialize(const std::string& json)
-      -> std::expected<BuildGraph, GraphError>;
+      -> tl::expected<BuildGraph, GraphError>;
 
 private:
   BuildGraph() = default;

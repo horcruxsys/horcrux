@@ -46,6 +46,17 @@ elseif(MSVC)
     endif()
 endif()
 
+# Dependencies
+include(FetchContent)
+
+# tl::expected for C++23 std::expected polyfill
+FetchContent_Declare(
+    tl_expected
+    GIT_REPOSITORY https://github.com/TartanLlama/expected.git
+    GIT_TAG v1.1.0
+)
+FetchContent_MakeAvailable(tl_expected)
+
 # Print configuration info
 message(STATUS "Horcrux v${PROJECT_VERSION}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")

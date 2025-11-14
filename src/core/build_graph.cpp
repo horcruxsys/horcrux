@@ -28,29 +28,29 @@ auto to_string(GraphError error) -> std::string {
 
 // Builder implementation
 
-auto BuildGraph::Builder::add_node(BuildNode node) -> std::expected<void, GraphError> {
+auto BuildGraph::Builder::add_node(BuildNode node) -> tl::expected<void, GraphError> {
   const auto label = node.label(); // Copy the label before moving
 
   if (nodes_.contains(label)) {
-    return std::unexpected(GraphError::NodeAlreadyExists);
+    return tl::unexpected(GraphError::NodeAlreadyExists);
   }
 
   nodes_[label] = std::make_unique<BuildNode>(std::move(node));
   return {};
 }
 
-auto BuildGraph::Builder::add_edge(BuildEdge edge) -> std::expected<void, GraphError> {
+auto BuildGraph::Builder::add_edge(BuildEdge edge) -> tl::expected<void, GraphError> {
   const auto from = edge.from(); // Copy before moving
   const auto to = edge.to();     // Copy before moving
 
   // Check if nodes exist
   if (!nodes_.contains(from) || !nodes_.contains(to)) {
-    return std::unexpected(GraphError::NodeNotFound);
+    return tl::unexpected(GraphError::NodeNotFound);
   }
 
   // Check for cycle before adding edge
   if (would_create_cycle(from, to)) {
-    return std::unexpected(GraphError::CycleDetected);
+    return tl::unexpected(GraphError::CycleDetected);
   }
 
   // Add edge to both outgoing and incoming maps
@@ -123,7 +123,7 @@ auto BuildGraph::Builder::dfs_cycle_check(const Label& node, std::unordered_set<
   return false;
 }
 
-auto BuildGraph::Builder::build() -> std::expected<BuildGraph, GraphError> {
+auto BuildGraph::Builder::build() -> tl::expected<BuildGraph, GraphError> {
   // Validate: check for cycles in the entire graph
   std::unordered_set<Label> visited;
   std::unordered_set<Label> rec_stack;
@@ -131,7 +131,7 @@ auto BuildGraph::Builder::build() -> std::expected<BuildGraph, GraphError> {
   for (const auto& [label, _] : nodes_) {
     if (!visited.contains(label)) {
       if (dfs_cycle_check(label, visited, rec_stack)) {
-        return std::unexpected(GraphError::CycleDetected);
+        return tl::unexpected(GraphError::CycleDetected);
       }
     }
   }
@@ -167,9 +167,9 @@ auto BuildGraph::get_all_nodes() const -> std::vector<const BuildNode*> {
 }
 
 auto BuildGraph::get_dependencies(const Label& label) const
-    -> std::expected<std::vector<Label>, GraphError> {
+    -> tl::expected<std::vector<Label>, GraphError> {
   if (!nodes_.contains(label)) {
-    return std::unexpected(GraphError::NodeNotFound);
+    return tl::unexpected(GraphError::NodeNotFound);
   }
 
   std::vector<Label> deps;
@@ -184,9 +184,9 @@ auto BuildGraph::get_dependencies(const Label& label) const
 }
 
 auto BuildGraph::get_transitive_dependencies(const Label& label) const
-    -> std::expected<std::vector<Label>, GraphError> {
+    -> tl::expected<std::vector<Label>, GraphError> {
   if (!nodes_.contains(label)) {
-    return std::unexpected(GraphError::NodeNotFound);
+    return tl::unexpected(GraphError::NodeNotFound);
   }
 
   std::vector<Label> result;
@@ -217,9 +217,9 @@ auto BuildGraph::get_transitive_dependencies(const Label& label) const
 }
 
 auto BuildGraph::get_dependents(const Label& label) const
-    -> std::expected<std::vector<Label>, GraphError> {
+    -> tl::expected<std::vector<Label>, GraphError> {
   if (!nodes_.contains(label)) {
-    return std::unexpected(GraphError::NodeNotFound);
+    return tl::unexpected(GraphError::NodeNotFound);
   }
 
   std::vector<Label> dependents;
@@ -272,7 +272,7 @@ auto BuildGraph::edge_count() const -> size_t {
   return count;
 }
 
-auto BuildGraph::serialize() const -> std::expected<std::string, GraphError> {
+auto BuildGraph::serialize() const -> tl::expected<std::string, GraphError> {
   // Simple JSON-like serialization
   // In production, use a proper JSON library like nlohmann/json
   std::ostringstream oss;
@@ -334,12 +334,12 @@ auto BuildGraph::serialize() const -> std::expected<std::string, GraphError> {
   return oss.str();
 }
 
-auto BuildGraph::deserialize(const std::string& json) -> std::expected<BuildGraph, GraphError> {
+auto BuildGraph::deserialize(const std::string& json) -> tl::expected<BuildGraph, GraphError> {
   // Simplified deserialization - in production use a proper JSON library
   // For now, return an error as this is a placeholder
   // TODO: Implement proper JSON deserialization
   [[maybe_unused]] auto json_ref = json; // Avoid unused parameter warning
-  return std::unexpected(GraphError::SerializationError);
+  return tl::unexpected(GraphError::SerializationError);
 }
 
 } // namespace horcrux::core

@@ -20,6 +20,9 @@ target_include_directories(horcrux_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# Link with tl::expected for C++23 std::expected polyfill
+target_link_libraries(horcrux_core PUBLIC tl::expected)
+
 # Compiler-specific options for library
 target_compile_options(horcrux_core PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:
