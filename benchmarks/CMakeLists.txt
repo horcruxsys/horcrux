@@ -7,7 +7,7 @@ include(FetchContent)
 FetchContent_Declare(
     benchmark
     GIT_REPOSITORY https://github.com/google/benchmark.git
-    GIT_TAG v1.8.3
+    GIT_TAG v1.9.4
     GIT_SHALLOW TRUE
 )
 
@@ -27,7 +27,7 @@ set(BENCHMARK_COMMON_FLAGS
         -O3
     >
     $<$<CXX_COMPILER_ID:Clang,AppleClang>:
-        -std=c++23
+        -std=c++20
         -Wall -Wextra
         -O3
     >
