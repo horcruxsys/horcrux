@@ -71,8 +71,8 @@ public:
     std::unordered_map<Label, std::vector<std::unique_ptr<BuildEdge>>> incoming_edges_;
 
     /// @brief Check if adding an edge would create a cycle
-    [[nodiscard]] auto would_create_cycle(const std::string& from,
-                                          const std::string& to) const -> bool;
+    [[nodiscard]] auto would_create_cycle(const std::string& from, const std::string& to) const
+        -> bool;
 
     /// @brief Depth-first search for cycle detection
     auto dfs_cycle_check(const Label& node, std::unordered_set<Label>& visited,
@@ -107,8 +107,8 @@ public:
   /// @brief Get direct dependencies of a node
   /// @param label The node label
   /// @return Vector of labels of direct dependencies
-  [[nodiscard]] auto
-  get_dependencies(const Label& label) const -> std::expected<std::vector<Label>, GraphError>;
+  [[nodiscard]] auto get_dependencies(const Label& label) const
+      -> std::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get all transitive dependencies of a node
   /// @param label The node label
@@ -119,8 +119,8 @@ public:
   /// @brief Get direct dependents of a node (reverse dependencies)
   /// @param label The node label
   /// @return Vector of labels of direct dependents
-  [[nodiscard]] auto
-  get_dependents(const Label& label) const -> std::expected<std::vector<Label>, GraphError>;
+  [[nodiscard]] auto get_dependents(const Label& label) const
+      -> std::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get topological order of all nodes
   /// @return Vector of labels in topological order
@@ -143,8 +143,8 @@ public:
   /// @brief Deserialize a graph from JSON format
   /// @param json JSON string representation
   /// @return BuildGraph or error
-  [[nodiscard]] static auto
-  deserialize(const std::string& json) -> std::expected<BuildGraph, GraphError>;
+  [[nodiscard]] static auto deserialize(const std::string& json)
+      -> std::expected<BuildGraph, GraphError>;
 
 private:
   BuildGraph() = default;
