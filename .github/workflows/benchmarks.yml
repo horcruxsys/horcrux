@@ -204,6 +204,12 @@ jobs:
             const fs = require('fs');
             const summary = fs.readFileSync('benchmark_summary.md', 'utf8');
             
+            // Ensure we have an issue number
+            if (!context.issue || !context.issue.number) {
+              console.log('No issue number found, skipping PR comment');
+              return;
+            }
+            
             // Find existing benchmark comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -226,6 +232,7 @@ jobs:
                 comment_id: botComment.id,
                 body: commentBody
               });
+              console.log('Updated existing comment');
             } else {
               // Create new comment
               await github.rest.issues.createComment({
@@ -234,6 +241,7 @@ jobs:
                 issue_number: context.issue.number,
                 body: commentBody
               });
+              console.log('Created new comment');
             }
 
       - name: Store baseline metrics
