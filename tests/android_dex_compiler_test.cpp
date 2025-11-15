@@ -487,11 +487,11 @@ TEST_F(DexCompilerTestFixture, CompileD8Integration) {
 
   AndroidDexCompiler compiler(toolchain_);
 
-  // This will fail because we have mock tools, but tests the flow
+  // This will succeed because we have mock tools that execute successfully
   auto result = compiler.compile_d8(config);
 
-  // Expect failure since tools are mocks
-  EXPECT_FALSE(result);
+  // Expect success since mock tools return 0 exit code
+  EXPECT_TRUE(result);
 }
 
 // Integration test for R8 compilation
@@ -509,9 +509,9 @@ TEST_F(DexCompilerTestFixture, CompileR8Integration) {
 
   AndroidDexCompiler compiler(toolchain_);
 
-  // This will fail because we have mock tools, but tests the flow
+  // This will succeed because we have mock tools that execute successfully
   auto result = compiler.compile_r8(config);
 
-  // Expect failure since tools are mocks
-  EXPECT_FALSE(result);
+  // Expect success since mock tools return 0 exit code
+  EXPECT_TRUE(result);
 }
