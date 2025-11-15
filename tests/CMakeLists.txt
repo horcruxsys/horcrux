@@ -228,10 +228,39 @@ target_compile_options(android_resources_test PRIVATE
 # Register test with CTest
 gtest_discover_tests(android_resources_test)
 
+# Android manifest merger tests
+add_executable(android_manifest_merger_test
+    android_manifest_merger_test.cpp
+)
+
+target_link_libraries(android_manifest_merger_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(android_manifest_merger_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(android_manifest_merger_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_java_compiler_test android_kotlin_compiler_test android_resources_test
+    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_java_compiler_test android_kotlin_compiler_test android_resources_test android_manifest_merger_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )

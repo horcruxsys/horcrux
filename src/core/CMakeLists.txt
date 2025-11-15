@@ -12,6 +12,7 @@ add_library(horcrux_core STATIC
     android_java_compiler.cpp
     android_kotlin_compiler.cpp
     android_resources.cpp
+    android_manifest_merger.cpp
 )
 
 # Set library properties
@@ -26,8 +27,8 @@ target_include_directories(horcrux_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Link with tl::expected for C++23 std::expected polyfill
-target_link_libraries(horcrux_core PUBLIC tl::expected OpenSSL::Crypto)
+# Link with tl::expected for C++23 std::expected polyfill and tinyxml2 for XML parsing
+target_link_libraries(horcrux_core PUBLIC tl::expected OpenSSL::Crypto tinyxml2)
 
 # Library-specific optimizations (global flags already applied)
 # No additional flags needed - using global settings
