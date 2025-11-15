@@ -8,6 +8,7 @@ add_library(horcrux_core STATIC
     build_graph.cpp
     local_cache.cpp
     simple_builder.cpp
+    android_toolchain.cpp
 )
 
 # Set library properties

@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include "build_executor.h"
+#include "doctor_command.h"
 #include "logger.h"
 
 namespace horcrux::cli {
@@ -23,6 +24,7 @@ void print_usage() {
   std::cout << "Usage: horcrux [command] [options]\n\n";
   std::cout << "Commands:\n";
   std::cout << "  build <target>  Build the specified target (e.g., //examples/hello:app)\n";
+  std::cout << "  doctor <system> Validate toolchain and system configuration\n";
   std::cout << "  test            Run tests (not yet implemented)\n";
   std::cout << "  clean           Remove build artifacts (not yet implemented)\n";
   std::cout << "  query           Query the build graph (not yet implemented)\n";
@@ -113,6 +115,10 @@ int main(int argc, char* argv[]) {
 
   if (command == "build") {
     return handle_build_command(argc, argv, global_logger);
+  }
+
+  if (command == "doctor") {
+    return handle_doctor_command(argc, argv, global_logger);
   }
 
   // Unknown command
