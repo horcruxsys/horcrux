@@ -62,7 +62,7 @@ private:
 
   /// @brief Check if source has changed (for incremental builds)
   [[nodiscard]] auto source_changed(const std::filesystem::path& source_file,
-                                     const std::filesystem::path& output_binary) -> bool;
+                                    const std::filesystem::path& output_binary) -> bool;
 
   // Cache the compiler path to avoid repeated system() calls
   std::optional<std::string> cached_compiler_;

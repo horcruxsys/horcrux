@@ -77,7 +77,7 @@ auto SimpleBuilder::get_compiler() -> const std::string& {
 }
 
 auto SimpleBuilder::source_changed(const fs::path& source_file,
-                                    const fs::path& output_binary) -> bool {
+                                   const fs::path& output_binary) -> bool {
   // If output doesn't exist, source has "changed"
   if (!fs::exists(output_binary)) {
     return true;
@@ -123,8 +123,7 @@ auto SimpleBuilder::compile_cc_binary(const TargetInfo& target_info)
   if (!source_changed(source_file, output_binary)) {
     std::cout << "✓ Target up-to-date (cached): " << output_binary << "\n";
     auto end_time = std::chrono::steady_clock::now();
-    auto duration =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     std::cout << "Build time: " << duration.count() << "ms (incremental)\n";
     return {};
   }
@@ -153,8 +152,8 @@ auto SimpleBuilder::compile_cc_binary(const TargetInfo& target_info)
                        static_cast<std::streamsize>(cached_artifact->content.size()));
 
           // Make executable
-          fs::permissions(output_binary, fs::perms::owner_exec | fs::perms::group_exec |
-                                             fs::perms::others_exec,
+          fs::permissions(output_binary,
+                          fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
                           fs::perm_options::add);
 
           auto end_time = std::chrono::steady_clock::now();
@@ -201,8 +200,7 @@ auto SimpleBuilder::compile_cc_binary(const TargetInfo& target_info)
 
       Artifact artifact;
       artifact.content = std::move(binary_content);
-      artifact.timestamp =
-          std::chrono::system_clock::now().time_since_epoch().count();
+      artifact.timestamp = std::chrono::system_clock::now().time_since_epoch().count();
 
       auto store_result = build_cache_->store(source_hash, artifact);
       if (store_result) {
