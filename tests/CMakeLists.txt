@@ -490,10 +490,39 @@ target_compile_options(import_command_test PRIVATE
 # Register test with CTest
 gtest_discover_tests(import_command_test)
 
+# Android variant tests
+add_executable(android_variant_test
+    android_variant_test.cpp
+)
+
+target_link_libraries(android_variant_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(android_variant_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(android_variant_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test
+    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test android_variant_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )

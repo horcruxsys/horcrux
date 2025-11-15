@@ -146,16 +146,193 @@ auto GradleParser::extract_build_variants(const std::string& content)
     -> std::vector<GradleBuildVariant> {
   std::vector<GradleBuildVariant> variants;
 
-  // Default build types
-  GradleBuildVariant debug_variant;
-  debug_variant.name = "debug";
-  debug_variant.build_type = "debug";
-  variants.push_back(debug_variant);
+  // Extract flavor dimensions (comma-separated or quoted strings)
+  std::vector<std::string> dimensions;
+  std::regex dim_re("flavorDimensions\\s+[\"'\\(]([^\"'\\)]+)");
+  std::smatch dim_match;
+  if (std::regex_search(content, dim_match, dim_re)) {
+    std::string dims_str = dim_match[1].str();
+    // Split by comma and clean up
+    std::stringstream ss(dims_str);
+    std::string item;
+    while (std::getline(ss, item, ',')) {
+      // Remove quotes and whitespace
+      item.erase(std::remove(item.begin(), item.end(), '"'), item.end());
+      item.erase(std::remove(item.begin(), item.end(), '\''), item.end());
+      // Trim whitespace
+      size_t start = item.find_first_not_of(" \t\n\r");
+      size_t end = item.find_last_not_of(" \t\n\r");
+      if (start != std::string::npos && end != std::string::npos) {
+        dimensions.push_back(item.substr(start, end - start + 1));
+      }
+    }
+  }
 
-  GradleBuildVariant release_variant;
-  release_variant.name = "release";
-  release_variant.build_type = "release";
-  variants.push_back(release_variant);
+  // Extract product flavors - look for flavor names as identifiers before opening brace
+  std::map<std::string, std::vector<std::string>> flavor_by_dimension;
+  
+  // Find productFlavors block
+  size_t flavors_start = content.find("productFlavors");
+  if (flavors_start != std::string::npos) {
+    // Find the opening brace for productFlavors
+    size_t block_start = content.find('{', flavors_start);
+    if (block_start != std::string::npos) {
+      // Find matching closing brace (simple approach - count braces)
+      int brace_count = 1;
+      size_t block_end = block_start + 1;
+      while (block_end < content.size() && brace_count > 0) {
+        if (content[block_end] == '{') brace_count++;
+        if (content[block_end] == '}') brace_count--;
+        block_end++;
+      }
+      
+      std::string flavors_block = content.substr(block_start + 1, block_end - block_start - 2);
+      
+      // Extract flavor names - look for identifier followed by {
+      std::regex flavor_re(R"(\b(\w+)\s*\{)");
+      auto flavor_begin = std::sregex_iterator(flavors_block.begin(), flavors_block.end(), flavor_re);
+      auto flavor_end = std::sregex_iterator();
+      
+      for (auto it = flavor_begin; it != flavor_end; ++it) {
+        std::string flavor_name = (*it)[1].str();
+        
+        // Find dimension for this flavor
+        std::string dimension;
+        std::regex dim_re2(R"(dimension\s+["']([^"']+)["'])");
+        std::smatch dim_match2;
+        
+        // Search for dimension in the flavor's block
+        size_t flavor_pos = flavors_block.find(flavor_name);
+        if (flavor_pos != std::string::npos) {
+          size_t flavor_block_start = flavors_block.find('{', flavor_pos);
+          if (flavor_block_start != std::string::npos) {
+            // Find matching brace
+            int count = 1;
+            size_t flavor_block_end = flavor_block_start + 1;
+            while (flavor_block_end < flavors_block.size() && count > 0) {
+              if (flavors_block[flavor_block_end] == '{') count++;
+              if (flavors_block[flavor_block_end] == '}') count--;
+              flavor_block_end++;
+            }
+            std::string flavor_content = flavors_block.substr(flavor_block_start, flavor_block_end - flavor_block_start);
+            
+            if (std::regex_search(flavor_content, dim_match2, dim_re2)) {
+              dimension = dim_match2[1].str();
+            }
+          }
+        }
+        
+        // If no dimension found, use first dimension if available
+        if (dimension.empty() && !dimensions.empty()) {
+          dimension = dimensions[0];
+        }
+        
+        if (!dimension.empty()) {
+          flavor_by_dimension[dimension].push_back(flavor_name);
+        }
+      }
+    }
+  }
+
+  // Extract build types - similar approach
+  std::vector<std::string> build_types;
+  
+  size_t build_types_start = content.find("buildTypes");
+  if (build_types_start != std::string::npos) {
+    size_t block_start = content.find('{', build_types_start);
+    if (block_start != std::string::npos) {
+      int brace_count = 1;
+      size_t block_end = block_start + 1;
+      while (block_end < content.size() && brace_count > 0) {
+        if (content[block_end] == '{') brace_count++;
+        if (content[block_end] == '}') brace_count--;
+        block_end++;
+      }
+      
+      std::string build_types_block = content.substr(block_start + 1, block_end - block_start - 2);
+      
+      std::regex bt_re(R"(\b(\w+)\s*\{)");
+      auto bt_begin = std::sregex_iterator(build_types_block.begin(), build_types_block.end(), bt_re);
+      auto bt_end = std::sregex_iterator();
+      
+      for (auto it = bt_begin; it != bt_end; ++it) {
+        build_types.push_back((*it)[1].str());
+      }
+    }
+  }
+  
+  // If no build types found, use defaults
+  if (build_types.empty()) {
+    build_types.push_back("debug");
+    build_types.push_back("release");
+  }
+
+  // Generate all variant combinations
+  if (flavor_by_dimension.empty()) {
+    // No flavors, just build types
+    for (const auto& build_type : build_types) {
+      GradleBuildVariant variant;
+      variant.name = build_type;
+      variant.build_type = build_type;
+      variants.push_back(variant);
+    }
+  } else {
+    // Generate cartesian product of flavors across dimensions
+    std::function<void(size_t, std::vector<std::string>&)> generate_flavor_combos;
+    
+    std::vector<std::vector<std::string>> flavor_combos;
+    
+    generate_flavor_combos = [&](size_t dim_idx, std::vector<std::string>& current) {
+      if (dim_idx >= dimensions.size()) {
+        flavor_combos.push_back(current);
+        return;
+      }
+      
+      const auto& current_dim = dimensions[dim_idx];
+      if (flavor_by_dimension.find(current_dim) != flavor_by_dimension.end()) {
+        for (const auto& flavor : flavor_by_dimension[current_dim]) {
+          current.push_back(flavor);
+          generate_flavor_combos(dim_idx + 1, current);
+          current.pop_back();
+        }
+      } else {
+        // Skip this dimension if no flavors found
+        generate_flavor_combos(dim_idx + 1, current);
+      }
+    };
+    
+    std::vector<std::string> current_combo;
+    generate_flavor_combos(0, current_combo);
+    
+    // Generate variant for each build type and flavor combination
+    for (const auto& build_type : build_types) {
+      for (const auto& flavor_combo : flavor_combos) {
+        GradleBuildVariant variant;
+        variant.flavors = flavor_combo;
+        variant.build_type = build_type;
+        
+        // Generate variant name (e.g., freeDebug, proRelease)
+        std::string name;
+        for (size_t i = 0; i < flavor_combo.size(); ++i) {
+          std::string flavor_name = flavor_combo[i];
+          if (i > 0 && !flavor_name.empty()) {
+            flavor_name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(flavor_name[0])));
+          }
+          name += flavor_name;
+        }
+        
+        // Capitalize build type
+        std::string bt_name = build_type;
+        if (!bt_name.empty()) {
+          bt_name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(bt_name[0])));
+        }
+        name += bt_name;
+        
+        variant.name = name;
+        variants.push_back(variant);
+      }
+    }
+  }
 
   return variants;
 }

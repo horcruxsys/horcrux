@@ -305,4 +305,174 @@ android {
   EXPECT_TRUE(found_release);
 }
 
+TEST_F(GradleParserTestFixture, ParseProductFlavorsOneDimension) {
+  std::string content = R"(
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 34
+    
+    flavorDimensions "tier"
+    
+    productFlavors {
+        free {
+            dimension "tier"
+            applicationIdSuffix ".free"
+        }
+        pro {
+            dimension "tier"
+            applicationIdSuffix ".pro"
+        }
+    }
+}
+)";
+
+  auto build_file = create_test_file("build.gradle", content);
+  auto result = GradleParser::parse_build(build_file);
+
+  ASSERT_TRUE(result.has_value());
+  
+  // Should have 4 variants: freeDebug, freeRelease, proDebug, proRelease
+  EXPECT_GE(result->build_variants.size(), 4);
+
+  // Check for specific variants
+  bool found_free_debug = false;
+  bool found_free_release = false;
+  bool found_pro_debug = false;
+  bool found_pro_release = false;
+
+  for (const auto& variant : result->build_variants) {
+    if (variant.name == "freeDebug") {
+      found_free_debug = true;
+      EXPECT_EQ(variant.build_type, "debug");
+      EXPECT_GE(variant.flavors.size(), 1);
+      if (!variant.flavors.empty()) {
+        EXPECT_EQ(variant.flavors[0], "free");
+      }
+    }
+    if (variant.name == "freeRelease") {
+      found_free_release = true;
+      EXPECT_EQ(variant.build_type, "release");
+    }
+    if (variant.name == "proDebug") {
+      found_pro_debug = true;
+      EXPECT_EQ(variant.build_type, "debug");
+    }
+    if (variant.name == "proRelease") {
+      found_pro_release = true;
+      EXPECT_EQ(variant.build_type, "release");
+    }
+  }
+
+  EXPECT_TRUE(found_free_debug);
+  EXPECT_TRUE(found_free_release);
+  EXPECT_TRUE(found_pro_debug);
+  EXPECT_TRUE(found_pro_release);
+}
+
+TEST_F(GradleParserTestFixture, ParseProductFlavorsMultipleDimensions) {
+  std::string content = R"(
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 34
+    
+    flavorDimensions "tier", "store"
+    
+    productFlavors {
+        free {
+            dimension "tier"
+        }
+        pro {
+            dimension "tier"
+        }
+        google {
+            dimension "store"
+        }
+        amazon {
+            dimension "store"
+        }
+    }
+}
+)";
+
+  auto build_file = create_test_file("build.gradle", content);
+  auto result = GradleParser::parse_build(build_file);
+
+  ASSERT_TRUE(result.has_value());
+  
+  // Should have 8 variants: 2 tiers × 2 stores × 2 build types = 8
+  EXPECT_GE(result->build_variants.size(), 8);
+
+  // Check for some specific variants
+  bool found_free_google_debug = false;
+  bool found_pro_amazon_release = false;
+
+  for (const auto& variant : result->build_variants) {
+    if (variant.name == "freeGoogleDebug") {
+      found_free_google_debug = true;
+      EXPECT_EQ(variant.build_type, "debug");
+      EXPECT_GE(variant.flavors.size(), 2);
+    }
+    if (variant.name == "proAmazonRelease") {
+      found_pro_amazon_release = true;
+      EXPECT_EQ(variant.build_type, "release");
+      EXPECT_GE(variant.flavors.size(), 2);
+    }
+  }
+
+  EXPECT_TRUE(found_free_google_debug);
+  EXPECT_TRUE(found_pro_amazon_release);
+}
+
+TEST_F(GradleParserTestFixture, ParseCustomBuildTypes) {
+  std::string content = R"(
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdk 34
+    
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            minifyEnabled true
+        }
+        staging {
+            debuggable true
+        }
+    }
+}
+)";
+
+  auto build_file = create_test_file("build.gradle", content);
+  auto result = GradleParser::parse_build(build_file);
+
+  ASSERT_TRUE(result.has_value());
+  
+  // Should have 3 build types
+  EXPECT_GE(result->build_variants.size(), 3);
+
+  bool found_debug = false;
+  bool found_release = false;
+  bool found_staging = false;
+
+  for (const auto& variant : result->build_variants) {
+    if (variant.name == "debug") found_debug = true;
+    if (variant.name == "release") found_release = true;
+    if (variant.name == "staging") found_staging = true;
+  }
+
+  EXPECT_TRUE(found_debug);
+  EXPECT_TRUE(found_release);
+  EXPECT_TRUE(found_staging);
+}
+
 } // namespace horcrux::core::test
