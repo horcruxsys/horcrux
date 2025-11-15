@@ -50,14 +50,17 @@ protected:
     // Get repository root
     repo_root_ = fs::path(__FILE__).parent_path().parent_path();
     horcrux_bin_ = repo_root_ / "build" / "bin" / "horcrux";
+    horcrux_cli_bin_ = repo_root_ / "build" / "bin" / "horcrux-cli";
     examples_dir_ = repo_root_ / "examples";
 
     // Verify horcrux binary exists
     ASSERT_TRUE(fs::exists(horcrux_bin_)) << "Horcrux binary not found at: " << horcrux_bin_;
+    ASSERT_TRUE(fs::exists(horcrux_cli_bin_)) << "Horcrux CLI binary not found at: " << horcrux_cli_bin_;
   }
 
   fs::path repo_root_;
   fs::path horcrux_bin_;
+  fs::path horcrux_cli_bin_;
   fs::path examples_dir_;
 };
 
@@ -234,6 +237,31 @@ TEST_F(IntegrationTest, RunBuiltBinary) {
   EXPECT_EQ(run_result.exit_code, 0);
   EXPECT_TRUE(run_result.output.find("Hello from Horcrux") != std::string::npos)
       << "Expected output not found. Got: " << run_result.output;
+}
+
+// Test: Doctor command help
+TEST_F(IntegrationTest, DoctorCommandHelp) {
+  auto result = execute_command(horcrux_cli_bin_.string() + " doctor");
+  
+  EXPECT_EQ(result.exit_code, 0);
+  EXPECT_TRUE(result.output.find("Usage: horcrux doctor") != std::string::npos)
+      << "Doctor help not found";
+  EXPECT_TRUE(result.output.find("android") != std::string::npos)
+      << "Android subsystem not listed";
+}
+
+// Test: Doctor android command without SDK
+TEST_F(IntegrationTest, DoctorAndroidWithoutSdk) {
+  // Unset Android environment variables to ensure it fails gracefully
+  auto result = execute_command(
+      "unset ANDROID_HOME && unset ANDROID_SDK_ROOT && unset ANDROID_NDK_ROOT && " +
+      horcrux_cli_bin_.string() + " doctor android");
+  
+  // Should fail with clear error message
+  EXPECT_NE(result.exit_code, 0);
+  EXPECT_TRUE(result.output.find("Android SDK not found") != std::string::npos ||
+              result.output.find("Android Toolchain Detection Failed") != std::string::npos)
+      << "Expected error message not found. Got: " << result.output;
 }
 
 // Placeholder test to demonstrate structure until build is implemented

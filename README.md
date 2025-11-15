@@ -192,7 +192,23 @@ horcrux-cli help
 
 ### Quick Start
 
-Try the example projects:
+#### Validate Your Environment
+
+Check your toolchain setup:
+
+```bash
+# Check Android SDK, NDK, and Java toolchain
+horcrux-cli doctor android
+
+# View all doctor options
+horcrux-cli doctor
+```
+
+For Android development, see [docs/android-toolchain.md](docs/android-toolchain.md).
+
+#### Try Example Projects
+
+Build the example projects:
 
 ```bash
 # Build the hello example
