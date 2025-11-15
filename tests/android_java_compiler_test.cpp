@@ -322,7 +322,8 @@ TEST(JavaCompilerTest, CompilerRequiresValidToolchain) {
   javac_file << "#!/bin/bash\n";
   javac_file.close();
 
-  auto toolchain_result = AndroidToolchainDetector::detect(temp.path(), std::nullopt, java_temp.path());
+  auto toolchain_result =
+      AndroidToolchainDetector::detect(temp.path(), std::nullopt, java_temp.path());
   ASSERT_TRUE(toolchain_result.has_value());
 
   AndroidJavaCompiler compiler(*toolchain_result);

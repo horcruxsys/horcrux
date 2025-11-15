@@ -143,7 +143,7 @@ public:
 
   // Check if compilation is needed (incremental compilation)
   auto is_compilation_needed(const KotlinCompileConfig& config,
-                            const std::string& cached_hash) const -> bool;
+                             const std::string& cached_hash) const -> bool;
 
   // Parse Kotlin source file to extract metadata
   static auto parse_kotlin_source(const std::filesystem::path& source_path)
@@ -157,24 +157,21 @@ private:
   std::optional<std::filesystem::path> kotlinc_path_;
 
   // Build kotlinc command line
-  auto build_kotlinc_command(const KotlinCompileConfig& config) const
-      -> std::vector<std::string>;
+  auto build_kotlinc_command(const KotlinCompileConfig& config) const -> std::vector<std::string>;
 
   // Execute kotlinc command
   auto execute_kotlinc(const std::vector<std::string>& command) const
       -> tl::expected<KotlinCompileResult, KotlinCompilerError>;
 
   // Run KAPT annotation processing
-  auto run_kapt(const KotlinCompileConfig& config)
-      -> tl::expected<void, KotlinCompilerError>;
+  auto run_kapt(const KotlinCompileConfig& config) -> tl::expected<void, KotlinCompilerError>;
 
   // Run KSP (Kotlin Symbol Processing)
-  auto run_ksp(const KotlinCompileConfig& config)
-      -> tl::expected<void, KotlinCompilerError>;
+  auto run_ksp(const KotlinCompileConfig& config) -> tl::expected<void, KotlinCompilerError>;
 
   // Scan output directory for generated class files
-  static auto scan_class_files(const std::filesystem::path& output_dir)
-      -> std::vector<std::filesystem::path>;
+  static auto
+  scan_class_files(const std::filesystem::path& output_dir) -> std::vector<std::filesystem::path>;
 
   // Scan for generated source files
   static auto scan_generated_sources(const std::filesystem::path& generated_dir)
@@ -200,7 +197,7 @@ auto separate_sources(const std::vector<std::filesystem::path>& sources)
 
 // Validate mixed Kotlin/Java compilation order
 auto validate_compilation_order(const std::vector<std::filesystem::path>& kotlin_sources,
-                               const std::vector<std::filesystem::path>& java_sources) -> bool;
+                                const std::vector<std::filesystem::path>& java_sources) -> bool;
 
 } // namespace kotlin_java_interop
 
@@ -212,16 +209,15 @@ auto compute_source_hash(const std::filesystem::path& source_path) -> std::strin
 
 // Check if source file has changed since last compilation
 auto has_source_changed(const std::filesystem::path& source_path,
-                       const std::string& cached_hash) -> bool;
+                        const std::string& cached_hash) -> bool;
 
 // Create compilation state file for incremental builds
 auto save_compilation_state(const std::filesystem::path& state_file,
-                           const KotlinCompileConfig& config,
-                           const std::string& compilation_hash) -> bool;
+                            const KotlinCompileConfig& config,
+                            const std::string& compilation_hash) -> bool;
 
 // Load compilation state from previous build
-auto load_compilation_state(const std::filesystem::path& state_file)
-    -> std::optional<std::string>;
+auto load_compilation_state(const std::filesystem::path& state_file) -> std::optional<std::string>;
 
 } // namespace kotlin_incremental
 

@@ -106,8 +106,8 @@ public:
   explicit AndroidJavaCompiler(const AndroidToolchain& toolchain);
 
   // Compile Java sources
-  auto compile(const JavaCompileConfig& config)
-      -> tl::expected<JavaCompileResult, JavaCompilerError>;
+  auto
+  compile(const JavaCompileConfig& config) -> tl::expected<JavaCompileResult, JavaCompilerError>;
 
   // Validate configuration
   static auto
@@ -118,7 +118,7 @@ public:
 
   // Check if compilation is needed (incremental compilation)
   auto is_compilation_needed(const JavaCompileConfig& config,
-                            const std::string& cached_hash) const -> bool;
+                             const std::string& cached_hash) const -> bool;
 
   // Parse Java source file to extract metadata
   static auto parse_java_source(const std::filesystem::path& source_path)
@@ -149,8 +149,7 @@ namespace java_classpath {
 auto build_classpath_string(const std::vector<std::filesystem::path>& classpath) -> std::string;
 
 // Parse classpath string into list of paths
-auto parse_classpath_string(const std::string& classpath_str)
-    -> std::vector<std::filesystem::path>;
+auto parse_classpath_string(const std::string& classpath_str) -> std::vector<std::filesystem::path>;
 
 // Validate classpath entries exist
 auto validate_classpath(const std::vector<std::filesystem::path>& classpath) -> bool;
@@ -168,16 +167,15 @@ auto compute_source_hash(const std::filesystem::path& source_path) -> std::strin
 
 // Check if source file has changed since last compilation
 auto has_source_changed(const std::filesystem::path& source_path,
-                       const std::string& cached_hash) -> bool;
+                        const std::string& cached_hash) -> bool;
 
 // Create compilation state file for incremental builds
 auto save_compilation_state(const std::filesystem::path& state_file,
-                           const JavaCompileConfig& config,
-                           const std::string& compilation_hash) -> bool;
+                            const JavaCompileConfig& config,
+                            const std::string& compilation_hash) -> bool;
 
 // Load compilation state from previous build
-auto load_compilation_state(const std::filesystem::path& state_file)
-    -> std::optional<std::string>;
+auto load_compilation_state(const std::filesystem::path& state_file) -> std::optional<std::string>;
 
 } // namespace java_incremental
 

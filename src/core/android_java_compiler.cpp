@@ -90,7 +90,8 @@ auto to_string(JavaCompilerError error) -> std::string {
 }
 
 AndroidJavaCompiler::AndroidJavaCompiler(const AndroidToolchain& toolchain)
-    : toolchain_(toolchain) {}
+    : toolchain_(toolchain) {
+}
 
 auto AndroidJavaCompiler::compile(const JavaCompileConfig& config)
     -> tl::expected<JavaCompileResult, JavaCompilerError> {
@@ -229,7 +230,7 @@ auto AndroidJavaCompiler::compute_compilation_hash(const JavaCompileConfig& conf
 }
 
 auto AndroidJavaCompiler::is_compilation_needed(const JavaCompileConfig& config,
-                                               const std::string& cached_hash) const -> bool {
+                                                const std::string& cached_hash) const -> bool {
   std::string current_hash = compute_compilation_hash(config);
   return current_hash != cached_hash;
 }
@@ -360,8 +361,7 @@ auto AndroidJavaCompiler::scan_class_files(const std::filesystem::path& output_d
   }
 
   try {
-    for (const auto& entry :
-         std::filesystem::recursive_directory_iterator(output_dir)) {
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(output_dir)) {
       if (entry.is_regular_file() && entry.path().extension() == ".class") {
         class_files.push_back(entry.path());
       }
@@ -460,14 +460,14 @@ auto compute_source_hash(const std::filesystem::path& source_path) -> std::strin
 }
 
 auto has_source_changed(const std::filesystem::path& source_path,
-                       const std::string& cached_hash) -> bool {
+                        const std::string& cached_hash) -> bool {
   std::string current_hash = compute_source_hash(source_path);
   return current_hash != cached_hash;
 }
 
 auto save_compilation_state(const std::filesystem::path& state_file,
-                           const JavaCompileConfig& /*config*/,
-                           const std::string& compilation_hash) -> bool {
+                            const JavaCompileConfig& /*config*/,
+                            const std::string& compilation_hash) -> bool {
   std::ofstream file(state_file);
   if (!file.is_open()) {
     return false;
@@ -477,8 +477,7 @@ auto save_compilation_state(const std::filesystem::path& state_file,
   return true;
 }
 
-auto load_compilation_state(const std::filesystem::path& state_file)
-    -> std::optional<std::string> {
+auto load_compilation_state(const std::filesystem::path& state_file) -> std::optional<std::string> {
   std::ifstream file(state_file);
   if (!file.is_open()) {
     return std::nullopt;

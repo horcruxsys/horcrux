@@ -91,7 +91,8 @@ auto to_string(KotlinCompilerError error) -> std::string {
 }
 
 AndroidKotlinCompiler::AndroidKotlinCompiler(const AndroidToolchain& toolchain)
-    : toolchain_(toolchain) {}
+    : toolchain_(toolchain) {
+}
 
 auto AndroidKotlinCompiler::compile(const KotlinCompileConfig& config)
     -> tl::expected<KotlinCompileResult, KotlinCompilerError> {
@@ -179,12 +180,12 @@ auto AndroidKotlinCompiler::compile(const KotlinCompileConfig& config)
   if (config.kapt_config && config.kapt_config->enabled) {
     auto kapt_sources = scan_generated_sources(config.kapt_config->generated_sources_dir);
     result.generated_sources.insert(result.generated_sources.end(), kapt_sources.begin(),
-                                   kapt_sources.end());
+                                    kapt_sources.end());
   }
   if (config.ksp_config && config.ksp_config->enabled) {
     auto ksp_sources = scan_generated_sources(config.ksp_config->output_dir);
     result.generated_sources.insert(result.generated_sources.end(), ksp_sources.begin(),
-                                   ksp_sources.end());
+                                    ksp_sources.end());
   }
 
   // Save compilation state for incremental builds
@@ -288,7 +289,7 @@ auto AndroidKotlinCompiler::compute_compilation_hash(const KotlinCompileConfig& 
 }
 
 auto AndroidKotlinCompiler::is_compilation_needed(const KotlinCompileConfig& config,
-                                                 const std::string& cached_hash) const -> bool {
+                                                  const std::string& cached_hash) const -> bool {
   std::string current_hash = compute_compilation_hash(config);
   return current_hash != cached_hash;
 }
@@ -590,7 +591,7 @@ auto separate_sources(const std::vector<std::filesystem::path>& sources)
 }
 
 auto validate_compilation_order(const std::vector<std::filesystem::path>& /*kotlin_sources*/,
-                               const std::vector<std::filesystem::path>& /*java_sources*/)
+                                const std::vector<std::filesystem::path>& /*java_sources*/)
     -> bool {
   // In mixed Kotlin/Java projects, Kotlin compiler can handle both
   // No special ordering needed as kotlinc can compile both
@@ -614,14 +615,14 @@ auto compute_source_hash(const std::filesystem::path& source_path) -> std::strin
 }
 
 auto has_source_changed(const std::filesystem::path& source_path,
-                       const std::string& cached_hash) -> bool {
+                        const std::string& cached_hash) -> bool {
   std::string current_hash = compute_source_hash(source_path);
   return current_hash != cached_hash;
 }
 
 auto save_compilation_state(const std::filesystem::path& state_file,
-                           const KotlinCompileConfig& /*config*/,
-                           const std::string& compilation_hash) -> bool {
+                            const KotlinCompileConfig& /*config*/,
+                            const std::string& compilation_hash) -> bool {
   std::ofstream file(state_file);
   if (!file.is_open()) {
     return false;
@@ -631,8 +632,7 @@ auto save_compilation_state(const std::filesystem::path& state_file,
   return true;
 }
 
-auto load_compilation_state(const std::filesystem::path& state_file)
-    -> std::optional<std::string> {
+auto load_compilation_state(const std::filesystem::path& state_file) -> std::optional<std::string> {
   std::ifstream file(state_file);
   if (!file.is_open()) {
     return std::nullopt;
