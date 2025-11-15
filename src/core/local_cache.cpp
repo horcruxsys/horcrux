@@ -20,17 +20,14 @@ namespace {
 // Simple SHA-256 implementation for demonstration
 // Note: In production, use a well-tested crypto library like OpenSSL or libsodium
 constexpr uint32_t K[64] = {
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
-    0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
-    0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
-    0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
-    0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
-    0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
 
 constexpr auto rotr(uint32_t x, uint32_t n) -> uint32_t {
   return (x >> n) | (x << (32 - n));
@@ -147,8 +144,7 @@ auto compute_sha256(std::span<const uint8_t> data) -> Hash {
   uint64_t bit_len = total_len * 8;
   size_t len_offset = block_count * 64 - 8;
   for (int i = 0; i < 8; ++i) {
-    final_block[len_offset + i] =
-        static_cast<uint8_t>((bit_len >> (56 - i * 8)) & 0xff);
+    final_block[len_offset + i] = static_cast<uint8_t>((bit_len >> (56 - i * 8)) & 0xff);
   }
 
   // Process final block(s)
@@ -190,11 +186,10 @@ auto LocalCache::create(const std::filesystem::path& cache_dir)
   return LocalCache(cache_dir);
 }
 
-LocalCache::LocalCache(const std::filesystem::path& cache_dir)
-    : cache_dir_(cache_dir) {}
+LocalCache::LocalCache(const std::filesystem::path& cache_dir) : cache_dir_(cache_dir) {
+}
 
-auto LocalCache::get_cache_path(const Hash& hash) const
-    -> std::filesystem::path {
+auto LocalCache::get_cache_path(const Hash& hash) const -> std::filesystem::path {
   // Use first 2 characters for subdirectory (256 buckets)
   // This helps with filesystem performance for large caches
   std::string hash_str = hash_to_string(hash);
@@ -202,8 +197,8 @@ auto LocalCache::get_cache_path(const Hash& hash) const
   return cache_dir_ / subdir / hash_str;
 }
 
-auto LocalCache::store(const Hash& hash, const Artifact& artifact)
-    -> std::expected<void, CacheError> {
+auto LocalCache::store(const Hash& hash,
+                       const Artifact& artifact) -> std::expected<void, CacheError> {
   // Store in memory cache
   memory_cache_[hash] = artifact;
 
@@ -226,13 +221,11 @@ auto LocalCache::store(const Hash& hash, const Artifact& artifact)
   }
 
   // Write timestamp
-  out.write(reinterpret_cast<const char*>(&artifact.timestamp),
-            sizeof(artifact.timestamp));
+  out.write(reinterpret_cast<const char*>(&artifact.timestamp), sizeof(artifact.timestamp));
 
   // Write content size
   size_t content_size = artifact.content.size();
-  out.write(reinterpret_cast<const char*>(&content_size),
-            sizeof(content_size));
+  out.write(reinterpret_cast<const char*>(&content_size), sizeof(content_size));
 
   // Write content
   out.write(reinterpret_cast<const char*>(artifact.content.data()),
@@ -266,8 +259,7 @@ auto LocalCache::lookup(const Hash& hash) const -> std::optional<Artifact> {
   Artifact artifact;
 
   // Read timestamp
-  in.read(reinterpret_cast<char*>(&artifact.timestamp),
-          sizeof(artifact.timestamp));
+  in.read(reinterpret_cast<char*>(&artifact.timestamp), sizeof(artifact.timestamp));
   if (!in) {
     return std::nullopt;
   }
@@ -304,7 +296,9 @@ auto LocalCache::contains(const Hash& hash) const -> bool {
   return std::filesystem::exists(file_path);
 }
 
-auto LocalCache::size() const -> size_t { return memory_cache_.size(); }
+auto LocalCache::size() const -> size_t {
+  return memory_cache_.size();
+}
 
 auto LocalCache::clear() -> std::expected<void, CacheError> {
   memory_cache_.clear();
@@ -312,8 +306,7 @@ auto LocalCache::clear() -> std::expected<void, CacheError> {
   // Remove all cache files
   std::error_code ec;
   if (std::filesystem::exists(cache_dir_, ec)) {
-    for (const auto& entry :
-         std::filesystem::recursive_directory_iterator(cache_dir_)) {
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(cache_dir_)) {
       if (entry.is_regular_file()) {
         std::filesystem::remove(entry.path(), ec);
         if (ec) {

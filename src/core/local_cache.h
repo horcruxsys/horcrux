@@ -33,13 +33,7 @@ struct HashHasher {
 };
 
 /// Error types for cache operations
-enum class CacheError {
-  FileNotFound,
-  WriteFailure,
-  ReadFailure,
-  InvalidHash,
-  CorruptedData
-};
+enum class CacheError { FileNotFound, WriteFailure, ReadFailure, InvalidHash, CorruptedData };
 
 /// Artifact stored in the cache
 struct Artifact {
@@ -79,8 +73,8 @@ public:
   /// @return Expected LocalCache or CacheError
   ///
   /// @note Creates the cache directory if it doesn't exist
-  static auto create(const std::filesystem::path& cache_dir)
-      -> std::expected<LocalCache, CacheError>;
+  static auto
+  create(const std::filesystem::path& cache_dir) -> std::expected<LocalCache, CacheError>;
 
   /// Stores an artifact in the cache
   ///
@@ -90,8 +84,7 @@ public:
   ///
   /// @complexity O(n) where n is the size of artifact content
   /// @note Thread-safe operation
-  auto store(const Hash& hash, const Artifact& artifact)
-      -> std::expected<void, CacheError>;
+  auto store(const Hash& hash, const Artifact& artifact) -> std::expected<void, CacheError>;
 
   /// Retrieves an artifact from the cache
   ///

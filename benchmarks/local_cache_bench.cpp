@@ -2,16 +2,16 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include "../../src/core/local_cache.h"
-
-#include <benchmark/benchmark.h>
-
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
 #include <random>
 #include <vector>
+
+#include <benchmark/benchmark.h>
+
+#include "../../src/core/local_cache.h"
 
 namespace horcrux::bench {
 
@@ -54,10 +54,8 @@ static void BM_Cache_Store_SmallArtifact(benchmark::State& state) {
   for (auto _ : state) {
     auto content = generate_random_content(artifact_size, seed++);
     auto hash = compute_sha256(content);
-    Artifact artifact{
-        .content = content,
-        .timestamp =
-            std::chrono::system_clock::now().time_since_epoch().count()};
+    Artifact artifact{.content = content,
+                      .timestamp = std::chrono::system_clock::now().time_since_epoch().count()};
 
     auto result = cache.store(hash, artifact);
     benchmark::DoNotOptimize(result);
@@ -79,10 +77,8 @@ static void BM_Cache_Store_MediumArtifact(benchmark::State& state) {
   for (auto _ : state) {
     auto content = generate_random_content(artifact_size, seed++);
     auto hash = compute_sha256(content);
-    Artifact artifact{
-        .content = content,
-        .timestamp =
-            std::chrono::system_clock::now().time_since_epoch().count()};
+    Artifact artifact{.content = content,
+                      .timestamp = std::chrono::system_clock::now().time_since_epoch().count()};
 
     auto result = cache.store(hash, artifact);
     benchmark::DoNotOptimize(result);
@@ -270,10 +266,8 @@ static void BM_Cache_StoreAndLookup(benchmark::State& state) {
     // Store
     auto content = generate_random_content(artifact_size, seed++);
     auto hash = compute_sha256(content);
-    Artifact artifact{
-        .content = content,
-        .timestamp =
-            std::chrono::system_clock::now().time_since_epoch().count()};
+    Artifact artifact{.content = content,
+                      .timestamp = std::chrono::system_clock::now().time_since_epoch().count()};
 
     cache.store(hash, artifact);
 
