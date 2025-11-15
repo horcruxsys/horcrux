@@ -286,10 +286,68 @@ target_compile_options(android_dex_compiler_test PRIVATE
 # Register test with CTest
 gtest_discover_tests(android_dex_compiler_test)
 
+# Android APK packager tests
+add_executable(android_apk_packager_test
+    android_apk_packager_test.cpp
+)
+
+target_link_libraries(android_apk_packager_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(android_apk_packager_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(android_apk_packager_test)
+
+# Android AAB packager tests
+add_executable(android_aab_packager_test
+    android_aab_packager_test.cpp
+)
+
+target_link_libraries(android_aab_packager_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(android_aab_packager_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(android_aab_packager_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_java_compiler_test android_kotlin_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test
+    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_java_compiler_test android_kotlin_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )
