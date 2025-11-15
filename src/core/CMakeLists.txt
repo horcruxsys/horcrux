@@ -11,6 +11,7 @@ add_library(horcrux_core STATIC
     android_toolchain.cpp
     android_java_compiler.cpp
     android_kotlin_compiler.cpp
+    android_compose_compiler.cpp
     android_dex_compiler.cpp
     android_resources.cpp
     android_manifest_merger.cpp
