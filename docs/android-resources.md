@@ -261,6 +261,10 @@ std::cout << "Merge hash: " << merge_result->merge_hash << std::endl;
 
 ## Manifest Merging
 
+Horcrux implements **deterministic manifest merging** following Gradle's manifest merger specification. This ensures that manifests from the main app and all libraries are correctly merged with proper priority handling.
+
+### Basic Manifest Merging
+
 Merge multiple manifest files (main + libraries):
 
 ```cpp
@@ -279,6 +283,162 @@ if (!manifest_result) {
 
 std::cout << "Merged manifest: " << manifest_result->merged_manifest << std::endl;
 ```
+
+### Advanced Manifest Merging
+
+For more control over the merge process, use the `AndroidManifestMerger` class directly:
+
+```cpp
+#include "android_manifest_merger.h"
+
+AndroidManifestMerger merger;
+
+AndroidManifestMerger::MergeConfig config;
+config.main_manifest = "src/main/AndroidManifest.xml";
+config.library_manifests.push_back("libs/lib1/AndroidManifest.xml");
+config.library_manifests.push_back("libs/lib2/AndroidManifest.xml");
+config.flavor_manifests.push_back("src/flavor/AndroidManifest.xml");
+config.build_type_manifests.push_back("src/debug/AndroidManifest.xml");
+config.output_manifest = "build/merged/AndroidManifest.xml";
+config.verbose = true;
+config.strict = false; // Don't fail on conflicts
+
+auto result = merger.merge(config);
+if (!result || !result->success) {
+    for (const auto& error : result->errors) {
+        std::cerr << "Error: " << error << std::endl;
+    }
+    return;
+}
+
+// Check warnings
+for (const auto& warning : result->warnings) {
+    std::cout << "Warning: " << warning << std::endl;
+}
+```
+
+### Manifest Merge Priority
+
+Manifests are merged with the following priority order (highest to lowest):
+
+1. **Main Manifest** - Highest priority
+2. **Flavor Manifests** - Product flavor overlays
+3. **Build Type Manifests** - Build type overlays (debug/release)
+4. **Library Manifests** - Lowest priority
+
+When conflicts occur, the higher priority manifest wins.
+
+### Merge Rules
+
+Horcrux supports different merge actions for different element types:
+
+#### Merge Actions
+
+- **merge** (default): Merge child elements and attributes
+- **replace**: Replace lower-priority elements with higher-priority ones
+- **merge-only**: Keep only if present in higher priority manifest
+- **remove**: Remove element from final manifest
+- **strict**: Fail on any conflict
+
+#### Element Matching
+
+Elements are matched using different strategies:
+
+- **By Name**: Elements like `<application>` match by tag name only
+- **By Name + Attribute**: Elements like `<activity>`, `<service>` match by `android:name`
+- **By Name + ID**: Elements like `<uses-permission>` match by `android:name`
+
+#### Supported Elements
+
+The merger has built-in rules for common Android manifest elements:
+
+- `<application>` - Merge children and attributes
+- `<activity>`, `<service>`, `<receiver>`, `<provider>` - Match by `android:name`
+- `<uses-permission>`, `<uses-feature>`, `<uses-library>` - Match by `android:name`
+- `<intent-filter>` - Merge all (no unique key)
+- `<meta-data>` - Match by `android:name`
+- `<uses-sdk>` - Merge attributes
+
+### Using tools:node Directives
+
+You can control merge behavior using `tools:node` attributes:
+
+```xml
+<!-- In library manifest: Always include this activity -->
+<activity
+    android:name=".LibraryActivity"
+    tools:node="merge" />
+
+<!-- In main manifest: Replace library's default configuration -->
+<activity
+    android:name=".MainActivity"
+    android:exported="true"
+    tools:node="replace" />
+
+<!-- Remove an element from a library manifest -->
+<activity
+    android:name=".UnwantedActivity"
+    tools:node="remove" />
+```
+
+### Custom Merge Rules
+
+Add custom merge rules for specific elements:
+
+```cpp
+AndroidManifestMerger merger;
+
+// Add custom rule for a custom element
+MergeRule custom_rule{
+    .element_name = "custom-element",
+    .default_action = MergeAction::Replace,
+    .key_type = NodeKey::NameAndAttr,
+    .key_attribute = "custom:id"
+};
+merger.add_merge_rule(custom_rule);
+
+// Set conflict strategy for specific attributes
+merger.set_conflict_strategy("android:minSdkVersion", ConflictStrategy::UseHigherPriority);
+merger.set_conflict_strategy("android:label", ConflictStrategy::UseHigherPriority);
+```
+
+### Conflict Resolution Strategies
+
+Control how attribute conflicts are resolved:
+
+- **UseHigherPriority** (default): Use value from higher priority manifest
+- **UseLowerPriority**: Use value from lower priority manifest
+- **Fail**: Fail on conflict
+- **Concatenate**: Concatenate values with comma separator
+
+### Deterministic Merging
+
+All manifest merging is **deterministic and reproducible**:
+
+- Elements are sorted by name and key attributes
+- Same inputs always produce identical outputs
+- Merge order is consistent across builds
+- Suitable for hermetic and cacheable builds
+
+### Validation
+
+The merger validates the final manifest:
+
+```cpp
+auto result = merger.merge(config);
+
+if (result->warnings.empty() && result->errors.empty()) {
+    std::cout << "Manifest merge successful with no issues" << std::endl;
+} else {
+    std::cout << "Warnings: " << result->warnings.size() << std::endl;
+    std::cout << "Errors: " << result->errors.size() << std::endl;
+}
+```
+
+Required checks:
+- Root element must be `<manifest>`
+- Must have `package` attribute
+- Must contain `<application>` element
 
 ## Incremental Compilation
 
@@ -595,7 +755,7 @@ ctest --output-on-failure -R AndroidResource
 
 ## Future Enhancements
 
-- [ ] Advanced manifest merger with library manifest merging
+- [x] ~~Advanced manifest merger with library manifest merging~~ - **Implemented!**
 - [ ] R.jar generation from R.java (currently placeholder)
 - [ ] ProGuard rule generation during linking
 - [ ] Resource shrinking and optimization
@@ -604,10 +764,14 @@ ctest --output-on-failure -R AndroidResource
 - [ ] Remote resource caching
 - [ ] Distributed resource compilation
 - [ ] Resource obfuscation
+- [ ] Namespace support for manifest merging (Android Gradle Plugin 7.0+)
+- [ ] Placeholder replacement (${applicationId}, etc.)
+- [ ] Manifest merger reports and conflict visualization
 
 ## See Also
 
 - [Android Toolchain Detection](android-toolchain.md)
 - [Android Java Compiler Rules](android-compiler-rules.md)
+- [Android Manifest Merger](android-manifest-merger.md)
 - [Coding Standards](coding-standards.md)
 - [Architecture](architecture.md)
