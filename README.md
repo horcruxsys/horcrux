@@ -147,6 +147,10 @@ Ensure you have the following installed:
 git clone https://github.com/horcruxsys/horcrux.git
 cd horcrux
 
+# Install git hooks (recommended for contributors)
+# Hooks automatically format code and run validations before commit/push
+lefthook install
+
 # Create and enter build directory
 mkdir build && cd build
 
@@ -162,6 +166,13 @@ ctest --output-on-failure
 # Install (optional, requires appropriate permissions)
 sudo cmake --install .
 ```
+
+**Note for contributors:** Git hooks using [Lefthook](https://github.com/evilmartians/lefthook) ensure code quality by:
+- Auto-formatting C++ code with clang-format before commit
+- Validating YAML files and checking for common issues
+- Building and testing before push
+
+See [docs/git-hooks.md](docs/git-hooks.md) for details.
 
 #### Verify Installation
 
