@@ -439,50 +439,6 @@ auto AndroidDexCompiler::compute_r8_hash(const R8CompileConfig& config) -> std::
   return hash_to_string(hash);
 }
 
-// Hash inputs (sorted for determinism)
-std::vector<std::filesystem::path> sorted_inputs = config.inputs;
-std::sort(sorted_inputs.begin(), sorted_inputs.end());
-for (const auto& input : sorted_inputs) {
-  hash_input << input.string() << "|";
-}
-
-// Hash classpath (sorted)
-std::vector<std::filesystem::path> sorted_classpath = config.classpath;
-std::sort(sorted_classpath.begin(), sorted_classpath.end());
-for (const auto& cp : sorted_classpath) {
-  hash_input << cp.string() << "|";
-}
-
-// Hash configuration options
-hash_input << config.min_api << "|";
-hash_input << config.multi_dex << "|";
-hash_input << config.debug << "|";
-
-// Hash ProGuard config
-hash_input << config.proguard_config.optimize << "|";
-hash_input << config.proguard_config.obfuscate << "|";
-hash_input << config.proguard_config.shrink << "|";
-
-std::vector<std::filesystem::path> sorted_pg_files = config.proguard_config.config_files;
-std::sort(sorted_pg_files.begin(), sorted_pg_files.end());
-for (const auto& pg_file : sorted_pg_files) {
-  hash_input << pg_file.string() << "|";
-}
-
-if (config.main_dex_list) {
-  hash_input << config.main_dex_list->string() << "|";
-}
-
-// Hash additional options (sorted)
-std::vector<std::string> sorted_options = config.r8_options;
-std::sort(sorted_options.begin(), sorted_options.end());
-for (const auto& opt : sorted_options) {
-  hash_input << opt << "|";
-}
-
-return cache.compute_hash(hash_input.str());
-} // namespace horcrux::core
-
 auto AndroidDexCompiler::is_d8_compilation_needed(const D8CompileConfig& config,
                                                   const std::string& cached_hash) const -> bool {
   auto current_hash = compute_d8_hash(config);
@@ -765,53 +721,6 @@ auto AndroidDexCompiler::get_r8_path() const -> std::optional<std::filesystem::p
   if (toolchain_.build_tools.empty()) {
     return std::nullopt;
   }
-  auto AndroidDexCompiler::validate_d8_tool() const -> tl::expected<void, DexCompilerError> {
-    auto d8_path = get_d8_path();
-    if (!d8_path || !std::filesystem::exists(*d8_path)) {
-      return tl::unexpected(DexCompilerError::CompilerNotFound);
-    }
-    return {};
-  }
-
-  auto AndroidDexCompiler::validate_r8_tool() const -> tl::expected<void, DexCompilerError> {
-    auto r8_path = get_r8_path();
-    if (!r8_path || !std::filesystem::exists(*r8_path)) {
-      return tl::unexpected(DexCompilerError::CompilerNotFound);
-    }
-    return {};
-  }
-
-  auto AndroidDexCompiler::sort_dex_files_deterministic(std::vector<std::filesystem::path> &
-                                                        dex_files) -> void {
-    // Sort by filename: classes.dex, classes2.dex, classes3.dex, ...
-    std::sort(dex_files.begin(), dex_files.end(),
-              [](const std::filesystem::path& a, const std::filesystem::path& b) {
-                std::string a_name = a.filename().string();
-                std::string b_name = b.filename().string();
-
-                // Extract number from classesN.dex
-                std::regex num_regex(R"(classes(\d*).dex)");
-                std::smatch a_match;
-                std::smatch b_match;
-
-                int a_num = 1;
-                int b_num = 1;
-
-                if (std::regex_match(a_name, a_match, num_regex)) {
-                  if (a_match[1].length() > 0) {
-                    a_num = std::stoi(a_match[1].str());
-                  }
-                }
-
-                if (std::regex_match(b_name, b_match, num_regex)) {
-                  if (b_match[1].length() > 0) {
-                    b_num = std::stoi(b_match[1].str());
-                  }
-                }
-
-                return a_num < b_num;
-              });
-  }
 
   // Use the first (newest) build tools
   const auto& bt = toolchain_.build_tools[0];
@@ -820,6 +729,54 @@ auto AndroidDexCompiler::get_r8_path() const -> std::optional<std::filesystem::p
   }
 
   return std::nullopt;
+}
+
+auto AndroidDexCompiler::validate_d8_tool() const -> tl::expected<void, DexCompilerError> {
+  auto d8_path = get_d8_path();
+  if (!d8_path || !std::filesystem::exists(*d8_path)) {
+    return tl::unexpected(DexCompilerError::CompilerNotFound);
+  }
+  return {};
+}
+
+auto AndroidDexCompiler::validate_r8_tool() const -> tl::expected<void, DexCompilerError> {
+  auto r8_path = get_r8_path();
+  if (!r8_path || !std::filesystem::exists(*r8_path)) {
+    return tl::unexpected(DexCompilerError::CompilerNotFound);
+  }
+  return {};
+}
+
+auto AndroidDexCompiler::sort_dex_files_deterministic(std::vector<std::filesystem::path>& dex_files)
+    -> void {
+  // Sort by filename: classes.dex, classes2.dex, classes3.dex, ...
+  std::sort(dex_files.begin(), dex_files.end(),
+            [](const std::filesystem::path& a, const std::filesystem::path& b) {
+              std::string a_name = a.filename().string();
+              std::string b_name = b.filename().string();
+
+              // Extract number from classesN.dex
+              std::regex num_regex(R"(classes(\d*).dex)");
+              std::smatch a_match;
+              std::smatch b_match;
+
+              int a_num = 1;
+              int b_num = 1;
+
+              if (std::regex_match(a_name, a_match, num_regex)) {
+                if (a_match[1].length() > 0) {
+                  a_num = std::stoi(a_match[1].str());
+                }
+              }
+
+              if (std::regex_match(b_name, b_match, num_regex)) {
+                if (b_match[1].length() > 0) {
+                  b_num = std::stoi(b_match[1].str());
+                }
+              }
+
+              return a_num < b_num;
+            });
 }
 
 // Helper namespace implementations
@@ -1005,9 +962,22 @@ auto merge_proguard_configs(const std::vector<ProguardConfig>& configs) -> Progu
     merged.optimize = merged.optimize && config.optimize;
     merged.obfuscate = merged.obfuscate && config.obfuscate;
     merged.shrink = merged.shrink && config.shrink;
+
+    // Use first non-empty output paths
+    if (!merged.mapping_output && config.mapping_output) {
+      merged.mapping_output = config.mapping_output;
+    }
+    if (!merged.usage_output && config.usage_output) {
+      merged.usage_output = config.usage_output;
+    }
+    if (!merged.seeds_output && config.seeds_output) {
+      merged.seeds_output = config.seeds_output;
+    }
   }
 
   return merged;
 }
 
 } // namespace proguard_utils
+
+} // namespace horcrux::core

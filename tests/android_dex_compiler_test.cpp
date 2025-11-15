@@ -2,8 +2,12 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <regex>
+#include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
