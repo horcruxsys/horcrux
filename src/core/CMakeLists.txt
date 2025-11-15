@@ -14,6 +14,8 @@ add_library(horcrux_core STATIC
     android_dex_compiler.cpp
     android_resources.cpp
     android_manifest_merger.cpp
+    android_apk_packager.cpp
+    android_aab_packager.cpp
 )
 
 # Set library properties
