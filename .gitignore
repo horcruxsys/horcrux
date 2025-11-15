@@ -40,6 +40,7 @@ CTestTestfile.cmake
 # Cache
 .ccache/
 .cache/
+.horcrux-cache/
 
 # IDE and editor files
 .vscode/

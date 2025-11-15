@@ -83,10 +83,40 @@ target_compile_options(local_cache_test PRIVATE
 # Register test with CTest
 gtest_discover_tests(local_cache_test)
 
+# Target parser tests
+add_executable(target_parser_test
+    target_parser_test.cpp
+)
+
+target_link_libraries(target_parser_test
+    PRIVATE
+    horcrux_cli
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(target_parser_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(target_parser_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test
+    DEPENDS build_graph_test local_cache_test target_parser_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )

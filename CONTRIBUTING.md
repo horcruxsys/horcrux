@@ -87,6 +87,7 @@ Feel free to ask questions in the issue comments or on our discussion forum.
 ### Pull Requests
 
 1. **Fork the repository** and create your branch from `main`:
+
    ```bash
    git checkout -b feature/my-new-feature
    ```
@@ -97,6 +98,7 @@ Feel free to ask questions in the issue comments or on our discussion forum.
    - Update documentation as needed
 
 3. **Test your changes**:
+
    ```bash
    mkdir build && cd build
    cmake .. -DCMAKE_BUILD_TYPE=Debug
