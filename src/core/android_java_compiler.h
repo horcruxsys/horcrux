@@ -73,6 +73,10 @@ struct JavaCompileConfig {
 
   // Bootclasspath (e.g., android.jar for Android)
   std::optional<std::filesystem::path> bootclasspath;
+
+  // Sandbox configuration
+  bool enable_sandbox = false;  // Enable sandboxed execution
+  std::optional<std::filesystem::path> sdk_path;  // Android SDK path for sandbox
 };
 
 // Java compilation result

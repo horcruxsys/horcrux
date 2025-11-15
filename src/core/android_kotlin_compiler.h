@@ -13,6 +13,7 @@
 #include <tl/expected.hpp>
 
 #include "android_compose_compiler.h"
+#include "android_sandbox.h"
 #include "android_toolchain.h"
 
 namespace horcrux::core {
@@ -99,6 +100,10 @@ struct KotlinCompileConfig {
 
   // Jetpack Compose compiler configuration
   std::optional<ComposeCompilerConfig> compose_config;
+
+  // Sandbox configuration
+  bool enable_sandbox = false;  // Enable sandboxed execution
+  std::optional<std::filesystem::path> sdk_path;  // Android SDK path for sandbox
 };
 
 // Kotlin compilation result
@@ -186,6 +191,11 @@ private:
 
   // Validate Kotlin compiler is available
   auto validate_kotlin_compiler() const -> tl::expected<void, KotlinCompilerError>;
+
+  // Execute command in sandbox
+  auto execute_sandboxed(const std::vector<std::string>& command,
+                        const KotlinCompileConfig& config) const
+      -> tl::expected<SandboxResult, KotlinCompilerError>;
 };
 
 // Helper functions for Kotlin/Java interop
