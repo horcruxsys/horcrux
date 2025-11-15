@@ -188,18 +188,18 @@ auto handle_doctor_android(Logger& logger) -> int {
     std::cout << "    Error: " << core::to_string(validation_result.error()) << "\n";
   }
 
-  print_check_status("SDK structure valid", 
-                    core::AndroidToolchainValidator::validate_sdk(toolchain.sdk_root));
+  print_check_status("SDK structure valid",
+                     core::AndroidToolchainValidator::validate_sdk(toolchain.sdk_root));
 
   if (toolchain.ndk_root) {
     print_check_status("NDK structure valid",
-                      core::AndroidToolchainValidator::validate_ndk(*toolchain.ndk_root));
+                       core::AndroidToolchainValidator::validate_ndk(*toolchain.ndk_root));
   }
 
   if (toolchain.java_sdk) {
-    print_check_status("Java installation valid",
-                      core::AndroidToolchainValidator::validate_java_home(
-                          toolchain.java_sdk->java_home));
+    print_check_status(
+        "Java installation valid",
+        core::AndroidToolchainValidator::validate_java_home(toolchain.java_sdk->java_home));
   }
 
   std::cout << "\n";
@@ -214,7 +214,7 @@ auto handle_doctor_android(Logger& logger) -> int {
     if (manifest_file.is_open()) {
       manifest_file << toolchain.to_json();
       manifest_file.close();
-      
+
       std::cout << "✓ Toolchain manifest saved to: " << manifest_path.string() << "\n";
       std::cout << "  This file ensures reproducible builds across machines.\n";
     } else {
@@ -227,8 +227,8 @@ auto handle_doctor_android(Logger& logger) -> int {
   std::cout << "\n";
 
   // Summary
-  bool has_warnings = !toolchain.ndk_root || !toolchain.java_sdk || 
-                     toolchain.build_tools.empty() || toolchain.platforms.empty();
+  bool has_warnings = !toolchain.ndk_root || !toolchain.java_sdk || toolchain.build_tools.empty() ||
+                      toolchain.platforms.empty();
 
   if (has_warnings) {
     std::cout << "✓ Android toolchain detected with warnings\n";
