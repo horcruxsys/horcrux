@@ -139,7 +139,7 @@ jobs:
                   time = bench.get('cpu_time', 0)
                   unit = bench.get('time_unit', 'ns')
                   print(f'{name}: {time:.2f} {unit}')
-          " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
+          " 2>/dev/null >> ../benchmark_summary.md || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
           fi
           cd ..
           
@@ -162,7 +162,7 @@ jobs:
                   time = bench.get('cpu_time', 0)
                   unit = bench.get('time_unit', 'ns')
                   print(f'{name}: {time:.2f} {unit}')
-          " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
+          " 2>/dev/null >> ../benchmark_summary.md || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
           fi
           cd ..
           
@@ -185,7 +185,7 @@ jobs:
                   time = bench.get('cpu_time', 0)
                   unit = bench.get('time_unit', 'ns')
                   print(f'{name}: {time:.2f} {unit}')
-          " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
+          " 2>/dev/null >> ../benchmark_summary.md || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
           fi
           cd ..
 
