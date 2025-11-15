@@ -44,50 +44,44 @@ AndroidManifestMerger::AndroidManifestMerger() {
 
 void AndroidManifestMerger::initialize_default_rules() {
   // Application element - merge children
-  merge_rules_["application"] = MergeRule{
-      .element_name = "application",
-      .default_action = MergeAction::Merge,
-      .key_type = NodeKey::Name,
-      .key_attribute = std::nullopt};
+  merge_rules_["application"] = MergeRule{.element_name = "application",
+                                          .default_action = MergeAction::Merge,
+                                          .key_type = NodeKey::Name,
+                                          .key_attribute = std::nullopt};
 
   // Activity, Service, Receiver, Provider - match by android:name
   for (const auto& component : {"activity", "service", "receiver", "provider"}) {
-    merge_rules_[component] = MergeRule{
-        .element_name = component,
-        .default_action = MergeAction::Merge,
-        .key_type = NodeKey::NameAndId,
-        .key_attribute = "android:name"};
+    merge_rules_[component] = MergeRule{.element_name = component,
+                                        .default_action = MergeAction::Merge,
+                                        .key_type = NodeKey::NameAndId,
+                                        .key_attribute = "android:name"};
   }
 
   // Uses-permission, uses-feature - match by android:name
   for (const auto& uses : {"uses-permission", "uses-feature", "uses-library"}) {
-    merge_rules_[uses] = MergeRule{
-        .element_name = uses,
-        .default_action = MergeAction::Merge,
-        .key_type = NodeKey::NameAndId,
-        .key_attribute = "android:name"};
+    merge_rules_[uses] = MergeRule{.element_name = uses,
+                                   .default_action = MergeAction::Merge,
+                                   .key_type = NodeKey::NameAndId,
+                                   .key_attribute = "android:name"};
   }
 
   // Intent-filter - merge all (no unique key)
-  merge_rules_["intent-filter"] = MergeRule{
-      .element_name = "intent-filter",
-      .default_action = MergeAction::Merge,
-      .key_type = NodeKey::Name,
-      .key_attribute = std::nullopt};
+  merge_rules_["intent-filter"] = MergeRule{.element_name = "intent-filter",
+                                            .default_action = MergeAction::Merge,
+                                            .key_type = NodeKey::Name,
+                                            .key_attribute = std::nullopt};
 
   // Meta-data - match by android:name
-  merge_rules_["meta-data"] = MergeRule{
-      .element_name = "meta-data",
-      .default_action = MergeAction::Merge,
-      .key_type = NodeKey::NameAndId,
-      .key_attribute = "android:name"};
+  merge_rules_["meta-data"] = MergeRule{.element_name = "meta-data",
+                                        .default_action = MergeAction::Merge,
+                                        .key_type = NodeKey::NameAndId,
+                                        .key_attribute = "android:name"};
 
   // Uses-sdk - merge attributes
-  merge_rules_["uses-sdk"] = MergeRule{
-      .element_name = "uses-sdk",
-      .default_action = MergeAction::Merge,
-      .key_type = NodeKey::Name,
-      .key_attribute = std::nullopt};
+  merge_rules_["uses-sdk"] = MergeRule{.element_name = "uses-sdk",
+                                       .default_action = MergeAction::Merge,
+                                       .key_type = NodeKey::Name,
+                                       .key_attribute = std::nullopt};
 
   // Default conflict strategies
   conflict_strategies_["android:minSdkVersion"] = ConflictStrategy::UseHigherPriority;
@@ -144,17 +138,18 @@ auto AndroidManifestMerger::merge(const MergeConfig& config)
   }
 
   // Sort manifests by priority (lowest first, so we merge lower priority into higher)
-  std::sort(manifests.begin(), manifests.end(),
-            [](const ParsedManifest& a, const ParsedManifest& b) { return a.priority < b.priority; });
+  std::sort(
+      manifests.begin(), manifests.end(),
+      [](const ParsedManifest& a, const ParsedManifest& b) { return a.priority < b.priority; });
 
   // Create output document starting with main manifest
   auto output_doc = std::make_unique<tinyxml2::XMLDocument>();
-  
+
   // Clone the main manifest as base
-  auto main_manifest = std::find_if(
-      manifests.begin(), manifests.end(),
-      [](const ParsedManifest& m) { return m.priority == ManifestPriority::Main; });
-  
+  auto main_manifest =
+      std::find_if(manifests.begin(), manifests.end(),
+                   [](const ParsedManifest& m) { return m.priority == ManifestPriority::Main; });
+
   if (main_manifest == manifests.end()) {
     result.errors.push_back("Main manifest not found");
     return tl::unexpected(AndroidResourceError::InvalidManifest);
@@ -171,13 +166,13 @@ auto AndroidManifestMerger::merge(const MergeConfig& config)
     }
 
     if (config.verbose) {
-      std::cout << "Merging: " << manifest.source_path << " (priority: "
-                << static_cast<int>(manifest.priority) << ")" << std::endl;
+      std::cout << "Merging: " << manifest.source_path
+                << " (priority: " << static_cast<int>(manifest.priority) << ")" << std::endl;
     }
 
     // Merge root attributes
-    auto attr_warnings = merge_attributes(output_root, manifest.root, manifest.priority,
-                                          ManifestPriority::Main);
+    auto attr_warnings =
+        merge_attributes(output_root, manifest.root, manifest.priority, ManifestPriority::Main);
     result.warnings.insert(result.warnings.end(), attr_warnings.begin(), attr_warnings.end());
 
     // Merge child elements
@@ -197,8 +192,7 @@ auto AndroidManifestMerger::merge(const MergeConfig& config)
 
   // Validate merged manifest
   auto validation_errors = validate_manifest(output_doc.get());
-  result.warnings.insert(result.warnings.end(), validation_errors.begin(),
-                         validation_errors.end());
+  result.warnings.insert(result.warnings.end(), validation_errors.begin(), validation_errors.end());
 
   // Save output manifest
   std::filesystem::create_directories(config.output_manifest.parent_path());
@@ -218,15 +212,13 @@ void AndroidManifestMerger::add_merge_rule(const MergeRule& rule) {
 }
 
 void AndroidManifestMerger::set_conflict_strategy(const std::string& attribute,
-                                                   ConflictStrategy strategy) {
+                                                  ConflictStrategy strategy) {
   conflict_strategies_[attribute] = strategy;
 }
 
-auto AndroidManifestMerger::merge_elements(tinyxml2::XMLElement* target,
-                                           tinyxml2::XMLElement* source,
-                                           ManifestPriority source_priority,
-                                           ManifestPriority target_priority)
-    -> tl::expected<void, AndroidResourceError> {
+auto AndroidManifestMerger::merge_elements(
+    tinyxml2::XMLElement* target, tinyxml2::XMLElement* source, ManifestPriority source_priority,
+    ManifestPriority target_priority) -> tl::expected<void, AndroidResourceError> {
   if (!target || !source) {
     return tl::unexpected(AndroidResourceError::InvalidManifest);
   }
@@ -308,11 +300,9 @@ auto AndroidManifestMerger::merge_elements(tinyxml2::XMLElement* target,
   return {};
 }
 
-auto AndroidManifestMerger::merge_attributes(tinyxml2::XMLElement* target,
-                                             tinyxml2::XMLElement* source,
-                                             ManifestPriority source_priority,
-                                             ManifestPriority target_priority)
-    -> std::vector<std::string> {
+auto AndroidManifestMerger::merge_attributes(
+    tinyxml2::XMLElement* target, tinyxml2::XMLElement* source, ManifestPriority source_priority,
+    ManifestPriority target_priority) -> std::vector<std::string> {
   std::vector<std::string> warnings;
 
   // Merge all attributes from source
@@ -367,8 +357,8 @@ auto AndroidManifestMerger::merge_attributes(tinyxml2::XMLElement* target,
 }
 
 auto AndroidManifestMerger::find_matching_element(tinyxml2::XMLElement* parent,
-                                                   tinyxml2::XMLElement* needle,
-                                                   const MergeRule& rule) -> tinyxml2::XMLElement* {
+                                                  tinyxml2::XMLElement* needle,
+                                                  const MergeRule& rule) -> tinyxml2::XMLElement* {
   if (!parent || !needle) {
     return nullptr;
   }
@@ -549,8 +539,8 @@ auto elements_match(tinyxml2::XMLElement* elem1, tinyxml2::XMLElement* elem2, No
   return false;
 }
 
-auto get_attribute(tinyxml2::XMLElement* element, const std::string& name)
-    -> std::optional<std::string> {
+auto get_attribute(tinyxml2::XMLElement* element,
+                   const std::string& name) -> std::optional<std::string> {
   if (!element) {
     return std::nullopt;
   }
@@ -570,8 +560,8 @@ void set_attribute(tinyxml2::XMLElement* element, const std::string& name,
   }
 }
 
-auto clone_element(tinyxml2::XMLElement* source, tinyxml2::XMLDocument* target_doc)
-    -> tinyxml2::XMLElement* {
+auto clone_element(tinyxml2::XMLElement* source,
+                   tinyxml2::XMLDocument* target_doc) -> tinyxml2::XMLElement* {
   if (!source || !target_doc) {
     return nullptr;
   }

@@ -10,10 +10,10 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tinyxml2.h>
 #include <vector>
 
 #include <tl/expected.hpp>
-#include <tinyxml2.h>
 
 namespace horcrux::core {
 
@@ -43,11 +43,11 @@ enum class NodeKey {
 
 // Manifest element priority (higher priority wins conflicts)
 enum class ManifestPriority {
-  Library = 0,     // Lowest priority - library manifests
-  BuildType = 1,   // Build type (debug/release) overlay
-  Flavor = 2,      // Product flavor overlay
-  Main = 3,        // Main manifest
-  Override = 4     // Highest priority - explicit overrides
+  Library = 0,   // Lowest priority - library manifests
+  BuildType = 1, // Build type (debug/release) overlay
+  Flavor = 2,    // Product flavor overlay
+  Main = 3,      // Main manifest
+  Override = 4   // Highest priority - explicit overrides
 };
 
 // Merge rule for specific element types
@@ -121,13 +121,13 @@ private:
 
   // Merge two XML elements
   auto merge_elements(tinyxml2::XMLElement* target, tinyxml2::XMLElement* source,
-                      ManifestPriority source_priority, ManifestPriority target_priority)
-      -> tl::expected<void, AndroidResourceError>;
+                      ManifestPriority source_priority,
+                      ManifestPriority target_priority) -> tl::expected<void, AndroidResourceError>;
 
   // Merge attributes from source to target
   auto merge_attributes(tinyxml2::XMLElement* target, tinyxml2::XMLElement* source,
-                        ManifestPriority source_priority, ManifestPriority target_priority)
-      -> std::vector<std::string>;
+                        ManifestPriority source_priority,
+                        ManifestPriority target_priority) -> std::vector<std::string>;
 
   // Find matching child element
   auto find_matching_element(tinyxml2::XMLElement* parent, tinyxml2::XMLElement* needle,
@@ -161,14 +161,16 @@ auto elements_match(tinyxml2::XMLElement* elem1, tinyxml2::XMLElement* elem2, No
                     const std::optional<std::string>& key_attribute) -> bool;
 
 // Get attribute value
-auto get_attribute(tinyxml2::XMLElement* element, const std::string& name) -> std::optional<std::string>;
+auto get_attribute(tinyxml2::XMLElement* element,
+                   const std::string& name) -> std::optional<std::string>;
 
 // Set attribute value
-void set_attribute(tinyxml2::XMLElement* element, const std::string& name, const std::string& value);
+void set_attribute(tinyxml2::XMLElement* element, const std::string& name,
+                   const std::string& value);
 
 // Deep clone element
-auto clone_element(tinyxml2::XMLElement* source, tinyxml2::XMLDocument* target_doc)
-    -> tinyxml2::XMLElement*;
+auto clone_element(tinyxml2::XMLElement* source,
+                   tinyxml2::XMLDocument* target_doc) -> tinyxml2::XMLElement*;
 
 // Convert merge action to string
 auto merge_action_to_string(MergeAction action) -> std::string;

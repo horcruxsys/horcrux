@@ -559,7 +559,7 @@ auto AndroidResourceProcessor::merge_manifests(const ManifestMergeConfig& config
 
   // Use AndroidManifestMerger for proper manifest merging
   AndroidManifestMerger merger;
-  
+
   AndroidManifestMerger::MergeConfig merge_config;
   merge_config.main_manifest = config.main_manifest;
   merge_config.library_manifests = config.library_manifests;

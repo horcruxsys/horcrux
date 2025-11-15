@@ -156,10 +156,8 @@ TEST_F(ManifestMergerTestFixture, MergePermissions) {
   auto lib_manifest = test_dir_ / "lib/AndroidManifest.xml";
   auto output_manifest = test_dir_ / "merged/AndroidManifest.xml";
 
-  create_manifest(main_manifest,
-                  manifest_with_permissions({"android.permission.INTERNET"}));
-  create_manifest(lib_manifest,
-                  manifest_with_permissions({"android.permission.CAMERA"}));
+  create_manifest(main_manifest, manifest_with_permissions({"android.permission.INTERNET"}));
+  create_manifest(lib_manifest, manifest_with_permissions({"android.permission.CAMERA"}));
 
   AndroidManifestMerger merger;
   AndroidManifestMerger::MergeConfig config;
@@ -182,10 +180,8 @@ TEST_F(ManifestMergerTestFixture, MergeDuplicatePermissionsDeduplicates) {
   auto lib_manifest = test_dir_ / "lib/AndroidManifest.xml";
   auto output_manifest = test_dir_ / "merged/AndroidManifest.xml";
 
-  create_manifest(main_manifest,
-                  manifest_with_permissions({"android.permission.INTERNET"}));
-  create_manifest(lib_manifest,
-                  manifest_with_permissions({"android.permission.INTERNET"}));
+  create_manifest(main_manifest, manifest_with_permissions({"android.permission.INTERNET"}));
+  create_manifest(lib_manifest, manifest_with_permissions({"android.permission.INTERNET"}));
 
   AndroidManifestMerger merger;
   AndroidManifestMerger::MergeConfig config;
@@ -307,7 +303,7 @@ TEST_F(ManifestMergerTestFixture, DeterministicOrdering) {
   create_manifest(main_manifest, manifest_content);
 
   AndroidManifestMerger merger;
-  
+
   // Merge twice
   AndroidManifestMerger::MergeConfig config1;
   config1.main_manifest = main_manifest;
@@ -338,9 +334,9 @@ TEST_F(ManifestMergerTestFixture, IntegrationWithResourceProcessor) {
   // Create a mock toolchain for resource processor
   AndroidToolchain toolchain;
   toolchain.sdk_root = "/mock/sdk";
-  
+
   AndroidResourceProcessor processor(toolchain);
-  
+
   ManifestMergeConfig config;
   config.main_manifest = main_manifest;
   config.library_manifests.push_back(lib_manifest);
