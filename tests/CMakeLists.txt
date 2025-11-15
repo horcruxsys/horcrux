@@ -54,10 +54,39 @@ target_compile_options(build_graph_test PRIVATE
 include(GoogleTest)
 gtest_discover_tests(build_graph_test)
 
+# Local cache tests
+add_executable(local_cache_test
+    local_cache_test.cpp
+)
+
+target_link_libraries(local_cache_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(local_cache_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(local_cache_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test
+    DEPENDS build_graph_test local_cache_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )

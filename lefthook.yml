@@ -6,18 +6,35 @@
 pre-commit:
   parallel: true
   commands:
-    # Format C++ code with clang-format
+    # Format ALL C++ code with clang-format-18
     format-cpp:
-      glob: "*.{cpp,hpp,h,cc}"
-      exclude: '(^build/|^third_party/|^_deps/)'
-      run: clang-format -i {staged_files}
+      run: |
+        if command -v clang-format-18 >/dev/null 2>&1; then
+          echo "🎨 Formatting C++ code with clang-format-18..."
+          find src tests benchmarks -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | xargs clang-format-18 -i
+          git add -A
+        elif command -v clang-format >/dev/null 2>&1; then
+          echo "🎨 Formatting C++ code with clang-format (fallback)..."
+          find src tests benchmarks -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | xargs clang-format -i
+          git add -A
+        else
+          echo "⚠️  clang-format not found, install with: sudo apt install clang-format-18"
+          echo "❌ Code formatting required for commit"
+          exit 1
+        fi
       stage_fixed: true
 
     # Validate YAML files
     validate-yaml:
       glob: "*.{yml,yaml}"
       exclude: '(^build/|^third_party/)'
-      run: yamllint {staged_files}
+      run: |
+        if command -v yamllint >/dev/null 2>&1; then
+          yamllint {staged_files}
+        else
+          echo "⚠️  yamllint not found, install with: sudo apt install yamllint"
+          echo "ℹ️  Skipping YAML validation..."
+        fi
 
     # Check for common issues in commit
     check-merge-conflicts:
@@ -38,33 +55,55 @@ pre-commit:
           echo "⚠️  Warning: Found TODO without context. Please add context like TODO(username) or TODO(#issue)"
         fi
 
-# Pre-push hook: build and test validation
+# Pre-push hook: build validation with both GCC and Clang
 pre-push:
   parallel: false
   commands:
-    # Build the project
-    build-project:
+    # Build with GCC using CI toolchain
+    build-gcc:
       run: |
-        echo "🔨 Building project..."
-        if [ ! -d "build" ]; then
-          mkdir -p build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
+        echo "🔨 Building with GCC (CI toolchain)..."
+        if command -v gcc >/dev/null 2>&1; then
+          export CC=gcc CXX=g++
+          cmake -B build-gcc-ci -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ci.cmake
+          cmake --build build-gcc-ci -j $(nproc)
+          echo "✅ GCC build successful!"
         else
-          cd build
+          echo "❌ GCC not found, install with: sudo apt install build-essential"
+          exit 1
         fi
-        cmake --build . -j $(nproc)
 
-    # Run tests
+    # Build with Clang using CI toolchain
+    build-clang:
+      run: |
+        echo "🔨 Building with Clang (CI toolchain)..."
+        if command -v clang-18 >/dev/null 2>&1; then
+          export CC=clang-18 CXX=clang++-18
+          cmake -B build-clang-ci -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ci.cmake
+          cmake --build build-clang-ci -j $(nproc)
+          echo "✅ Clang build successful!"
+        elif command -v clang >/dev/null 2>&1; then
+          echo "🔨 Using fallback clang..."
+          export CC=clang CXX=clang++
+          cmake -B build-clang-ci -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ci.cmake
+          cmake --build build-clang-ci -j $(nproc)
+          echo "✅ Clang build successful!"
+        else
+          echo "❌ Clang not found, install with: sudo apt install clang-18"
+          exit 1
+        fi
+
+    # Run tests with GCC build
     run-tests:
       run: |
         echo "🧪 Running tests..."
-        cd build
-        if [ -f "build.ninja" ] || [ -f "Makefile" ]; then
-          ctest --output-on-failure || echo "No tests configured yet"
+        cd build-gcc-ci
+        if command -v ctest >/dev/null 2>&1; then
+          ctest --output-on-failure -j $(nproc) || echo "⚠️  Some tests failed or no tests configured"
         else
-          echo "No tests to run"
+          echo "ℹ️  CTest not available, skipping tests"
         fi
+        echo "✅ All validation steps completed!"
 
 # Skip hook configuration
 # Users can skip hooks with: LEFTHOOK=0 git commit

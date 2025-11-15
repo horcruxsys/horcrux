@@ -8,18 +8,23 @@ This repository uses [Lefthook](https://github.com/evilmartians/lefthook) to man
 
 Runs automatically before each commit to ensure code quality:
 
-1. **Format C++ Code** - Runs `clang-format` on all staged C++ files
-2. **Validate YAML** - Checks YAML syntax with `yamllint`
-3. **Validate GitHub Actions** - Verifies workflow files with `actionlint`
-4. **Check Merge Conflicts** - Ensures no conflict markers remain
-5. **Check TODOs** - Warns about TODOs without context
+1. **Format ALL C++ Code** - Runs `clang-format-18` on ALL C++ files in `src/`, `tests/`, and `benchmarks/` (not just staged files)
+2. **Validate YAML** - Checks YAML syntax with `yamllint`  
+3. **Check Merge Conflicts** - Ensures no conflict markers remain
+4. **Check TODOs** - Warns about TODOs without context
 
 ### Pre-Push Hook
 
-Runs automatically before pushing to ensure the code works:
+Runs automatically before pushing to ensure cross-compiler compatibility:
 
-1. **Build Project** - Compiles the entire project with CMake
-2. **Run Tests** - Executes all test suites
+1. **Build with GCC** - Compiles entire project using GCC with CI toolchain
+2. **Build with Clang** - Compiles entire project using Clang-18 with CI toolchain
+3. **Run Tests** - Executes all test suites with one of the builds
+
+**Why Both Compilers?**
+- Ensures code works with both major C++ compilers
+- GCC for production compatibility, Clang for better error messages
+- Matches GitHub Actions CI environment exactly
 
 ## Installation
 
