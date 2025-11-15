@@ -16,7 +16,8 @@
 
 namespace horcrux::core {
 
-// Error types for Java compilation
+/// @brief Error types for Java compilation
+/// Used with tl::expected for recoverable error handling
 enum class JavaCompilerError {
   CompilerNotFound,
   InvalidSourceFile,
