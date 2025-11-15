@@ -35,8 +35,11 @@ FetchContent_MakeAvailable(tl_expected)
 # ---- Submodules ----
 add_subdirectory(src/core)
 
+# ---- Testing ----
 option(HORCRUX_BUILD_TESTS "Build unit tests" ON)
 if(HORCRUX_BUILD_TESTS)
+    enable_testing()
+    include(CTest)
     add_subdirectory(tests)
 endif()
 
