@@ -24,6 +24,9 @@ message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 # ---- Dependencies ----
 include(FetchContent)
 
+# Find OpenSSL for SHA256 hashing
+find_package(OpenSSL REQUIRED)
+
 set(EXPECTED_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     tl_expected

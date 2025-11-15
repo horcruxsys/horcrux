@@ -11,6 +11,7 @@ add_library(horcrux_core STATIC
     android_toolchain.cpp
     android_java_compiler.cpp
     android_kotlin_compiler.cpp
+    android_resources.cpp
 )
 
 # Set library properties
@@ -26,7 +27,7 @@ target_include_directories(horcrux_core PUBLIC
 )
 
 # Link with tl::expected for C++23 std::expected polyfill
-target_link_libraries(horcrux_core PUBLIC tl::expected)
+target_link_libraries(horcrux_core PUBLIC tl::expected OpenSSL::Crypto)
 
 # Library-specific optimizations (global flags already applied)
 # No additional flags needed - using global settings

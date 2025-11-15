@@ -43,6 +43,7 @@ struct AndroidBuildTools {
   std::string version;
   std::filesystem::path path;
   std::filesystem::path aapt_path;
+  std::filesystem::path aapt2_path;
   std::filesystem::path aidl_path;
   std::filesystem::path dx_path;
   std::filesystem::path zipalign_path;
