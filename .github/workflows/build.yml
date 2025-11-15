@@ -139,37 +139,20 @@ jobs:
           ninja --version
           ${{ matrix.compiler.cxx }} --version
 
-      - name: Configure CMake
+      - name: Configure CMake (CI toolchain)
         env:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
         run: |
-          # Check if CMakeLists.txt exists
-          if [ -f "CMakeLists.txt" ]; then
-            echo "Found CMakeLists.txt, configuring build..."
-            
-            # Set up CMake flags using array for proper handling
-            CMAKE_FLAGS=(
-              -G Ninja
-              -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}"
-              -DCMAKE_CXX_COMPILER="${{ matrix.compiler.cxx }}"
-              -DCMAKE_C_COMPILER="${{ matrix.compiler.cc }}"
-              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-            )
-            
-            # Use libc++ with Clang for optimal C++23 support
-            if [ "${{ matrix.compiler.name }}" = "clang" ]; then
-              CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS=-stdlib=libc++)
-              CMAKE_FLAGS+=(-DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++)
-            fi
-            
-            cmake -B build "${CMAKE_FLAGS[@]}"
-          else
-            echo "No CMakeLists.txt found yet. Creating placeholder build directory."
-            mkdir -p build
-            echo "Build system will be configured once CMakeLists.txt is added."
-          fi
+          echo "Configuring with CI-safe toolchain..."
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ci.cmake \
+            -DCMAKE_CXX_COMPILER="${{ matrix.compiler.cxx }}" \
+            -DCMAKE_C_COMPILER="${{ matrix.compiler.cc }}" \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Build
         run: |

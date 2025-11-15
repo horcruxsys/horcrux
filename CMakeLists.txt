@@ -1,91 +1,30 @@
 cmake_minimum_required(VERSION 3.25)
 
-# Project definition
 project(Horcrux
     VERSION 0.1.0
     DESCRIPTION "The Next-Generation Universal Build System"
     LANGUAGES CXX
 )
 
-# Require C++23
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Set build output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Compiler-specific flags optimized for Ubuntu 24.04
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    # GCC 14 optimizations for Ubuntu 24.04
-    add_compile_options(
-        -Wall
-        -Wextra
-        -Wpedantic
-        -Werror=return-type
-        -Wno-missing-field-initializers
-        -fno-exceptions  # Performance: disable exceptions where possible
-        -fstrict-aliasing
-        -march=native    # Optimize for build machine CPU
-        -mtune=native
-    )
-    
-    # Release build optimizations
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        add_compile_options(
-            -O3
-            -flto              # Link-time optimization
-            -ffast-math        # Fast floating-point math
-            -DNDEBUG          # Disable assert() macros
-        )
-        add_link_options(-flto)
-    endif()
-    
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Clang 17 optimizations for Ubuntu 24.04
-    add_compile_options(
-        -Wall
-        -Wextra
-        -Wpedantic
-        -Werror=return-type
-        -Wno-missing-field-initializers
-        -fno-exceptions  # Performance: disable exceptions where possible
-        -fstrict-aliasing
-        -march=native    # Optimize for build machine CPU
-        -mtune=native
-    )
-    
-    # Release build optimizations
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        add_compile_options(
-            -O3
-            -flto=thin         # Thin link-time optimization
-            -ffast-math        # Fast floating-point math
-            -DNDEBUG          # Disable assert() macros
-        )
-        add_link_options(-flto=thin)
-    endif()
-    
-elseif(MSVC)
-    # MSVC-specific flags (minimal support)
-    add_compile_options(
-        /W4
-        /permissive-
-        /std:c++latest
-    )
-    
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        add_compile_options(/O2)
-    endif()
-endif()
+# ----- Print diagnostic -----
+message(STATUS "Horcrux v${PROJECT_VERSION}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "Toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 
-# Dependencies
+# ---- Dependencies ----
 include(FetchContent)
 
-# tl::expected for C++23 std::expected polyfill
-set(EXPECTED_BUILD_TESTS OFF CACHE BOOL "Disable tl::expected tests" FORCE)
+set(EXPECTED_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     tl_expected
     GIT_REPOSITORY https://github.com/TartanLlama/expected.git
@@ -93,31 +32,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tl_expected)
 
-# Print configuration info
-message(STATUS "Horcrux v${PROJECT_VERSION}")
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
-message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
-message(STATUS "Output directory: ${CMAKE_BINARY_DIR}")
-
-# Add subdirectories
+# ---- Submodules ----
 add_subdirectory(src/core)
 
-# Optional: Add tests (enabled by default)
 option(HORCRUX_BUILD_TESTS "Build unit tests" ON)
 if(HORCRUX_BUILD_TESTS)
-    message(STATUS "Building tests")
     add_subdirectory(tests)
 endif()
 
-# Optional: Add benchmarks (disabled by default for faster builds)
-option(HORCRUX_BUILD_BENCHMARKS "Build benchmark executables" ON)
+option(HORCRUX_BUILD_BENCHMARKS "Build benchmarks" ON)
 if(HORCRUX_BUILD_BENCHMARKS)
-    message(STATUS "Building benchmarks")
     add_subdirectory(benchmarks)
 endif()
 
-# Installation rules
 install(TARGETS horcrux
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
