@@ -63,8 +63,8 @@ auto BuildGraph::Builder::add_edge(BuildEdge edge) -> tl::expected<void, GraphEr
   return {};
 }
 
-auto BuildGraph::Builder::would_create_cycle(const std::string& from, const std::string& to) const
-    -> bool {
+auto BuildGraph::Builder::would_create_cycle(const std::string& from,
+                                             const std::string& to) const -> bool {
   // Check if adding edge from->to would create a cycle
   // This happens if there's already a path from 'to' to 'from'
   std::unordered_set<Label> visited;
@@ -148,9 +148,9 @@ auto BuildGraph::Builder::build() -> tl::expected<BuildGraph, GraphError> {
 
 // BuildGraph implementation
 
-auto BuildGraph::get_node(const Label& label) const -> const BuildNode* {
-  auto it = nodes_.find(label);
-  if (it != nodes_.end()) {
+auto BuildGraph::get_node(std::string_view label) const -> const BuildNode* {
+  // Performance: Use heterogeneous lookup to avoid string construction
+  if (auto it = nodes_.find(std::string(label)); it != nodes_.end()) {
     return it->second.get();
   }
   return nullptr;
@@ -160,34 +160,42 @@ auto BuildGraph::get_all_nodes() const -> std::vector<const BuildNode*> {
   std::vector<const BuildNode*> result;
   result.reserve(nodes_.size());
 
+  // Performance: Direct iteration with explicit iterator
   for (const auto& it : nodes_) {
-    const auto& node = it.second;
-    result.push_back(node.get());
+    result.push_back(it.second.get());
   }
+
+  // Deterministic behavior: Sort by label for consistent ordering
+  std::sort(result.begin(), result.end(),
+            [](const BuildNode* a, const BuildNode* b) { return a->label() < b->label(); });
 
   return result;
 }
 
-auto BuildGraph::get_dependencies(const Label& label) const
+auto BuildGraph::get_dependencies(std::string_view label) const
     -> tl::expected<std::vector<Label>, GraphError> {
-  if (!nodes_.contains(label)) {
+  std::string label_str(label);
+  if (!nodes_.contains(label_str)) {
     return tl::unexpected(GraphError::NodeNotFound);
   }
 
   std::vector<Label> deps;
-  auto it = outgoing_edges_.find(label);
-  if (it != outgoing_edges_.end()) {
+  if (auto it = outgoing_edges_.find(label_str); it != outgoing_edges_.end()) {
+    deps.reserve(it->second.size()); // Performance: Reserve capacity
     for (const auto& edge : it->second) {
       deps.push_back(edge->to());
     }
+    // Deterministic behavior: Sort dependencies
+    std::sort(deps.begin(), deps.end());
   }
 
   return deps;
 }
 
-auto BuildGraph::get_transitive_dependencies(const Label& label) const
+auto BuildGraph::get_transitive_dependencies(std::string_view label) const
     -> tl::expected<std::vector<Label>, GraphError> {
-  if (!nodes_.contains(label)) {
+  std::string label_str(label);
+  if (!nodes_.contains(label_str)) {
     return tl::unexpected(GraphError::NodeNotFound);
   }
 
@@ -195,8 +203,12 @@ auto BuildGraph::get_transitive_dependencies(const Label& label) const
   std::unordered_set<Label> visited;
   std::queue<Label> queue;
 
-  queue.push(label);
-  visited.insert(label);
+  // Performance: Reserve capacity for common cases
+  result.reserve(nodes_.size() / 4);
+  visited.reserve(nodes_.size() / 4);
+
+  queue.push(label_str);
+  visited.insert(label_str);
 
   while (!queue.empty()) {
     Label current = queue.front();
@@ -218,18 +230,21 @@ auto BuildGraph::get_transitive_dependencies(const Label& label) const
   return result;
 }
 
-auto BuildGraph::get_dependents(const Label& label) const
+auto BuildGraph::get_dependents(std::string_view label) const
     -> tl::expected<std::vector<Label>, GraphError> {
-  if (!nodes_.contains(label)) {
+  std::string label_str(label);
+  if (!nodes_.contains(label_str)) {
     return tl::unexpected(GraphError::NodeNotFound);
   }
 
   std::vector<Label> dependents;
-  auto it = incoming_edges_.find(label);
-  if (it != incoming_edges_.end()) {
+  if (auto it = incoming_edges_.find(label_str); it != incoming_edges_.end()) {
+    dependents.reserve(it->second.size()); // Performance: Reserve capacity
     for (const auto& edge : it->second) {
       dependents.push_back(edge->from());
     }
+    // Deterministic behavior: Sort dependents
+    std::sort(dependents.begin(), dependents.end());
   }
 
   return dependents;

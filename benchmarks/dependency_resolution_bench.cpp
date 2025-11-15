@@ -59,8 +59,8 @@ private:
 };
 
 // Generate a mock dependency graph with controlled complexity
-auto generate_mock_graph(int num_targets, int avg_deps_per_target)
-    -> std::unordered_map<std::string, MockTarget> {
+auto generate_mock_graph(int num_targets,
+                         int avg_deps_per_target) -> std::unordered_map<std::string, MockTarget> {
   std::unordered_map<std::string, MockTarget> targets;
   std::mt19937 rng(42); // Fixed seed for reproducibility
   std::uniform_int_distribution<int> dep_count_dist(0, avg_deps_per_target * 2);

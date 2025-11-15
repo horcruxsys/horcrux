@@ -17,30 +17,65 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Compiler-specific flags for C++23 and optimizations
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    # Enable warnings and optimizations
+# Compiler-specific flags optimized for Ubuntu 24.04
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    # GCC 14 optimizations for Ubuntu 24.04
     add_compile_options(
         -Wall
         -Wextra
         -Wpedantic
         -Werror=return-type
+        -Wno-missing-field-initializers
+        -fno-exceptions  # Performance: disable exceptions where possible
+        -fstrict-aliasing
+        -march=native    # Optimize for build machine CPU
+        -mtune=native
     )
     
     # Release build optimizations
     if(CMAKE_BUILD_TYPE MATCHES "Release")
-        add_compile_options(-O3)
+        add_compile_options(
+            -O3
+            -flto              # Link-time optimization
+            -ffast-math        # Fast floating-point math
+            -DNDEBUG          # Disable assert() macros
+        )
+        add_link_options(-flto)
+    endif()
+    
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Clang 17 optimizations for Ubuntu 24.04
+    add_compile_options(
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror=return-type
+        -Wno-missing-field-initializers
+        -fno-exceptions  # Performance: disable exceptions where possible
+        -fstrict-aliasing
+        -march=native    # Optimize for build machine CPU
+        -mtune=native
+    )
+    
+    # Release build optimizations
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+        add_compile_options(
+            -O3
+            -flto=thin         # Thin link-time optimization
+            -ffast-math        # Fast floating-point math
+            -DNDEBUG          # Disable assert() macros
+        )
+        add_link_options(-flto=thin)
     endif()
     
 elseif(MSVC)
-    # MSVC-specific flags
+    # MSVC-specific flags (minimal support)
     add_compile_options(
         /W4
         /permissive-
         /std:c++latest
     )
     
-    # Release build optimizations
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         add_compile_options(/O2)
     endif()

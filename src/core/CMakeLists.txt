@@ -23,22 +23,8 @@ target_include_directories(horcrux_core PUBLIC
 # Link with tl::expected for C++23 std::expected polyfill
 target_link_libraries(horcrux_core PUBLIC tl::expected)
 
-# Compiler-specific options for library
-target_compile_options(horcrux_core PRIVATE
-    $<$<CXX_COMPILER_ID:GNU>:
-        -std=c++23
-        -Wall -Wextra -Wpedantic
-        -Werror=return-type
-    >
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
-        -std=c++23
-        -Wall -Wextra -Wpedantic
-        -Werror=return-type
-    >
-    $<$<CXX_COMPILER_ID:MSVC>:
-        /W4 /permissive-
-    >
-)
+# Library-specific optimizations (global flags already applied)
+# No additional flags needed - using global settings
 
 # Create the horcrux executable
 add_executable(horcrux
@@ -56,22 +42,8 @@ set_target_properties(horcrux PROPERTIES
 # Link core library to executable
 target_link_libraries(horcrux PRIVATE horcrux_core)
 
-# Compiler-specific options
-target_compile_options(horcrux PRIVATE
-    $<$<CXX_COMPILER_ID:GNU>:
-        -std=c++23
-        -Wall -Wextra -Wpedantic
-        -Werror=return-type
-    >
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
-        -std=c++23
-        -Wall -Wextra -Wpedantic
-        -Werror=return-type
-    >
-    $<$<CXX_COMPILER_ID:MSVC>:
-        /W4 /permissive-
-    >
-)
+# Executable-specific settings (global flags already applied)
+# No additional flags needed - using global settings
 
 # Create example executable (optional)
 option(HORCRUX_BUILD_EXAMPLES "Build example programs" ON)
@@ -82,19 +54,8 @@ if(HORCRUX_BUILD_EXAMPLES)
     
     target_link_libraries(build_graph_example PRIVATE horcrux_core)
     
-    target_compile_options(build_graph_example PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:
-            -std=c++23
-            -Wall -Wextra -Wpedantic
-        >
-        $<$<CXX_COMPILER_ID:Clang,AppleClang>:
-            -std=c++23
-            -Wall -Wextra -Wpedantic
-        >
-        $<$<CXX_COMPILER_ID:MSVC>:
-            /W4 /permissive-
-        >
-    )
+    # Example-specific settings (global flags already applied)
+    # No additional flags needed - using global settings
     
     set_target_properties(build_graph_example PROPERTIES
         OUTPUT_NAME build_graph_example

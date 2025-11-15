@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -15,6 +16,12 @@
 
 #include "build_edge.h"
 #include "build_node.h"
+
+// Performance optimization: Reserve hash table capacity
+namespace horcrux::core::detail {
+constexpr size_t DEFAULT_NODE_CAPACITY = 1024;
+constexpr size_t DEFAULT_EDGE_CAPACITY = 4096;
+} // namespace horcrux::core::detail
 
 namespace horcrux::core {
 
@@ -50,7 +57,12 @@ public:
   /// the graph becomes immutable and thread-safe.
   class Builder {
   public:
-    Builder() = default;
+    Builder() {
+      // Performance: Reserve capacity to avoid rehashing
+      nodes_.reserve(detail::DEFAULT_NODE_CAPACITY);
+      outgoing_edges_.reserve(detail::DEFAULT_NODE_CAPACITY);
+      incoming_edges_.reserve(detail::DEFAULT_NODE_CAPACITY);
+    }
 
     /// @brief Add a node to the graph
     /// @param node The node to add (will be moved)
@@ -72,8 +84,8 @@ public:
     std::unordered_map<Label, std::vector<std::unique_ptr<BuildEdge>>> incoming_edges_;
 
     /// @brief Check if adding an edge would create a cycle
-    [[nodiscard]] auto would_create_cycle(const std::string& from, const std::string& to) const
-        -> bool;
+    [[nodiscard]] auto would_create_cycle(const std::string& from,
+                                          const std::string& to) const -> bool;
 
     /// @brief Depth-first search for cycle detection
     auto dfs_cycle_check(const Label& node, std::unordered_set<Label>& visited,
@@ -96,32 +108,32 @@ public:
     return Builder{};
   }
 
-  /// @brief Get a node by label
+  /// @brief Get a node by label (optimized for frequent lookups)
   /// @param label The node label
   /// @return Pointer to node if found, nullptr otherwise
-  [[nodiscard]] auto get_node(const Label& label) const -> const BuildNode*;
+  [[nodiscard]] auto get_node(std::string_view label) const -> const BuildNode*;
 
   /// @brief Get all nodes in the graph
-  /// @return Vector of pointers to all nodes
+  /// @return Vector of pointers to all nodes (sorted for deterministic behavior)
   [[nodiscard]] auto get_all_nodes() const -> std::vector<const BuildNode*>;
 
   /// @brief Get direct dependencies of a node
   /// @param label The node label
   /// @return Vector of labels of direct dependencies
-  [[nodiscard]] auto get_dependencies(const Label& label) const
-      -> tl::expected<std::vector<Label>, GraphError>;
+  [[nodiscard]] auto
+  get_dependencies(std::string_view label) const -> tl::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get all transitive dependencies of a node
   /// @param label The node label
   /// @return Vector of labels of all transitive dependencies in topological order
-  [[nodiscard]] auto get_transitive_dependencies(const Label& label) const
+  [[nodiscard]] auto get_transitive_dependencies(std::string_view label) const
       -> tl::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get direct dependents of a node (reverse dependencies)
   /// @param label The node label
   /// @return Vector of labels of direct dependents
-  [[nodiscard]] auto get_dependents(const Label& label) const
-      -> tl::expected<std::vector<Label>, GraphError>;
+  [[nodiscard]] auto
+  get_dependents(std::string_view label) const -> tl::expected<std::vector<Label>, GraphError>;
 
   /// @brief Get topological order of all nodes
   /// @return Vector of labels in topological order
@@ -144,8 +156,8 @@ public:
   /// @brief Deserialize a graph from JSON format
   /// @param json JSON string representation
   /// @return BuildGraph or error
-  [[nodiscard]] static auto deserialize(const std::string& json)
-      -> tl::expected<BuildGraph, GraphError>;
+  [[nodiscard]] static auto
+  deserialize(const std::string& json) -> tl::expected<BuildGraph, GraphError>;
 
 private:
   BuildGraph() = default;

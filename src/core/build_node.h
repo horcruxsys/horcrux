@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -81,10 +82,10 @@ public:
     return attributes_;
   }
 
-  /// @brief Get a specific attribute value
+  /// @brief Get a specific attribute value (optimized for frequent lookups)
   /// @param key The attribute key
   /// @return Optional containing the value if found
-  [[nodiscard]] auto get_attribute(const std::string& key) const -> std::optional<std::string>;
+  [[nodiscard]] auto get_attribute(std::string_view key) const -> std::optional<std::string>;
 
   /// @brief Compute content hash for this node
   /// @return Hash string for content-based addressing

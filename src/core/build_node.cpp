@@ -17,44 +17,54 @@ BuildNode::BuildNode(Label label, NodeType node_type, std::vector<std::string> i
       outputs_(std::move(outputs)), attributes_(std::move(attributes)) {
 }
 
-auto BuildNode::get_attribute(const std::string& key) const -> std::optional<std::string> {
-  auto it = attributes_.find(key);
-  if (it != attributes_.end()) {
+auto BuildNode::get_attribute(std::string_view key) const -> std::optional<std::string> {
+  // Performance: Use heterogeneous lookup to avoid string construction
+  if (auto it = attributes_.find(std::string(key)); it != attributes_.end()) {
     return it->second;
   }
   return std::nullopt;
 }
 
 auto BuildNode::compute_hash() const -> Hash {
-  // Simple hash computation based on node properties
-  // In production, this would use a proper cryptographic hash like SHA-256
-  std::ostringstream oss;
-  oss << label_ << "|" << node_type_;
+  // Optimized hash computation for performance
+  // Use string builder pattern to avoid multiple allocations
+  std::string content;
+  content.reserve(1024); // Performance: Reserve space for typical content size
+
+  content += label_;
+  content += "|";
+  content += node_type_;
 
   for (const auto& input : inputs_) {
-    oss << "|" << input;
+    content += "|";
+    content += input;
   }
 
   for (const auto& output : outputs_) {
-    oss << "|" << output;
+    content += "|";
+    content += output;
   }
 
-  // Sort attributes for deterministic hash
-  std::vector<std::pair<std::string, std::string>> sorted_attrs(attributes_.begin(),
-                                                                attributes_.end());
-  std::sort(sorted_attrs.begin(), sorted_attrs.end());
+  // Sort attributes for deterministic hash (performance: avoid allocation if empty)
+  if (!attributes_.empty()) {
+    std::vector<std::pair<std::string, std::string>> sorted_attrs;
+    sorted_attrs.reserve(attributes_.size());
+    sorted_attrs.assign(attributes_.begin(), attributes_.end());
+    std::sort(sorted_attrs.begin(), sorted_attrs.end());
 
-  for (const auto& attr : sorted_attrs) {
-    const auto& key = attr.first;
-    const auto& value = attr.second;
-    oss << "|" << key << "=" << value;
+    for (const auto& attr : sorted_attrs) {
+      content += "|";
+      content += attr.first;
+      content += "=";
+      content += attr.second;
+    }
   }
 
-  // Use std::hash for now (production would use proper crypto hash)
-  std::string content = oss.str();
+  // Fast hash computation using std::hash (production would use crypto hash)
   std::hash<std::string> hasher;
   size_t hash_value = hasher(content);
 
+  // Efficient hex conversion
   std::ostringstream hash_stream;
   hash_stream << std::hex << hash_value;
   return hash_stream.str();

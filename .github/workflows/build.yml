@@ -21,7 +21,7 @@ permissions:
 jobs:
   lint:
     name: Code Quality Checks
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -31,7 +31,7 @@ jobs:
       - name: Install clang-format and clang-tidy
         run: |
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/llvm.asc
-          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main"
+          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-17 main"
           sudo apt-get update
           sudo apt-get install -y clang-format-17 clang-tidy-17
           sudo ln -sf /usr/bin/clang-format-17 /usr/bin/clang-format
@@ -80,21 +80,16 @@ jobs:
           actionlint .github/workflows/*.yml
 
   build:
-    name: Build (${{ matrix.os }}, ${{ matrix.compiler.name }})
-    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.compiler.name }})
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
         compiler:
-          - { name: gcc, version: 13, cc: gcc-13, cxx: g++-13 }
+          - { name: gcc, version: 14, cc: gcc-14, cxx: g++-14 }
           - { name: clang, version: 17, cc: clang-17, cxx: clang++-17 }
-        exclude:
-          # GCC 13 not available on Ubuntu 24.04 default repos
-          - os: ubuntu-24.04
-            compiler: { name: gcc, version: 13 }
 
     steps:
       - name: Checkout code
@@ -126,26 +121,17 @@ jobs:
 
           # Install compilers
           if [ "${{ matrix.compiler.name }}" = "gcc" ]; then
-            # Add toolchain PPA for GCC 13 on Ubuntu 22.04
-            if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
-              sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-              sudo apt-get update
-            fi
+            # GCC 14 is available in Ubuntu 24.04 default repos
             sudo apt-get install -y ${{ matrix.compiler.cxx }}
           else
+            # Install Clang 17 from LLVM repository
             wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/llvm.asc
-            if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
-              sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main"
-            else
-              sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-17 main"
-            fi
+            sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-17 main"
             sudo apt-get update
             sudo apt-get install -y ${{ matrix.compiler.cxx }}
             
-            # On Ubuntu 24.04, install libc++ to avoid GCC 14 libstdc++ compatibility issues
-            if [ "${{ matrix.os }}" = "ubuntu-24.04" ]; then
-              sudo apt-get install -y libc++-17-dev libc++abi-17-dev
-            fi
+            # Install libc++ for optimal C++23 support
+            sudo apt-get install -y libc++-17-dev libc++abi-17-dev
           fi
 
           # Verify installations
@@ -170,8 +156,8 @@ jobs:
             CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
             CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
             
-            # Use libc++ on Ubuntu 24.04 with Clang to avoid GCC 14 libstdc++ issues
-            if [ "${{ matrix.os }}" = "ubuntu-24.04" ] && [ "${{ matrix.compiler.name }}" = "clang" ]; then
+            # Use libc++ with Clang for optimal C++23 support
+            if [ "${{ matrix.compiler.name }}" = "clang" ]; then
               CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=-stdlib=libc++"
               CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++"
             fi
@@ -204,7 +190,7 @@ jobs:
           fi
 
       - name: Upload build artifacts
-        if: always() && matrix.os == 'ubuntu-22.04' && matrix.compiler.name == 'clang'
+        if: always() && matrix.compiler.name == 'clang'
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts-${{ matrix.compiler.name }}-${{ matrix.compiler.version }}
