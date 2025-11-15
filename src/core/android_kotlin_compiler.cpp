@@ -300,11 +300,11 @@ auto AndroidKotlinCompiler::compute_compilation_hash(const KotlinCompileConfig& 
     ss << "compose_live_literals:" << config.compose_config->enable_live_literals << "\n";
     ss << "compose_source_info:" << config.compose_config->enable_source_information << "\n";
     ss << "compose_intrinsic_remember:" << config.compose_config->enable_intrinsic_remember << "\n";
-    
+
     if (config.compose_config->stability_config_path) {
       ss << "compose_stability:" << config.compose_config->stability_config_path->string() << "\n";
     }
-    
+
     for (const auto& opt : config.compose_config->additional_options) {
       ss << "compose_option:" << opt << "\n";
     }

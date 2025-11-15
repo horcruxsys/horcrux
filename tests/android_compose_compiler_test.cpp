@@ -46,32 +46,32 @@ TEST(ComposeCompilerTest, ValidateConfigRequiresPluginJar) {
 
 TEST(ComposeCompilerTest, ValidateConfigAcceptsValidConfig) {
   TempDir temp;
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
-  
+
   // Create mock plugin JAR
   auto plugin_jar = temp.path() / "compose-compiler.jar";
   std::ofstream(plugin_jar).close();
   config.plugin_jar = plugin_jar;
-  
+
   auto result = compose_compiler::validate_compose_config(config);
   EXPECT_TRUE(result.has_value());
 }
 
 TEST(ComposeCompilerTest, ValidateConfigCreatesMetricsDirectory) {
   TempDir temp;
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
-  
+
   auto plugin_jar = temp.path() / "compose-compiler.jar";
   std::ofstream(plugin_jar).close();
   config.plugin_jar = plugin_jar;
-  
+
   config.enable_metrics = true;
   config.metrics_output_dir = temp.path() / "metrics";
-  
+
   auto result = compose_compiler::validate_compose_config(config);
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(std::filesystem::exists(config.metrics_output_dir));
@@ -79,17 +79,17 @@ TEST(ComposeCompilerTest, ValidateConfigCreatesMetricsDirectory) {
 
 TEST(ComposeCompilerTest, ValidateConfigCreatesReportsDirectory) {
   TempDir temp;
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
-  
+
   auto plugin_jar = temp.path() / "compose-compiler.jar";
   std::ofstream(plugin_jar).close();
   config.plugin_jar = plugin_jar;
-  
+
   config.enable_reports = true;
   config.reports_output_dir = temp.path() / "reports";
-  
+
   auto result = compose_compiler::validate_compose_config(config);
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(std::filesystem::exists(config.reports_output_dir));
@@ -97,17 +97,17 @@ TEST(ComposeCompilerTest, ValidateConfigCreatesReportsDirectory) {
 
 TEST(ComposeCompilerTest, ValidateConfigChecksStabilityConfigExists) {
   TempDir temp;
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
-  
+
   auto plugin_jar = temp.path() / "compose-compiler.jar";
   std::ofstream(plugin_jar).close();
   config.plugin_jar = plugin_jar;
-  
+
   // Non-existent stability config should fail
   config.stability_config_path = temp.path() / "nonexistent.txt";
-  
+
   auto result = compose_compiler::validate_compose_config(config);
   EXPECT_FALSE(result.has_value());
 }
@@ -115,49 +115,49 @@ TEST(ComposeCompilerTest, ValidateConfigChecksStabilityConfigExists) {
 // Test plugin options generation
 TEST(ComposeCompilerTest, BuildPluginOptionsIncludesPluginJar) {
   TempDir temp;
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
   config.plugin_jar = temp.path() / "compose-compiler.jar";
-  
+
   auto options = compose_compiler::build_compose_plugin_options(config);
-  
+
   EXPECT_FALSE(options.empty());
   EXPECT_TRUE(std::find_if(options.begin(), options.end(), [](const std::string& opt) {
-    return opt.find("-Xplugin=") != std::string::npos;
-  }) != options.end());
+                return opt.find("-Xplugin=") != std::string::npos;
+              }) != options.end());
 }
 
 TEST(ComposeCompilerTest, BuildPluginOptionsIncludesMetrics) {
   TempDir temp;
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
   config.plugin_jar = temp.path() / "compose-compiler.jar";
   config.enable_metrics = true;
   config.metrics_output_dir = temp.path() / "metrics";
-  
+
   auto options = compose_compiler::build_compose_plugin_options(config);
-  
+
   EXPECT_TRUE(std::find_if(options.begin(), options.end(), [](const std::string& opt) {
-    return opt.find("metricsDestination=") != std::string::npos;
-  }) != options.end());
+                return opt.find("metricsDestination=") != std::string::npos;
+              }) != options.end());
 }
 
 TEST(ComposeCompilerTest, BuildPluginOptionsIncludesReports) {
   TempDir temp;
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
   config.plugin_jar = temp.path() / "compose-compiler.jar";
   config.enable_reports = true;
   config.reports_output_dir = temp.path() / "reports";
-  
+
   auto options = compose_compiler::build_compose_plugin_options(config);
-  
+
   EXPECT_TRUE(std::find_if(options.begin(), options.end(), [](const std::string& opt) {
-    return opt.find("reportsDestination=") != std::string::npos;
-  }) != options.end());
+                return opt.find("reportsDestination=") != std::string::npos;
+              }) != options.end());
 }
 
 TEST(ComposeCompilerTest, BuildPluginOptionsIncludesLiveLiterals) {
@@ -165,12 +165,12 @@ TEST(ComposeCompilerTest, BuildPluginOptionsIncludesLiveLiterals) {
   config.enabled = true;
   config.plugin_jar = "/path/to/compose-compiler.jar";
   config.enable_live_literals = true;
-  
+
   auto options = compose_compiler::build_compose_plugin_options(config);
-  
+
   EXPECT_TRUE(std::find_if(options.begin(), options.end(), [](const std::string& opt) {
-    return opt.find("liveLiterals=true") != std::string::npos;
-  }) != options.end());
+                return opt.find("liveLiterals=true") != std::string::npos;
+              }) != options.end());
 }
 
 TEST(ComposeCompilerTest, BuildPluginOptionsIncludesSourceInformation) {
@@ -178,12 +178,12 @@ TEST(ComposeCompilerTest, BuildPluginOptionsIncludesSourceInformation) {
   config.enabled = true;
   config.plugin_jar = "/path/to/compose-compiler.jar";
   config.enable_source_information = true;
-  
+
   auto options = compose_compiler::build_compose_plugin_options(config);
-  
+
   EXPECT_TRUE(std::find_if(options.begin(), options.end(), [](const std::string& opt) {
-    return opt.find("sourceInformation=true") != std::string::npos;
-  }) != options.end());
+                return opt.find("sourceInformation=true") != std::string::npos;
+              }) != options.end());
 }
 
 TEST(ComposeCompilerTest, BuildPluginOptionsIncludesIntrinsicRemember) {
@@ -191,45 +191,42 @@ TEST(ComposeCompilerTest, BuildPluginOptionsIncludesIntrinsicRemember) {
   config.enabled = true;
   config.plugin_jar = "/path/to/compose-compiler.jar";
   config.enable_intrinsic_remember = true;
-  
+
   auto options = compose_compiler::build_compose_plugin_options(config);
-  
+
   EXPECT_TRUE(std::find_if(options.begin(), options.end(), [](const std::string& opt) {
-    return opt.find("intrinsicRemember=true") != std::string::npos;
-  }) != options.end());
+                return opt.find("intrinsicRemember=true") != std::string::npos;
+              }) != options.end());
 }
 
 TEST(ComposeCompilerTest, BuildPluginOptionsIncludesStabilityConfig) {
   TempDir temp;
   auto stability_path = temp.path() / "stability.txt";
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
   config.plugin_jar = "/path/to/compose-compiler.jar";
   config.stability_config_path = stability_path;
-  
+
   auto options = compose_compiler::build_compose_plugin_options(config);
-  
+
   EXPECT_TRUE(std::find_if(options.begin(), options.end(), [&](const std::string& opt) {
-    return opt.find("stabilityConfigurationPath=") != std::string::npos;
-  }) != options.end());
+                return opt.find("stabilityConfigurationPath=") != std::string::npos;
+              }) != options.end());
 }
 
 // Test IR hash computation
 TEST(ComposeCompilerTest, ComputeIRHashIsDeterministic) {
-  std::vector<std::filesystem::path> sources = {
-    "/path/to/MainActivity.kt",
-    "/path/to/Theme.kt"
-  };
-  
+  std::vector<std::filesystem::path> sources = {"/path/to/MainActivity.kt", "/path/to/Theme.kt"};
+
   ComposeCompilerConfig config;
   config.enabled = true;
   config.version = "1.5.4";
   config.kotlin_version = "1.9.20";
-  
+
   std::string hash1 = compose_compiler::compute_compose_ir_hash(sources, config);
   std::string hash2 = compose_compiler::compute_compose_ir_hash(sources, config);
-  
+
   EXPECT_EQ(hash1, hash2);
   EXPECT_FALSE(hash1.empty());
 }
@@ -237,36 +234,36 @@ TEST(ComposeCompilerTest, ComputeIRHashIsDeterministic) {
 TEST(ComposeCompilerTest, ComputeIRHashChangesWithDifferentSources) {
   std::vector<std::filesystem::path> sources1 = {"/path/to/MainActivity.kt"};
   std::vector<std::filesystem::path> sources2 = {"/path/to/Theme.kt"};
-  
+
   ComposeCompilerConfig config;
   config.enabled = true;
   config.version = "1.5.4";
   config.kotlin_version = "1.9.20";
-  
+
   std::string hash1 = compose_compiler::compute_compose_ir_hash(sources1, config);
   std::string hash2 = compose_compiler::compute_compose_ir_hash(sources2, config);
-  
+
   EXPECT_NE(hash1, hash2);
 }
 
 TEST(ComposeCompilerTest, ComputeIRHashChangesWithDifferentConfig) {
   std::vector<std::filesystem::path> sources = {"/path/to/MainActivity.kt"};
-  
+
   ComposeCompilerConfig config1;
   config1.enabled = true;
   config1.version = "1.5.4";
   config1.kotlin_version = "1.9.20";
   config1.enable_metrics = false;
-  
+
   ComposeCompilerConfig config2;
   config2.enabled = true;
   config2.version = "1.5.4";
   config2.kotlin_version = "1.9.20";
   config2.enable_metrics = true;
-  
+
   std::string hash1 = compose_compiler::compute_compose_ir_hash(sources, config1);
   std::string hash2 = compose_compiler::compute_compose_ir_hash(sources, config2);
-  
+
   EXPECT_NE(hash1, hash2);
 }
 
@@ -295,17 +292,15 @@ TEST(ComposeCompilerTest, KotlinCompatibilityCheck_1_6_With_2_0) {
 TEST(ComposeCompilerTest, GenerateStabilityConfig) {
   TempDir temp;
   auto config_path = temp.path() / "stability.txt";
-  
-  std::vector<std::string> stable_types = {
-    "com.example.MyStableClass",
-    "com.example.AnotherStableClass"
-  };
-  
+
+  std::vector<std::string> stable_types = {"com.example.MyStableClass",
+                                           "com.example.AnotherStableClass"};
+
   auto result = compose_compiler::generate_stability_config(stable_types, config_path);
-  
+
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(std::filesystem::exists(config_path));
-  
+
   // Verify content
   std::ifstream file(config_path);
   std::string line;
@@ -319,7 +314,7 @@ TEST(ComposeCompilerTest, GenerateStabilityConfig) {
 TEST(ComposeCompilerTest, ParseStabilityConfig) {
   TempDir temp;
   auto config_path = temp.path() / "stability.txt";
-  
+
   // Create stability config
   std::ofstream file(config_path);
   file << "com.example.MyStableClass\n";
@@ -327,9 +322,9 @@ TEST(ComposeCompilerTest, ParseStabilityConfig) {
   file << "\n"; // Empty line
   file << "com.example.AnotherStableClass\n";
   file.close();
-  
+
   auto result = compose_compiler::parse_stability_config(config_path);
-  
+
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result->size(), 2);
   EXPECT_EQ((*result)[0], "com.example.MyStableClass");
@@ -344,14 +339,14 @@ TEST(ComposeCompilerTest, ParseStabilityConfigFailsForNonexistentFile) {
 // Test integration with Kotlin compiler
 TEST(ComposeKotlinIntegrationTest, KotlinCompileConfigSupportsComposeConfig) {
   KotlinCompileConfig config;
-  
+
   ComposeCompilerConfig compose_config;
   compose_config.enabled = true;
   compose_config.version = "1.5.4";
   compose_config.kotlin_version = "1.9.20";
-  
+
   config.compose_config = compose_config;
-  
+
   EXPECT_TRUE(config.compose_config.has_value());
   EXPECT_TRUE(config.compose_config->enabled);
   EXPECT_EQ(config.compose_config->version, "1.5.4");
@@ -362,21 +357,21 @@ TEST(ComposeKotlinIntegrationTest, ComposeConfigIncludedInCompilationHash) {
   config1.language_version = "1.9";
   config1.jvm_target = "17";
   config1.api_version = "1.9";
-  
+
   KotlinCompileConfig config2 = config1;
-  
+
   // Without Compose
   std::string hash1 = AndroidKotlinCompiler::compute_compilation_hash(config1);
-  
+
   // With Compose
   ComposeCompilerConfig compose_config;
   compose_config.enabled = true;
   compose_config.version = "1.5.4";
   compose_config.kotlin_version = "1.9.20";
   config2.compose_config = compose_config;
-  
+
   std::string hash2 = AndroidKotlinCompiler::compute_compilation_hash(config2);
-  
+
   EXPECT_NE(hash1, hash2);
 }
 
@@ -390,9 +385,9 @@ TEST(ComposeCompilerTest, ParseMetricsWithEmptyDirectory) {
   TempDir temp;
   auto metrics_dir = temp.path() / "metrics";
   std::filesystem::create_directories(metrics_dir);
-  
+
   auto result = compose_compiler::parse_compose_metrics(metrics_dir);
-  
+
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result->total_composables, 0);
 }
@@ -407,14 +402,14 @@ TEST(ComposeCompilerTest, ScanGeneratedClassesFindsComposeClasses) {
   TempDir temp;
   auto output_dir = temp.path() / "output";
   std::filesystem::create_directories(output_dir);
-  
+
   // Create mock Compose generated files
   std::ofstream(output_dir / "ComposableSingletons$MainActivity.class").close();
   std::ofstream(output_dir / "MainActivityKt$ComposerImpl.class").close();
   std::ofstream(output_dir / "RegularClass.class").close(); // Should not be included
-  
+
   auto classes = compose_compiler::scan_compose_generated_classes(output_dir);
-  
+
   EXPECT_EQ(classes.size(), 2);
 }
 
@@ -422,13 +417,13 @@ TEST(ComposeCompilerTest, ScanGeneratedClassesIsDeterministic) {
   TempDir temp;
   auto output_dir = temp.path() / "output";
   std::filesystem::create_directories(output_dir);
-  
+
   std::ofstream(output_dir / "B_ComposableSingletons.class").close();
   std::ofstream(output_dir / "A_ComposableSingletons.class").close();
-  
+
   auto classes1 = compose_compiler::scan_compose_generated_classes(output_dir);
   auto classes2 = compose_compiler::scan_compose_generated_classes(output_dir);
-  
+
   EXPECT_EQ(classes1, classes2);
   // Should be sorted
   EXPECT_TRUE(std::is_sorted(classes1.begin(), classes1.end()));

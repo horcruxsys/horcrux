@@ -31,14 +31,14 @@ auto build_compose_plugin_options(const ComposeCompilerConfig& config) -> std::v
   if (config.enable_metrics && !config.metrics_output_dir.empty()) {
     options.push_back("-P");
     options.push_back("plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
-                     config.metrics_output_dir.string());
+                      config.metrics_output_dir.string());
   }
 
   // Enable reports
   if (config.enable_reports && !config.reports_output_dir.empty()) {
     options.push_back("-P");
     options.push_back("plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
-                     config.reports_output_dir.string());
+                      config.reports_output_dir.string());
   }
 
   // Live literals (experimental)
@@ -65,15 +65,16 @@ auto build_compose_plugin_options(const ComposeCompilerConfig& config) -> std::v
   // Suppress Kotlin version compatibility check
   if (config.suppress_kotlin_version_check) {
     options.push_back("-P");
-    options.push_back(
-        "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true");
+    options.push_back("plugin:androidx.compose.compiler.plugins.kotlin:"
+                      "suppressKotlinVersionCompatibilityCheck=true");
   }
 
   // Stability configuration
   if (config.stability_config_path) {
     options.push_back("-P");
-    options.push_back("plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
-                     config.stability_config_path->string());
+    options.push_back(
+        "plugin:androidx.compose.compiler.plugins.kotlin:stabilityConfigurationPath=" +
+        config.stability_config_path->string());
   }
 
   // Additional options
@@ -97,7 +98,7 @@ auto validate_compose_config(const ComposeCompilerConfig& config)
 
   if (!std::filesystem::exists(config.plugin_jar)) {
     return tl::unexpected("Compose compiler plugin JAR does not exist: " +
-                         config.plugin_jar.string());
+                          config.plugin_jar.string());
   }
 
   // Validate metrics directory
@@ -130,7 +131,7 @@ auto validate_compose_config(const ComposeCompilerConfig& config)
   if (config.stability_config_path && !config.stability_config_path->empty()) {
     if (!std::filesystem::exists(*config.stability_config_path)) {
       return tl::unexpected("Stability configuration file does not exist: " +
-                           config.stability_config_path->string());
+                            config.stability_config_path->string());
     }
   }
 
@@ -202,7 +203,7 @@ auto parse_compose_metrics(const std::filesystem::path& metrics_dir)
   std::ostringstream hash_input;
   hash_input << metrics.total_composables << ":" << metrics.restartable_composables << ":"
              << metrics.skippable_composables << ":" << metrics.readonly_composables;
-  
+
   std::string hash_str = hash_input.str();
   std::vector<uint8_t> hash_data(hash_str.begin(), hash_str.end());
   auto hash = compute_sha256(hash_data);
@@ -286,7 +287,8 @@ auto scan_compose_generated_classes(const std::filesystem::path& output_dir)
     // Look for generated Compose classes (typically contain ComposableSingletons, ComposerKt, etc.)
     std::string filename = path.filename().string();
     if (filename.find("ComposableSingletons") != std::string::npos ||
-        filename.find("ComposerKt") != std::string::npos || filename.find("Compose") != std::string::npos) {
+        filename.find("ComposerKt") != std::string::npos ||
+        filename.find("Compose") != std::string::npos) {
       generated_classes.push_back(path);
     }
   }

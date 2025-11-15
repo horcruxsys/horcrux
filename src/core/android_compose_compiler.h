@@ -114,11 +114,11 @@ struct ComposeCompilationResult {
 namespace compose_compiler {
 
 // Build Compose compiler plugin options for kotlinc
-auto build_compose_plugin_options(const ComposeCompilerConfig& config)
-    -> std::vector<std::string>;
+auto build_compose_plugin_options(const ComposeCompilerConfig& config) -> std::vector<std::string>;
 
 // Validate Compose compiler configuration
-auto validate_compose_config(const ComposeCompilerConfig& config) -> tl::expected<void, std::string>;
+auto validate_compose_config(const ComposeCompilerConfig& config)
+    -> tl::expected<void, std::string>;
 
 // Parse Compose metrics from output directory
 auto parse_compose_metrics(const std::filesystem::path& metrics_dir)
@@ -138,7 +138,8 @@ auto scan_compose_generated_classes(const std::filesystem::path& output_dir)
 
 // Generate stability configuration file
 auto generate_stability_config(const std::vector<std::string>& stable_types,
-                               const std::filesystem::path& output_path) -> tl::expected<void, std::string>;
+                               const std::filesystem::path& output_path)
+    -> tl::expected<void, std::string>;
 
 // Parse stability configuration file
 auto parse_stability_config(const std::filesystem::path& config_path)
