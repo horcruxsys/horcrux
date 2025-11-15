@@ -112,10 +112,39 @@ target_compile_options(integration_test PRIVATE
 # Register test with CTest
 gtest_discover_tests(integration_test)
 
+# Android toolchain tests
+add_executable(android_toolchain_test
+    android_toolchain_test.cpp
+)
+
+target_link_libraries(android_toolchain_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(android_toolchain_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(android_toolchain_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test
+    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )

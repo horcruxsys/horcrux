@@ -38,10 +38,11 @@ _deps/
 Testing/
 CTestTestfile.cmake
 
-# Cache
+# Cache and lock files
 .ccache/
 .cache/
 .horcrux-cache/
+.horcrux/
 
 # IDE and editor files
 .vscode/
