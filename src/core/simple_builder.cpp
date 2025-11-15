@@ -85,9 +85,8 @@ auto SimpleBuilder::compile_cc_binary(const TargetInfo& target_info)
   }
 
   // Build compilation command
-  std::string compile_cmd =
-      compiler + " -std=c++23 -O2 -Wall -Wextra " + source_file.string() + " -o " +
-      output_binary.string() + " 2>&1";
+  std::string compile_cmd = compiler + " -std=c++23 -O2 -Wall -Wextra " + source_file.string() +
+                            " -o " + output_binary.string() + " 2>&1";
 
   std::cout << "Building target: //" << target_info.package_path << ":" << target_info.target_name
             << "\n";

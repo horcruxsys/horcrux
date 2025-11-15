@@ -50,8 +50,8 @@ private:
   [[nodiscard]] auto build_file_exists(std::string_view package_path) -> bool;
 
   /// @brief Simple compile for cc_binary targets
-  [[nodiscard]] auto compile_cc_binary(const TargetInfo& target_info)
-      -> tl::expected<void, BuildError>;
+  [[nodiscard]] auto
+  compile_cc_binary(const TargetInfo& target_info) -> tl::expected<void, BuildError>;
 };
 
 } // namespace horcrux::core
