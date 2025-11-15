@@ -5,7 +5,7 @@
 
 set(CMAKE_SYSTEM_NAME Linux)
 
-# x86-64-v2 microarchitecture level
+# x86-64-v2 microarchitecture level (2009+)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=x86-64-v2 -mtune=generic -ffast-math -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -march=x86-64-v2 -mtune=generic")
 

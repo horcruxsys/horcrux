@@ -5,7 +5,7 @@
 set(CMAKE_SYSTEM_NAME Linux)
 
 # Safe baseline arch for GitHub runners (Xeon with no AVX2 support)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=x86-64 -mtune=generic -ffast-math -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=x86-64 -mtune=generic -DNDEBUG")
 
 # Disable LTO for CI (prevents illegal instruction)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
