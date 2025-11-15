@@ -7,6 +7,7 @@ add_library(horcrux_core STATIC
     build_edge.cpp
     build_graph.cpp
     local_cache.cpp
+    simple_builder.cpp
 )
 
 # Set library properties
