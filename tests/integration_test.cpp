@@ -258,13 +258,13 @@ TEST_F(IntegrationTest, BasicStructureValidation) {
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <string>
+
+#include <gtest/gtest.h>
 
 namespace horcrux::integration_test {
 
@@ -373,9 +373,8 @@ TEST_F(IntegrationTest, DISABLED_BuildHelloTarget) {
   // 4. Verify the binary is executable
   // 5. Run the binary and check output
 
-  auto result =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                " build //examples/hello:hello");
 
   EXPECT_EQ(result.exit_code, 0) << "Build failed with output: " << result.output;
 
@@ -401,9 +400,8 @@ TEST_F(IntegrationTest, DISABLED_BuildPerformanceBenchmark) {
     auto clean_result =
         execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() + " clean");
 
-    auto build_result =
-        execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                        " build //examples/hello:hello");
+    auto build_result = execute_command("cd " + repo_root_.string() + " && " +
+                                        horcrux_bin_.string() + " build //examples/hello:hello");
 
     ASSERT_EQ(build_result.exit_code, 0) << "Build failed on run " << i;
     build_times.push_back(build_result.duration_ms);
@@ -439,16 +437,14 @@ TEST_F(IntegrationTest, DISABLED_CacheBehavior) {
   // 3. Cache correctly invalidates on source changes
 
   // First build (cold cache)
-  auto first_build =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto first_build = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                     " build //examples/hello:hello");
   ASSERT_EQ(first_build.exit_code, 0);
   auto first_duration = first_build.duration_ms;
 
   // Second build (warm cache) - should be faster
-  auto second_build =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto second_build = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                      " build //examples/hello:hello");
   ASSERT_EQ(second_build.exit_code, 0);
   auto second_duration = second_build.duration_ms;
 
@@ -471,9 +467,8 @@ TEST_F(IntegrationTest, DISABLED_CacheBehavior) {
 // Test: Validate build logs
 TEST_F(IntegrationTest, DISABLED_BuildLogsValidation) {
   // This test is disabled until the build command is fully implemented
-  auto result =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                " build //examples/hello:hello");
 
   ASSERT_EQ(result.exit_code, 0);
 
@@ -489,9 +484,8 @@ TEST_F(IntegrationTest, DISABLED_BuildLogsValidation) {
 TEST_F(IntegrationTest, DISABLED_RunBuiltBinary) {
   // This test is disabled until the build command is fully implemented
   // First build the target
-  auto build_result =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                      " build //examples/hello:hello");
   ASSERT_EQ(build_result.exit_code, 0);
 
   // Run the built binary
@@ -530,13 +524,13 @@ TEST_F(IntegrationTest, BasicStructureValidation) {
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <string>
+
+#include <gtest/gtest.h>
 
 namespace horcrux::integration_test {
 
@@ -645,9 +639,8 @@ TEST_F(IntegrationTest, DISABLED_BuildHelloTarget) {
   // 4. Verify the binary is executable
   // 5. Run the binary and check output
 
-  auto result =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                " build //examples/hello:hello");
 
   EXPECT_EQ(result.exit_code, 0) << "Build failed with output: " << result.output;
 
@@ -673,9 +666,8 @@ TEST_F(IntegrationTest, DISABLED_BuildPerformanceBenchmark) {
     auto clean_result =
         execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() + " clean");
 
-    auto build_result =
-        execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                        " build //examples/hello:hello");
+    auto build_result = execute_command("cd " + repo_root_.string() + " && " +
+                                        horcrux_bin_.string() + " build //examples/hello:hello");
 
     ASSERT_EQ(build_result.exit_code, 0) << "Build failed on run " << i;
     build_times.push_back(build_result.duration_ms);
@@ -711,16 +703,14 @@ TEST_F(IntegrationTest, DISABLED_CacheBehavior) {
   // 3. Cache correctly invalidates on source changes
 
   // First build (cold cache)
-  auto first_build =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto first_build = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                     " build //examples/hello:hello");
   ASSERT_EQ(first_build.exit_code, 0);
   auto first_duration = first_build.duration_ms;
 
   // Second build (warm cache) - should be faster
-  auto second_build =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto second_build = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                      " build //examples/hello:hello");
   ASSERT_EQ(second_build.exit_code, 0);
   auto second_duration = second_build.duration_ms;
 
@@ -743,9 +733,8 @@ TEST_F(IntegrationTest, DISABLED_CacheBehavior) {
 // Test: Validate build logs
 TEST_F(IntegrationTest, DISABLED_BuildLogsValidation) {
   // This test is disabled until the build command is fully implemented
-  auto result =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                " build //examples/hello:hello");
 
   ASSERT_EQ(result.exit_code, 0);
 
@@ -761,9 +750,8 @@ TEST_F(IntegrationTest, DISABLED_BuildLogsValidation) {
 TEST_F(IntegrationTest, DISABLED_RunBuiltBinary) {
   // This test is disabled until the build command is fully implemented
   // First build the target
-  auto build_result =
-      execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                      " build //examples/hello:hello");
+  auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                      " build //examples/hello:hello");
   ASSERT_EQ(build_result.exit_code, 0);
 
   // Run the built binary

@@ -86,9 +86,6 @@ gtest_discover_tests(local_cache_test)
 # Target parser tests
 add_executable(target_parser_test
     target_parser_test.cpp
-# Target parser tests
-add_executable(target_parser_test
-    target_parser_test.cpp
 )
 
 target_link_libraries(integration_test
@@ -114,13 +111,12 @@ target_compile_options(integration_test PRIVATE
 )
 
 # Register test with CTest
-gtest_discover_tests(target_parser_test)
 gtest_discover_tests(integration_test)
 
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test target_parser_test target_parser_test integration_test
+    DEPENDS build_graph_test local_cache_test integration_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )
