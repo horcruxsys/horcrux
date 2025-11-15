@@ -18,10 +18,10 @@ namespace horcrux::core {
 
 // Android ABI (Application Binary Interface) types
 enum class AndroidAbi {
-  Arm64V8a,    // 64-bit ARM
-  ArmeabiV7a,  // 32-bit ARM
-  X86,         // 32-bit x86
-  X86_64       // 64-bit x86
+  Arm64V8a,   // 64-bit ARM
+  ArmeabiV7a, // 32-bit ARM
+  X86,        // 32-bit x86
+  X86_64      // 64-bit x86
 };
 
 // Convert ABI enum to string representation
@@ -60,7 +60,7 @@ struct NdkAbiToolchain {
   std::filesystem::path ar_path;
   std::filesystem::path ld_path;
   std::filesystem::path strip_path;
-  std::string target_triple;  // e.g., "aarch64-linux-android"
+  std::string target_triple; // e.g., "aarch64-linux-android"
   std::string api_level;
   std::vector<std::string> include_paths;
   std::vector<std::string> library_paths;
@@ -68,25 +68,25 @@ struct NdkAbiToolchain {
 
 // Compilation options for NDK
 struct NdkCompileOptions {
-  std::vector<std::string> defines;           // -D flags
-  std::vector<std::string> include_dirs;      // -I flags
-  std::vector<std::string> cflags;            // Additional C flags
-  std::vector<std::string> cxxflags;          // Additional C++ flags
-  std::string optimization_level = "-O2";     // -O0, -O1, -O2, -O3, -Os
-  bool debug_info = false;                    // -g flag
-  bool pic = true;                            // Position independent code (-fPIC)
-  bool exceptions = true;                     // C++ exceptions
-  bool rtti = true;                           // C++ RTTI
-  std::string cpp_std = "c++17";              // C++ standard version
+  std::vector<std::string> defines;       // -D flags
+  std::vector<std::string> include_dirs;  // -I flags
+  std::vector<std::string> cflags;        // Additional C flags
+  std::vector<std::string> cxxflags;      // Additional C++ flags
+  std::string optimization_level = "-O2"; // -O0, -O1, -O2, -O3, -Os
+  bool debug_info = false;                // -g flag
+  bool pic = true;                        // Position independent code (-fPIC)
+  bool exceptions = true;                 // C++ exceptions
+  bool rtti = true;                       // C++ RTTI
+  std::string cpp_std = "c++17";          // C++ standard version
 };
 
 // Linking options for NDK
 struct NdkLinkOptions {
-  std::vector<std::string> library_dirs;      // -L flags
-  std::vector<std::string> libraries;         // -l flags
-  std::vector<std::string> ldflags;           // Additional linker flags
-  bool strip_symbols = false;                 // Strip debug symbols
-  bool shared = true;                         // Build shared library (.so)
+  std::vector<std::string> library_dirs; // -L flags
+  std::vector<std::string> libraries;    // -l flags
+  std::vector<std::string> ldflags;      // Additional linker flags
+  bool strip_symbols = false;            // Strip debug symbols
+  bool shared = true;                    // Build shared library (.so)
 };
 
 // Compilation result
@@ -109,9 +109,8 @@ struct NdkLinkResult {
 class AndroidNdkCompiler {
 public:
   // Create compiler for specific ABI
-  static auto
-  create(const AndroidNdk& ndk, AndroidAbi abi,
-         const std::string& api_level = "21") -> tl::expected<AndroidNdkCompiler, NdkCompilerError>;
+  static auto create(const AndroidNdk& ndk, AndroidAbi abi, const std::string& api_level = "21")
+      -> tl::expected<AndroidNdkCompiler, NdkCompilerError>;
 
   // Compile a single source file to object file
   auto compile(const std::filesystem::path& source_file, const std::filesystem::path& output_file,
@@ -120,15 +119,14 @@ public:
 
   // Link object files into shared library
   auto link(const std::vector<std::filesystem::path>& object_files,
-            const std::filesystem::path& output_file, const NdkLinkOptions& options = {})
-      -> tl::expected<NdkLinkResult, NdkCompilerError>;
+            const std::filesystem::path& output_file,
+            const NdkLinkOptions& options = {}) -> tl::expected<NdkLinkResult, NdkCompilerError>;
 
   // Compile and link in one step
-  auto compile_and_link(const std::vector<std::filesystem::path>& source_files,
-                        const std::filesystem::path& output_file,
-                        const NdkCompileOptions& compile_opts = {},
-                        const NdkLinkOptions& link_opts = {})
-      -> tl::expected<NdkLinkResult, NdkCompilerError>;
+  auto compile_and_link(
+      const std::vector<std::filesystem::path>& source_files,
+      const std::filesystem::path& output_file, const NdkCompileOptions& compile_opts = {},
+      const NdkLinkOptions& link_opts = {}) -> tl::expected<NdkLinkResult, NdkCompilerError>;
 
   // Get toolchain information
   auto get_toolchain() const -> const NdkAbiToolchain& {
@@ -165,8 +163,8 @@ private:
 
   // Build link command
   auto build_link_command(const std::vector<std::filesystem::path>& object_files,
-                          const std::filesystem::path& output_file, const NdkLinkOptions& options)
-      -> std::vector<std::string>;
+                          const std::filesystem::path& output_file,
+                          const NdkLinkOptions& options) -> std::vector<std::string>;
 
   // Execute command and capture output
   static auto execute_command(const std::vector<std::string>& command)
@@ -179,8 +177,7 @@ private:
 auto get_all_abis() -> std::vector<AndroidAbi>;
 
 // Helper function to detect all available NDK toolchains
-auto detect_all_ndk_toolchains(const AndroidNdk& ndk,
-                               const std::string& api_level = "21")
+auto detect_all_ndk_toolchains(const AndroidNdk& ndk, const std::string& api_level = "21")
     -> tl::expected<std::vector<AndroidNdkCompiler>, NdkCompilerError>;
 
 } // namespace horcrux::core

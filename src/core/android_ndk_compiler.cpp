@@ -29,8 +29,7 @@ auto is_cpp_file(const std::filesystem::path& path) -> bool {
 }
 
 // Execute command and capture output
-auto execute_command_impl(const std::vector<std::string>& command)
-    -> std::pair<std::string, int> {
+auto execute_command_impl(const std::vector<std::string>& command) -> std::pair<std::string, int> {
   // Build command string
   std::ostringstream cmd_stream;
   for (size_t i = 0; i < command.size(); ++i) {
@@ -141,8 +140,7 @@ AndroidNdkCompiler::AndroidNdkCompiler(NdkAbiToolchain toolchain)
     : toolchain_(std::move(toolchain)) {
 }
 
-auto AndroidNdkCompiler::create(const AndroidNdk& ndk, AndroidAbi abi,
-                                const std::string& api_level)
+auto AndroidNdkCompiler::create(const AndroidNdk& ndk, AndroidAbi abi, const std::string& api_level)
     -> tl::expected<AndroidNdkCompiler, NdkCompilerError> {
   auto toolchain_result = detect_abi_toolchain(ndk, abi, api_level);
   if (!toolchain_result) {
@@ -224,8 +222,8 @@ auto AndroidNdkCompiler::detect_abi_toolchain(const AndroidNdk& ndk, AndroidAbi 
   return toolchain;
 }
 
-auto AndroidNdkCompiler::get_target_triple(AndroidAbi abi, const std::string& api_level)
-    -> std::string {
+auto AndroidNdkCompiler::get_target_triple(AndroidAbi abi,
+                                           const std::string& api_level) -> std::string {
   switch (abi) {
   case AndroidAbi::Arm64V8a:
     return "aarch64-linux-android";
@@ -253,10 +251,9 @@ auto AndroidNdkCompiler::get_arch_name(AndroidAbi abi) -> std::string {
   return "unknown";
 }
 
-auto AndroidNdkCompiler::compile(const std::filesystem::path& source_file,
-                                 const std::filesystem::path& output_file,
-                                 const NdkCompileOptions& options)
-    -> tl::expected<NdkCompileResult, NdkCompilerError> {
+auto AndroidNdkCompiler::compile(
+    const std::filesystem::path& source_file, const std::filesystem::path& output_file,
+    const NdkCompileOptions& options) -> tl::expected<NdkCompileResult, NdkCompilerError> {
   // Validate source file
   if (!std::filesystem::exists(source_file)) {
     return tl::unexpected(NdkCompilerError::InvalidSourceFile);
@@ -296,10 +293,9 @@ auto AndroidNdkCompiler::compile(const std::filesystem::path& source_file,
   return compile_result;
 }
 
-auto AndroidNdkCompiler::build_compile_command(const std::filesystem::path& source_file,
-                                               const std::filesystem::path& output_file,
-                                               const NdkCompileOptions& options)
-    -> std::vector<std::string> {
+auto AndroidNdkCompiler::build_compile_command(
+    const std::filesystem::path& source_file, const std::filesystem::path& output_file,
+    const NdkCompileOptions& options) -> std::vector<std::string> {
   std::vector<std::string> command;
 
   // Choose compiler based on file type
@@ -474,11 +470,10 @@ auto AndroidNdkCompiler::build_link_command(const std::vector<std::filesystem::p
   return command;
 }
 
-auto AndroidNdkCompiler::compile_and_link(const std::vector<std::filesystem::path>& source_files,
-                                          const std::filesystem::path& output_file,
-                                          const NdkCompileOptions& compile_opts,
-                                          const NdkLinkOptions& link_opts)
-    -> tl::expected<NdkLinkResult, NdkCompilerError> {
+auto AndroidNdkCompiler::compile_and_link(
+    const std::vector<std::filesystem::path>& source_files,
+    const std::filesystem::path& output_file, const NdkCompileOptions& compile_opts,
+    const NdkLinkOptions& link_opts) -> tl::expected<NdkLinkResult, NdkCompilerError> {
   // Create temporary directory for object files
   auto temp_dir = std::filesystem::temp_directory_path() / "horcrux_ndk_build";
   std::filesystem::create_directories(temp_dir);
@@ -539,10 +534,10 @@ auto AndroidNdkCompiler::generate_cmake_toolchain_file(const std::filesystem::pa
 
   file << "set(CMAKE_SYSROOT \"" << toolchain_.sysroot.string() << "\")\n\n";
 
-  file << "set(CMAKE_C_FLAGS_INIT \"--target=" << toolchain_.target_triple
-       << toolchain_.api_level << "\")\n";
-  file << "set(CMAKE_CXX_FLAGS_INIT \"--target=" << toolchain_.target_triple
-       << toolchain_.api_level << "\")\n\n";
+  file << "set(CMAKE_C_FLAGS_INIT \"--target=" << toolchain_.target_triple << toolchain_.api_level
+       << "\")\n";
+  file << "set(CMAKE_CXX_FLAGS_INIT \"--target=" << toolchain_.target_triple << toolchain_.api_level
+       << "\")\n\n";
 
   file << "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)\n";
   file << "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)\n";

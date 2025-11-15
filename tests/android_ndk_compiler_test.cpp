@@ -343,21 +343,21 @@ TEST(AndroidNdkCompilerTest, X86_64ToolchainProperties) {
 TEST(AndroidNdkCompilerTest, CompileOptionsWithDefines) {
   NdkCompileOptions opts;
   opts.defines = {"DEBUG=1", "VERSION=\"1.0.0\""};
-  
+
   EXPECT_EQ(opts.defines.size(), 2);
 }
 
 TEST(AndroidNdkCompilerTest, CompileOptionsWithIncludes) {
   NdkCompileOptions opts;
   opts.include_dirs = {"/path/to/include1", "/path/to/include2"};
-  
+
   EXPECT_EQ(opts.include_dirs.size(), 2);
 }
 
 TEST(AndroidNdkCompilerTest, CompileOptionsOptimization) {
   NdkCompileOptions opts;
   opts.optimization_level = "-O3";
-  
+
   EXPECT_EQ(opts.optimization_level, "-O3");
 }
 
@@ -365,14 +365,14 @@ TEST(AndroidNdkCompilerTest, CompileOptionsOptimization) {
 TEST(AndroidNdkCompilerTest, LinkOptionsWithLibraries) {
   NdkLinkOptions opts;
   opts.libraries = {"log", "android"};
-  
+
   EXPECT_EQ(opts.libraries.size(), 2);
 }
 
 TEST(AndroidNdkCompilerTest, LinkOptionsStaticLibrary) {
   NdkLinkOptions opts;
   opts.shared = false;
-  
+
   EXPECT_FALSE(opts.shared);
 }
 
