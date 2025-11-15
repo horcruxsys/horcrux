@@ -61,7 +61,7 @@ struct GradleBuildConfig {
   std::string application_id;
   std::string version_name;
   std::string version_code;
-  
+
   std::vector<GradleDependency> dependencies;
   std::vector<GradleSourceSet> source_sets;
   std::vector<GradleBuildVariant> build_variants;
@@ -86,17 +86,14 @@ private:
   static auto parse_kotlin_dsl_file(const std::filesystem::path& file)
       -> std::expected<std::string, GradleParserError>;
 
-  static auto extract_string_value(const std::string& content, const std::string& key)
-      -> std::string;
+  static auto extract_string_value(const std::string& content,
+                                   const std::string& key) -> std::string;
 
-  static auto extract_dependencies(const std::string& content)
-      -> std::vector<GradleDependency>;
+  static auto extract_dependencies(const std::string& content) -> std::vector<GradleDependency>;
 
-  static auto extract_source_sets(const std::string& content)
-      -> std::vector<GradleSourceSet>;
+  static auto extract_source_sets(const std::string& content) -> std::vector<GradleSourceSet>;
 
-  static auto extract_build_variants(const std::string& content)
-      -> std::vector<GradleBuildVariant>;
+  static auto extract_build_variants(const std::string& content) -> std::vector<GradleBuildVariant>;
 };
 
 } // namespace horcrux::core

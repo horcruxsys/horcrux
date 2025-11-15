@@ -2,12 +2,12 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
+#include <filesystem>
+#include <fstream>
+
 #include <gtest/gtest.h>
 
 #include "../src/core/gradle_parser.h"
-
-#include <filesystem>
-#include <fstream>
 
 namespace horcrux::core::test {
 
@@ -24,8 +24,8 @@ protected:
     }
   }
 
-  auto create_test_file(const std::string& filename, const std::string& content)
-      -> std::filesystem::path {
+  auto create_test_file(const std::string& filename,
+                        const std::string& content) -> std::filesystem::path {
     auto file_path = test_dir_ / filename;
     std::ofstream out(file_path);
     out << content;
@@ -158,7 +158,7 @@ dependencies {
   EXPECT_EQ(result->application_id, "com.example.myapp");
   EXPECT_EQ(result->version_name, "1.0");
   EXPECT_EQ(result->version_code, "1");
-  
+
   EXPECT_EQ(result->dependencies.size(), 3);
   EXPECT_EQ(result->dependencies[0].group, "androidx.core");
   EXPECT_EQ(result->dependencies[0].name, "core-ktx");
@@ -216,11 +216,11 @@ dependencies {
 
   ASSERT_TRUE(result.has_value());
   ASSERT_GE(result->dependencies.size(), 2);
-  
+
   // Check for specific dependencies
   bool found_kotlin = false;
   bool found_junit = false;
-  
+
   for (const auto& dep : result->dependencies) {
     if (dep.name == "kotlin-stdlib") {
       found_kotlin = true;
@@ -235,7 +235,7 @@ dependencies {
       EXPECT_EQ(dep.configuration, "testImplementation");
     }
   }
-  
+
   EXPECT_TRUE(found_kotlin);
   EXPECT_TRUE(found_junit);
 }
@@ -256,7 +256,7 @@ android {
 
   ASSERT_TRUE(result.has_value());
   EXPECT_GE(result->source_sets.size(), 2);
-  
+
   // Check for main source set
   bool found_main = false;
   for (const auto& ss : result->source_sets) {
@@ -285,11 +285,11 @@ android {
 
   ASSERT_TRUE(result.has_value());
   EXPECT_GE(result->build_variants.size(), 2);
-  
+
   // Check for debug and release variants
   bool found_debug = false;
   bool found_release = false;
-  
+
   for (const auto& variant : result->build_variants) {
     if (variant.name == "debug") {
       found_debug = true;
@@ -300,7 +300,7 @@ android {
       EXPECT_EQ(variant.build_type, "release");
     }
   }
-  
+
   EXPECT_TRUE(found_debug);
   EXPECT_TRUE(found_release);
 }

@@ -2,13 +2,13 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
+#include <filesystem>
+#include <fstream>
+
 #include <gtest/gtest.h>
 
 #include "../src/cli/import_command.h"
 #include "../src/cli/logger.h"
-
-#include <filesystem>
-#include <fstream>
 
 namespace horcrux::cli::test {
 
@@ -26,8 +26,8 @@ protected:
     }
   }
 
-  auto create_test_file(const std::string& filename, const std::string& content)
-      -> std::filesystem::path {
+  auto create_test_file(const std::string& filename,
+                        const std::string& content) -> std::filesystem::path {
     auto file_path = test_dir_ / filename;
     std::ofstream out(file_path);
     out << content;
@@ -85,20 +85,19 @@ TEST_F(ImportCommandTestFixture, ErrorToString) {
 
 TEST_F(ImportCommandTestFixture, ImportValidProject) {
   auto project_dir = create_gradle_project();
-  
+
   ImportCommand command(*logger_);
   auto result = command.execute(project_dir);
 
   ASSERT_TRUE(result.has_value());
-  
+
   // Check that horcrux.yaml was created
   auto output_file = project_dir / "horcrux.yaml";
   EXPECT_TRUE(std::filesystem::exists(output_file));
 
   // Read and verify content
   std::ifstream file(output_file);
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+  std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
   EXPECT_NE(content.find("TestAndroidProject"), std::string::npos);
   EXPECT_NE(content.find("android-app"), std::string::npos);
@@ -108,7 +107,7 @@ TEST_F(ImportCommandTestFixture, ImportValidProject) {
 TEST_F(ImportCommandTestFixture, ImportWithCustomOutputPath) {
   auto project_dir = create_gradle_project();
   auto custom_output = project_dir / "custom-config.yaml";
-  
+
   ImportCommand command(*logger_);
   auto result = command.execute_with_options(project_dir, custom_output);
 
@@ -118,7 +117,7 @@ TEST_F(ImportCommandTestFixture, ImportWithCustomOutputPath) {
 
 TEST_F(ImportCommandTestFixture, ImportInvalidPath) {
   auto nonexistent = test_dir_ / "nonexistent";
-  
+
   ImportCommand command(*logger_);
   auto result = command.execute(nonexistent);
 
@@ -130,7 +129,7 @@ TEST_F(ImportCommandTestFixture, ImportNoGradleFiles) {
   // Create empty directory
   auto empty_dir = test_dir_ / "empty";
   std::filesystem::create_directories(empty_dir);
-  
+
   ImportCommand command(*logger_);
   auto result = command.execute(empty_dir);
 
@@ -150,12 +149,12 @@ dependencies {
 }
 )";
   create_test_file("build.gradle", build_content);
-  
+
   ImportCommand command(*logger_);
   auto result = command.execute(test_dir_);
 
   ASSERT_TRUE(result.has_value());
-  
+
   auto output_file = test_dir_ / "horcrux.yaml";
   EXPECT_TRUE(std::filesystem::exists(output_file));
 }
@@ -189,12 +188,12 @@ dependencies {
 }
 )";
   create_test_file("build.gradle.kts", build_content);
-  
+
   ImportCommand command(*logger_);
   auto result = command.execute(test_dir_);
 
   ASSERT_TRUE(result.has_value());
-  
+
   auto output_file = test_dir_ / "horcrux.yaml";
   EXPECT_TRUE(std::filesystem::exists(output_file));
 }
@@ -203,7 +202,7 @@ TEST_F(ImportCommandTestFixture, ImportPrefersBuildGradleOverKts) {
   // Create both .gradle and .kts files
   create_test_file("build.gradle", "plugins { id 'java' }");
   create_test_file("build.gradle.kts", "plugins { id(\"java\") }");
-  
+
   ImportCommand command(*logger_);
   auto result = command.execute(test_dir_);
 

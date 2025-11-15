@@ -27,12 +27,10 @@ class ImportCommand {
 public:
   explicit ImportCommand(Logger& logger);
 
-  auto execute(const std::filesystem::path& project_path) 
-      -> std::expected<void, ImportError>;
+  auto execute(const std::filesystem::path& project_path) -> std::expected<void, ImportError>;
 
-  auto execute_with_options(
-      const std::filesystem::path& project_path,
-      const std::filesystem::path& output_path)
+  auto execute_with_options(const std::filesystem::path& project_path,
+                            const std::filesystem::path& output_path)
       -> std::expected<void, ImportError>;
 
 private:
@@ -41,8 +39,7 @@ private:
   auto find_gradle_files(const std::filesystem::path& project_path)
       -> std::expected<std::pair<std::filesystem::path, std::filesystem::path>, ImportError>;
 
-  auto validate_project_path(const std::filesystem::path& path)
-      -> std::expected<void, ImportError>;
+  auto validate_project_path(const std::filesystem::path& path) -> std::expected<void, ImportError>;
 };
 
 auto handle_import_command(int argc, char* argv[], Logger& logger) -> int;

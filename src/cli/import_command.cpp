@@ -3,12 +3,12 @@
 // Licensed under the MIT License
 
 #include "import_command.h"
-#include "logger.h"
+
+#include <iostream>
 
 #include "../core/gradle_parser.h"
 #include "../core/workspace_config_generator.h"
-
-#include <iostream>
+#include "logger.h"
 
 namespace horcrux::cli {
 
@@ -29,7 +29,8 @@ auto to_string(ImportError error) -> std::string {
   }
 }
 
-ImportCommand::ImportCommand(Logger& logger) : logger_(logger) {}
+ImportCommand::ImportCommand(Logger& logger) : logger_(logger) {
+}
 
 auto ImportCommand::validate_project_path(const std::filesystem::path& path)
     -> std::expected<void, ImportError> {
@@ -46,14 +47,13 @@ auto ImportCommand::validate_project_path(const std::filesystem::path& path)
 
 auto ImportCommand::find_gradle_files(const std::filesystem::path& project_path)
     -> std::expected<std::pair<std::filesystem::path, std::filesystem::path>, ImportError> {
-  
   std::filesystem::path settings_file;
   std::filesystem::path build_file;
 
   // Check for settings.gradle or settings.gradle.kts
   auto settings_groovy = project_path / "settings.gradle";
   auto settings_kts = project_path / "settings.gradle.kts";
-  
+
   if (std::filesystem::exists(settings_groovy)) {
     settings_file = settings_groovy;
   } else if (std::filesystem::exists(settings_kts)) {
@@ -63,7 +63,7 @@ auto ImportCommand::find_gradle_files(const std::filesystem::path& project_path)
   // Check for build.gradle or build.gradle.kts
   auto build_groovy = project_path / "build.gradle";
   auto build_kts = project_path / "build.gradle.kts";
-  
+
   if (std::filesystem::exists(build_groovy)) {
     build_file = build_groovy;
   } else if (std::filesystem::exists(build_kts)) {
@@ -78,17 +78,15 @@ auto ImportCommand::find_gradle_files(const std::filesystem::path& project_path)
   return std::make_pair(settings_file, build_file);
 }
 
-auto ImportCommand::execute(const std::filesystem::path& project_path) 
+auto ImportCommand::execute(const std::filesystem::path& project_path)
     -> std::expected<void, ImportError> {
   auto output_path = project_path / "horcrux.yaml";
   return execute_with_options(project_path, output_path);
 }
 
-auto ImportCommand::execute_with_options(
-    const std::filesystem::path& project_path,
-    const std::filesystem::path& output_path)
+auto ImportCommand::execute_with_options(const std::filesystem::path& project_path,
+                                         const std::filesystem::path& output_path)
     -> std::expected<void, ImportError> {
-  
   // Validate project path
   auto validation = validate_project_path(project_path);
   if (!validation) {
@@ -111,8 +109,7 @@ auto ImportCommand::execute_with_options(
     logger_.info("Parsing settings file: ", settings_file.filename().string());
     auto project_result = core::GradleParser::parse_settings(settings_file);
     if (!project_result) {
-      logger_.error("Failed to parse settings.gradle: ", 
-                   core::to_string(project_result.error()));
+      logger_.error("Failed to parse settings.gradle: ", core::to_string(project_result.error()));
       return std::unexpected(ImportError::ParseError);
     }
     project = *project_result;
@@ -128,8 +125,7 @@ auto ImportCommand::execute_with_options(
   logger_.info("Parsing build file: ", build_file.filename().string());
   auto build_config_result = core::GradleParser::parse_build(build_file);
   if (!build_config_result) {
-    logger_.error("Failed to parse build.gradle: ", 
-                 core::to_string(build_config_result.error()));
+    logger_.error("Failed to parse build.gradle: ", core::to_string(build_config_result.error()));
     return std::unexpected(ImportError::ParseError);
   }
 
@@ -140,12 +136,11 @@ auto ImportCommand::execute_with_options(
 
   // Generate horcrux.yaml
   logger_.info("Generating horcrux.yaml...");
-  auto generate_result = core::WorkspaceConfigGenerator::generate_from_gradle(
-      project, build_config, output_path);
-  
+  auto generate_result =
+      core::WorkspaceConfigGenerator::generate_from_gradle(project, build_config, output_path);
+
   if (!generate_result) {
-    logger_.error("Failed to generate horcrux.yaml: ", 
-                 core::to_string(generate_result.error()));
+    logger_.error("Failed to generate horcrux.yaml: ", core::to_string(generate_result.error()));
     return std::unexpected(ImportError::GenerateError);
   }
 
@@ -177,7 +172,7 @@ auto handle_import_command(int argc, char* argv[], Logger& logger) -> int {
 
   ImportCommand command(logger);
   auto result = command.execute_with_options(project_path, output_path);
-  
+
   if (!result) {
     logger.error("Import failed: ", to_string(result.error()));
     return 1;

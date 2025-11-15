@@ -2,12 +2,12 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
+#include <filesystem>
+#include <fstream>
+
 #include <gtest/gtest.h>
 
 #include "../src/core/workspace_config_generator.h"
-
-#include <filesystem>
-#include <fstream>
 
 namespace horcrux::core::test {
 
@@ -48,16 +48,14 @@ TEST_F(WorkspaceConfigGeneratorTestFixture, GenerateBasicConfig) {
   build_config.version_code = "1";
 
   auto output_path = test_dir_ / "horcrux.yaml";
-  auto result = WorkspaceConfigGenerator::generate_from_gradle(
-      project, build_config, output_path);
+  auto result = WorkspaceConfigGenerator::generate_from_gradle(project, build_config, output_path);
 
   ASSERT_TRUE(result.has_value());
   EXPECT_TRUE(std::filesystem::exists(output_path));
 
   // Read and verify content
   std::ifstream file(output_path);
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+  std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
   EXPECT_NE(content.find("TestProject"), std::string::npos);
   EXPECT_NE(content.find("android-app"), std::string::npos);
@@ -89,15 +87,13 @@ TEST_F(WorkspaceConfigGeneratorTestFixture, GenerateConfigWithDependencies) {
   build_config.dependencies.push_back(dep2);
 
   auto output_path = test_dir_ / "horcrux.yaml";
-  auto result = WorkspaceConfigGenerator::generate_from_gradle(
-      project, build_config, output_path);
+  auto result = WorkspaceConfigGenerator::generate_from_gradle(project, build_config, output_path);
 
   ASSERT_TRUE(result.has_value());
 
   // Read and verify content
   std::ifstream file(output_path);
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+  std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
   EXPECT_NE(content.find("dependencies:"), std::string::npos);
   EXPECT_NE(content.find("core-ktx"), std::string::npos);
@@ -125,15 +121,13 @@ TEST_F(WorkspaceConfigGeneratorTestFixture, GenerateConfigWithSourceSets) {
   build_config.source_sets.push_back(test_set);
 
   auto output_path = test_dir_ / "horcrux.yaml";
-  auto result = WorkspaceConfigGenerator::generate_from_gradle(
-      project, build_config, output_path);
+  auto result = WorkspaceConfigGenerator::generate_from_gradle(project, build_config, output_path);
 
   ASSERT_TRUE(result.has_value());
 
   // Read and verify content
   std::ifstream file(output_path);
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+  std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
   EXPECT_NE(content.find("sourceSets:"), std::string::npos);
   EXPECT_NE(content.find("main:"), std::string::npos);
@@ -160,15 +154,13 @@ TEST_F(WorkspaceConfigGeneratorTestFixture, GenerateConfigWithBuildVariants) {
   build_config.build_variants.push_back(release);
 
   auto output_path = test_dir_ / "horcrux.yaml";
-  auto result = WorkspaceConfigGenerator::generate_from_gradle(
-      project, build_config, output_path);
+  auto result = WorkspaceConfigGenerator::generate_from_gradle(project, build_config, output_path);
 
   ASSERT_TRUE(result.has_value());
 
   // Read and verify content
   std::ifstream file(output_path);
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+  std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
   EXPECT_NE(content.find("buildVariants:"), std::string::npos);
   EXPECT_NE(content.find("debug:"), std::string::npos);
@@ -184,8 +176,7 @@ TEST_F(WorkspaceConfigGeneratorTestFixture, InvalidOutputPath) {
 
   // Try to write to a non-existent directory without creating it
   auto bad_output = std::filesystem::path("/nonexistent/path/horcrux.yaml");
-  auto result = WorkspaceConfigGenerator::generate_from_gradle(
-      project, build_config, bad_output);
+  auto result = WorkspaceConfigGenerator::generate_from_gradle(project, build_config, bad_output);
 
   EXPECT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), ConfigGeneratorError::FileWriteError);
@@ -205,15 +196,13 @@ TEST_F(WorkspaceConfigGeneratorTestFixture, GenerateJavaApplicationConfig) {
   build_config.source_sets.push_back(main_set);
 
   auto output_path = test_dir_ / "horcrux.yaml";
-  auto result = WorkspaceConfigGenerator::generate_from_gradle(
-      project, build_config, output_path);
+  auto result = WorkspaceConfigGenerator::generate_from_gradle(project, build_config, output_path);
 
   ASSERT_TRUE(result.has_value());
 
   // Read and verify content
   std::ifstream file(output_path);
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+  std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
   EXPECT_NE(content.find("type: application"), std::string::npos);
   EXPECT_NE(content.find("java_application"), std::string::npos);

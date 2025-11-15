@@ -44,10 +44,10 @@ auto GradleParser::parse_kotlin_dsl_file(const std::filesystem::path& file)
   return parse_groovy_file(file);
 }
 
-auto GradleParser::extract_string_value(const std::string& content, const std::string& key)
-    -> std::string {
+auto GradleParser::extract_string_value(const std::string& content,
+                                        const std::string& key) -> std::string {
   // Try multiple patterns in order of specificity
-  
+
   // Pattern 1: Match quoted strings with = or :
   std::string pattern = key + R"(\s*[=:]\s*["']([^"']+)["'])";
   std::regex re(pattern);
@@ -96,7 +96,7 @@ auto GradleParser::extract_dependencies(const std::string& content)
   // or implementation("group:name:version")
   std::regex dep_re(
       R"((implementation|api|compile|testImplementation|androidTestImplementation)\s*[(\s]['"]([^'"]+)['"][\s)])");
-  
+
   auto begin = std::sregex_iterator(content.begin(), content.end(), dep_re);
   auto end = std::sregex_iterator();
 
@@ -108,7 +108,7 @@ auto GradleParser::extract_dependencies(const std::string& content)
     // Parse dependency string (format: group:name:version)
     std::regex parts_re(R"(([^:]+):([^:]+):([^:]+))");
     std::smatch parts_match;
-    
+
     if (std::regex_search(dep_string, parts_match, parts_re)) {
       GradleDependency dep;
       dep.configuration = config;
@@ -122,8 +122,7 @@ auto GradleParser::extract_dependencies(const std::string& content)
   return dependencies;
 }
 
-auto GradleParser::extract_source_sets(const std::string& content)
-    -> std::vector<GradleSourceSet> {
+auto GradleParser::extract_source_sets(const std::string& content) -> std::vector<GradleSourceSet> {
   std::vector<GradleSourceSet> source_sets;
 
   // Default Android source sets
@@ -201,9 +200,8 @@ auto GradleParser::parse_build(const std::filesystem::path& build_file)
     return std::unexpected(GradleParserError::FileNotFound);
   }
 
-  auto content_result = (build_file.extension() == ".kts") 
-      ? parse_kotlin_dsl_file(build_file)
-      : parse_groovy_file(build_file);
+  auto content_result = (build_file.extension() == ".kts") ? parse_kotlin_dsl_file(build_file)
+                                                           : parse_groovy_file(build_file);
 
   if (!content_result) {
     return std::unexpected(content_result.error());
@@ -223,12 +221,12 @@ auto GradleParser::parse_build(const std::filesystem::path& build_file)
   if (config.compile_sdk.empty()) {
     config.compile_sdk = extract_string_value(content, "compileSdkVersion");
   }
-  
+
   config.min_sdk = extract_string_value(content, "minSdk");
   if (config.min_sdk.empty()) {
     config.min_sdk = extract_string_value(content, "minSdkVersion");
   }
-  
+
   config.target_sdk = extract_string_value(content, "targetSdk");
   if (config.target_sdk.empty()) {
     config.target_sdk = extract_string_value(content, "targetSdkVersion");
@@ -258,9 +256,8 @@ auto GradleParser::detect_project_type(const std::filesystem::path& build_file)
     return std::unexpected(GradleParserError::FileNotFound);
   }
 
-  auto content_result = (build_file.extension() == ".kts")
-      ? parse_kotlin_dsl_file(build_file)
-      : parse_groovy_file(build_file);
+  auto content_result = (build_file.extension() == ".kts") ? parse_kotlin_dsl_file(build_file)
+                                                           : parse_groovy_file(build_file);
 
   if (!content_result) {
     return std::unexpected(content_result.error());
@@ -279,13 +276,13 @@ auto GradleParser::detect_project_type(const std::filesystem::path& build_file)
   }
 
   // Check for Java application
-  if (content.find("application") != std::string::npos || 
+  if (content.find("application") != std::string::npos ||
       content.find("java-application") != std::string::npos) {
     return "application";
   }
 
   // Check for Java library
-  if (content.find("java-library") != std::string::npos || 
+  if (content.find("java-library") != std::string::npos ||
       content.find("java") != std::string::npos) {
     return "library";
   }
