@@ -141,6 +141,11 @@ jobs:
             fi
             sudo apt-get update
             sudo apt-get install -y ${{ matrix.compiler.cxx }}
+            
+            # On Ubuntu 24.04, install libc++ to avoid GCC 14 libstdc++ compatibility issues
+            if [ "${{ matrix.os }}" = "ubuntu-24.04" ]; then
+              sudo apt-get install -y libc++-17-dev libc++abi-17-dev
+            fi
           fi
 
           # Verify installations
@@ -156,13 +161,22 @@ jobs:
           # Check if CMakeLists.txt exists
           if [ -f "CMakeLists.txt" ]; then
             echo "Found CMakeLists.txt, configuring build..."
-            cmake -B build \
-              -G Ninja \
-              -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-              -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cxx }} \
-              -DCMAKE_C_COMPILER=${{ matrix.compiler.cc }} \
-              -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-              -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+            
+            # Set up CMake flags
+            CMAKE_FLAGS="-G Ninja"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cxx }}"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_COMPILER=${{ matrix.compiler.cc }}"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+            CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            
+            # Use libc++ on Ubuntu 24.04 with Clang to avoid GCC 14 libstdc++ issues
+            if [ "${{ matrix.os }}" = "ubuntu-24.04" ] && [ "${{ matrix.compiler.name }}" = "clang" ]; then
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_CXX_FLAGS=-stdlib=libc++"
+              CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_EXE_LINKER_FLAGS=-stdlib=libc++"
+            fi
+            
+            cmake -B build $CMAKE_FLAGS
           else
             echo "No CMakeLists.txt found yet. Creating placeholder build directory."
             mkdir -p build
