@@ -2,12 +2,13 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include "android_dex_compiler.h"
-#include "android_toolchain.h"
-
 #include <filesystem>
 #include <fstream>
+
 #include <gtest/gtest.h>
+
+#include "android_dex_compiler.h"
+#include "android_toolchain.h"
 
 using namespace horcrux::core;
 

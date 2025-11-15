@@ -166,34 +166,33 @@ public:
   explicit AndroidDexCompiler(const AndroidToolchain& toolchain);
 
   // Compile with D8 (Java bytecode -> DEX)
-  auto compile_d8(const D8CompileConfig& config)
-      -> tl::expected<DexCompileResult, DexCompilerError>;
+  auto
+  compile_d8(const D8CompileConfig& config) -> tl::expected<DexCompileResult, DexCompilerError>;
 
   // Compile with R8 (Java bytecode -> optimized DEX)
-  auto compile_r8(const R8CompileConfig& config)
-      -> tl::expected<DexCompileResult, DexCompilerError>;
+  auto
+  compile_r8(const R8CompileConfig& config) -> tl::expected<DexCompileResult, DexCompilerError>;
 
   // Merge multiple DEX files
-  auto merge_dex(const DexMergeConfig& config)
-      -> tl::expected<DexCompileResult, DexCompilerError>;
+  auto merge_dex(const DexMergeConfig& config) -> tl::expected<DexCompileResult, DexCompilerError>;
 
   // Validate D8 configuration
-  static auto validate_d8_config(const D8CompileConfig& config)
-      -> tl::expected<void, DexCompilerError>;
+  static auto
+  validate_d8_config(const D8CompileConfig& config) -> tl::expected<void, DexCompilerError>;
 
   // Validate R8 configuration
-  static auto validate_r8_config(const R8CompileConfig& config)
-      -> tl::expected<void, DexCompilerError>;
+  static auto
+  validate_r8_config(const R8CompileConfig& config) -> tl::expected<void, DexCompilerError>;
 
   // Compute compilation hash for caching (Merkle signature)
   static auto compute_d8_hash(const D8CompileConfig& config) -> std::string;
   static auto compute_r8_hash(const R8CompileConfig& config) -> std::string;
 
   // Check if compilation is needed (incremental compilation)
-  auto is_d8_compilation_needed(const D8CompileConfig& config, const std::string& cached_hash) const
-      -> bool;
-  auto is_r8_compilation_needed(const R8CompileConfig& config, const std::string& cached_hash) const
-      -> bool;
+  auto is_d8_compilation_needed(const D8CompileConfig& config,
+                                const std::string& cached_hash) const -> bool;
+  auto is_r8_compilation_needed(const R8CompileConfig& config,
+                                const std::string& cached_hash) const -> bool;
 
   // Parse ProGuard configuration file
   static auto parse_proguard_config(const std::filesystem::path& config_path)
@@ -217,8 +216,8 @@ private:
       -> tl::expected<DexCompileResult, DexCompilerError>;
 
   // Scan output directory for generated .dex files
-  static auto scan_dex_files(const std::filesystem::path& output_dir)
-      -> std::vector<std::filesystem::path>;
+  static auto
+  scan_dex_files(const std::filesystem::path& output_dir) -> std::vector<std::filesystem::path>;
 
   // Validate D8/R8 tools are available
   auto validate_d8_tool() const -> tl::expected<void, DexCompilerError>;
@@ -242,8 +241,7 @@ auto merge_dex_files(const std::vector<std::filesystem::path>& dex_files,
                      const std::filesystem::path& output_file, int min_api) -> bool;
 
 // Split large DEX into multiple DEX files (multi-dex)
-auto split_dex(const std::filesystem::path& input_dex,
-               const std::filesystem::path& output_dir,
+auto split_dex(const std::filesystem::path& input_dex, const std::filesystem::path& output_dir,
                const std::optional<std::filesystem::path>& main_dex_list) -> bool;
 
 // Check if DEX file exceeds method limit (65536)
@@ -265,8 +263,7 @@ auto has_input_changed(const std::vector<std::filesystem::path>& inputs,
                        const std::string& cached_hash) -> bool;
 
 // Save compilation state for incremental builds
-auto save_compilation_state(const std::filesystem::path& state_file,
-                            const std::string& config_hash,
+auto save_compilation_state(const std::filesystem::path& state_file, const std::string& config_hash,
                             const std::string& compilation_hash) -> bool;
 
 // Load compilation state from previous build
