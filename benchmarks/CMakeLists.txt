@@ -75,11 +75,26 @@ target_link_libraries(task_scheduling_bench
 
 target_compile_options(task_scheduling_bench PRIVATE ${BENCHMARK_COMMON_FLAGS})
 
+# Local cache performance benchmark
+add_executable(local_cache_bench
+    local_cache_bench.cpp
+)
+
+target_link_libraries(local_cache_bench
+    PRIVATE
+    horcrux_core
+    benchmark::benchmark
+    benchmark::benchmark_main
+)
+
+target_compile_options(local_cache_bench PRIVATE ${BENCHMARK_COMMON_FLAGS})
+
 # Installation
 install(TARGETS
     dependency_resolution_bench
     cache_lookup_bench
     task_scheduling_bench
+    local_cache_bench
     RUNTIME DESTINATION bin/benchmarks
 )
 
@@ -88,10 +103,12 @@ add_custom_target(run_benchmarks
     COMMAND dependency_resolution_bench --benchmark_format=json --benchmark_out=dependency_resolution_results.json
     COMMAND cache_lookup_bench --benchmark_format=json --benchmark_out=cache_lookup_results.json
     COMMAND task_scheduling_bench --benchmark_format=json --benchmark_out=task_scheduling_results.json
+    COMMAND local_cache_bench --benchmark_format=json --benchmark_out=local_cache_results.json
     DEPENDS
         dependency_resolution_bench
         cache_lookup_bench
         task_scheduling_bench
+        local_cache_bench
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all benchmarks and generating JSON results"
 )
