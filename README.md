@@ -206,6 +206,21 @@ horcrux-cli doctor
 
 For Android development, see [docs/android-toolchain.md](docs/android-toolchain.md).
 
+#### Import an Existing Gradle Project
+
+Horcrux can import existing Gradle-based projects (especially Android projects) and automatically generate a `horcrux.yaml` configuration:
+
+```bash
+# Import a Gradle project
+cd /path/to/your/android/project
+horcrux-cli import .
+
+# The generated horcrux.yaml will contain your project configuration
+cat horcrux.yaml
+```
+
+This is particularly useful for migrating Android projects from Gradle to Horcrux. See [docs/gradle-interop.md](docs/gradle-interop.md) for detailed information.
+
 #### Try Example Projects
 
 Build the example projects:
@@ -285,6 +300,9 @@ For more help, see our [Contributing Guide](CONTRIBUTING.md) or [open an issue](
 ### Basic Commands
 
 ```bash
+# Import an existing Gradle project
+horcrux import /path/to/gradle/project
+
 # Build a specific target
 horcrux build //path/to:target
 
@@ -299,7 +317,27 @@ horcrux clean
 
 # Show build graph
 horcrux query --graph //path/to:target
+
+# Validate your development environment
+horcrux doctor android
 ```
+
+### Gradle Interoperability
+
+Import existing Gradle projects seamlessly:
+
+```bash
+# Import current directory
+horcrux import .
+
+# Import with custom output
+horcrux import /path/to/project -o custom-config.yaml
+
+# Verbose mode for debugging
+horcrux import . --verbose
+```
+
+See [docs/gradle-interop.md](docs/gradle-interop.md) for comprehensive Gradle integration guide.
 
 ### Advanced Features
 

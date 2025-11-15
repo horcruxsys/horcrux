@@ -402,10 +402,98 @@ target_compile_options(android_aab_packager_test PRIVATE
 # Register test with CTest
 gtest_discover_tests(android_aab_packager_test)
 
+# Gradle parser tests
+add_executable(gradle_parser_test
+    gradle_parser_test.cpp
+)
+
+target_link_libraries(gradle_parser_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(gradle_parser_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(gradle_parser_test)
+
+# Workspace config generator tests
+add_executable(workspace_config_generator_test
+    workspace_config_generator_test.cpp
+)
+
+target_link_libraries(workspace_config_generator_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(workspace_config_generator_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(workspace_config_generator_test)
+
+# Import command tests
+add_executable(import_command_test
+    import_command_test.cpp
+)
+
+target_link_libraries(import_command_test
+    PRIVATE
+    horcrux_cli
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(import_command_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+# Register test with CTest
+gtest_discover_tests(import_command_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test
+    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )
