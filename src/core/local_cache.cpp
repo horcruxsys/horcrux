@@ -11,6 +11,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include <tl/expected.hpp>
+
 // SHA-256 implementation using OpenSSL-like approach
 // For production, consider using a proper crypto library
 namespace horcrux::core {
@@ -174,12 +176,12 @@ auto hash_to_string(const Hash& hash) -> std::string {
 }
 
 auto LocalCache::create(const std::filesystem::path& cache_dir)
-    -> std::expected<LocalCache, CacheError> {
+    -> tl::expected<LocalCache, CacheError> {
   // Create cache directory if it doesn't exist
   std::error_code ec;
   if (!std::filesystem::exists(cache_dir, ec)) {
     if (!std::filesystem::create_directories(cache_dir, ec)) {
-      return std::unexpected(CacheError::WriteFailure);
+      return tl::unexpected(CacheError::WriteFailure);
     }
   }
 
@@ -198,7 +200,7 @@ auto LocalCache::get_cache_path(const Hash& hash) const -> std::filesystem::path
 }
 
 auto LocalCache::store(const Hash& hash,
-                       const Artifact& artifact) -> std::expected<void, CacheError> {
+                       const Artifact& artifact) -> tl::expected<void, CacheError> {
   // Store in memory cache
   memory_cache_[hash] = artifact;
 
@@ -210,14 +212,14 @@ auto LocalCache::store(const Hash& hash,
   std::error_code ec;
   if (!std::filesystem::exists(dir_path, ec)) {
     if (!std::filesystem::create_directories(dir_path, ec)) {
-      return std::unexpected(CacheError::WriteFailure);
+      return tl::unexpected(CacheError::WriteFailure);
     }
   }
 
   // Write artifact to file
   std::ofstream out(file_path, std::ios::binary);
   if (!out) {
-    return std::unexpected(CacheError::WriteFailure);
+    return tl::unexpected(CacheError::WriteFailure);
   }
 
   // Write timestamp
@@ -232,7 +234,7 @@ auto LocalCache::store(const Hash& hash,
             static_cast<std::streamsize>(artifact.content.size()));
 
   if (!out) {
-    return std::unexpected(CacheError::WriteFailure);
+    return tl::unexpected(CacheError::WriteFailure);
   }
 
   return {};
@@ -300,7 +302,7 @@ auto LocalCache::size() const -> size_t {
   return memory_cache_.size();
 }
 
-auto LocalCache::clear() -> std::expected<void, CacheError> {
+auto LocalCache::clear() -> tl::expected<void, CacheError> {
   memory_cache_.clear();
 
   // Remove all cache files
@@ -310,7 +312,7 @@ auto LocalCache::clear() -> std::expected<void, CacheError> {
       if (entry.is_regular_file()) {
         std::filesystem::remove(entry.path(), ec);
         if (ec) {
-          return std::unexpected(CacheError::WriteFailure);
+          return tl::unexpected(CacheError::WriteFailure);
         }
       }
     }

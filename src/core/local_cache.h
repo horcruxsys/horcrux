@@ -6,7 +6,6 @@
 
 #include <array>
 #include <cstdint>
-#include <expected>
 #include <filesystem>
 #include <optional>
 #include <span>
@@ -14,6 +13,8 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+
+#include <tl/expected.hpp>
 
 namespace horcrux::core {
 
@@ -74,7 +75,7 @@ public:
   ///
   /// @note Creates the cache directory if it doesn't exist
   static auto
-  create(const std::filesystem::path& cache_dir) -> std::expected<LocalCache, CacheError>;
+  create(const std::filesystem::path& cache_dir) -> tl::expected<LocalCache, CacheError>;
 
   /// Stores an artifact in the cache
   ///
@@ -84,7 +85,7 @@ public:
   ///
   /// @complexity O(n) where n is the size of artifact content
   /// @note Thread-safe operation
-  auto store(const Hash& hash, const Artifact& artifact) -> std::expected<void, CacheError>;
+  auto store(const Hash& hash, const Artifact& artifact) -> tl::expected<void, CacheError>;
 
   /// Retrieves an artifact from the cache
   ///
@@ -112,7 +113,7 @@ public:
   /// Clears all artifacts from the cache
   ///
   /// @return Expected void or CacheError on failure
-  auto clear() -> std::expected<void, CacheError>;
+  auto clear() -> tl::expected<void, CacheError>;
 
 private:
   explicit LocalCache(const std::filesystem::path& cache_dir);
