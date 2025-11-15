@@ -33,22 +33,22 @@ auto to_string(AndroidAabPackagerError error) -> std::string;
 
 // AAB module configuration
 struct AabModuleConfig {
-  std::string module_name;                     // Module name (e.g., "base", "feature1")
-  std::filesystem::path manifest;              // AndroidManifest.xml
-  std::filesystem::path resources_apk;         // resources.ap_ from AAPT2
-  std::vector<std::filesystem::path> dex_files; // DEX files
+  std::string module_name;                        // Module name (e.g., "base", "feature1")
+  std::filesystem::path manifest;                 // AndroidManifest.xml
+  std::filesystem::path resources_apk;            // resources.ap_ from AAPT2
+  std::vector<std::filesystem::path> dex_files;   // DEX files
   std::vector<std::filesystem::path> native_libs; // Native libraries
-  std::vector<std::filesystem::path> assets; // Assets
-  bool is_base_module = false;                // Is this the base module?
+  std::vector<std::filesystem::path> assets;      // Assets
+  bool is_base_module = false;                    // Is this the base module?
 };
 
 // AAB packaging configuration
 struct AabPackagingConfig {
-  std::vector<AabModuleConfig> modules;        // Modules (base + features)
-  std::filesystem::path output_aab;            // Output AAB path
+  std::vector<AabModuleConfig> modules;                // Modules (base + features)
+  std::filesystem::path output_aab;                    // Output AAB path
   std::optional<std::filesystem::path> bundletool_jar; // bundletool.jar path
-  bool verbose = false;                        // Enable verbose output
-  std::vector<std::string> additional_args;    // Additional arguments
+  bool verbose = false;                                // Enable verbose output
+  std::vector<std::string> additional_args;            // Additional arguments
 };
 
 // AAB packaging result
@@ -61,10 +61,10 @@ struct AabPackagingResult {
 
 // Universal APK generation configuration
 struct UniversalApkConfig {
-  std::filesystem::path aab_path;              // Input AAB
-  std::filesystem::path output_apk;            // Output universal APK
+  std::filesystem::path aab_path;                      // Input AAB
+  std::filesystem::path output_apk;                    // Output universal APK
   std::optional<std::filesystem::path> bundletool_jar; // bundletool.jar path
-  std::optional<std::filesystem::path> keystore_path; // Keystore for signing
+  std::optional<std::filesystem::path> keystore_path;  // Keystore for signing
   std::optional<std::string> keystore_password;
   std::optional<std::string> key_alias;
   std::optional<std::string> key_password;
@@ -98,12 +98,11 @@ public:
       -> tl::expected<void, AndroidAabPackagerError>;
 
   // Validate configuration
-  static auto validate_config(const AabPackagingConfig& config)
-      -> tl::expected<void, AndroidAabPackagerError>;
+  static auto
+  validate_config(const AabPackagingConfig& config) -> tl::expected<void, AndroidAabPackagerError>;
 
   // Compute packaging hash
-  static auto compute_packaging_hash(const AabPackagingConfig& config)
-      -> std::string;
+  static auto compute_packaging_hash(const AabPackagingConfig& config) -> std::string;
 
 private:
   const AndroidToolchain& toolchain_;
@@ -117,8 +116,7 @@ private:
       -> tl::expected<std::string, AndroidAabPackagerError>;
 
   // Create module ZIP
-  auto create_module_zip(const AabModuleConfig& module,
-                         const std::filesystem::path& output_zip)
+  auto create_module_zip(const AabModuleConfig& module, const std::filesystem::path& output_zip)
       -> tl::expected<void, AndroidAabPackagerError>;
 
   // Execute command
@@ -150,8 +148,7 @@ auto validate_aab(const std::filesystem::path& aab_path)
     -> tl::expected<bool, AndroidAabPackagerError>;
 
 // Extract AAB to directory
-auto extract_aab(const std::filesystem::path& aab_path,
-                 const std::filesystem::path& output_dir)
+auto extract_aab(const std::filesystem::path& aab_path, const std::filesystem::path& output_dir)
     -> tl::expected<void, AndroidAabPackagerError>;
 
 } // namespace aab_utils

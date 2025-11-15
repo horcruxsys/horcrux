@@ -11,38 +11,39 @@
 #include <iomanip>
 #include <memory>
 #include <sstream>
+#include <unistd.h>
 
 #include <openssl/sha.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 namespace horcrux::core {
 
 // Convert error to string
 auto to_string(AndroidAabPackagerError error) -> std::string {
   switch (error) {
-    case AndroidAabPackagerError::InvalidConfiguration:
-      return "Invalid configuration";
-    case AndroidAabPackagerError::BundletoolNotFound:
-      return "bundletool not found";
-    case AndroidAabPackagerError::PackagingFailed:
-      return "AAB packaging failed";
-    case AndroidAabPackagerError::ModuleCreationFailed:
-      return "Module creation failed";
-    case AndroidAabPackagerError::UniversalApkFailed:
-      return "Universal APK generation failed";
-    case AndroidAabPackagerError::IoError:
-      return "I/O error";
-    case AndroidAabPackagerError::UnknownError:
-      return "Unknown error";
+  case AndroidAabPackagerError::InvalidConfiguration:
+    return "Invalid configuration";
+  case AndroidAabPackagerError::BundletoolNotFound:
+    return "bundletool not found";
+  case AndroidAabPackagerError::PackagingFailed:
+    return "AAB packaging failed";
+  case AndroidAabPackagerError::ModuleCreationFailed:
+    return "Module creation failed";
+  case AndroidAabPackagerError::UniversalApkFailed:
+    return "Universal APK generation failed";
+  case AndroidAabPackagerError::IoError:
+    return "I/O error";
+  case AndroidAabPackagerError::UnknownError:
+    return "Unknown error";
   }
   return "Unknown error";
 }
 
 // AndroidAabPackager implementation
 AndroidAabPackager::AndroidAabPackager(const AndroidToolchain& toolchain)
-    : toolchain_(toolchain), bundletool_path_(find_bundletool()) {}
+    : toolchain_(toolchain), bundletool_path_(find_bundletool()) {
+}
 
 auto AndroidAabPackager::package(const AabPackagingConfig& config)
     -> tl::expected<AabPackagingResult, AndroidAabPackagerError> {
@@ -59,7 +60,7 @@ auto AndroidAabPackager::package(const AabPackagingConfig& config)
   // Create module ZIPs
   std::vector<std::filesystem::path> module_zips;
   std::vector<std::string> module_names;
-  
+
   for (const auto& module : config.modules) {
     auto module_zip = temp_dir / (module.module_name + ".zip");
     if (auto result = create_module_zip(module, module_zip); !result) {
@@ -79,12 +80,12 @@ auto AndroidAabPackager::package(const AabPackagingConfig& config)
   args.push_back("-jar");
   args.push_back(bundletool_path_->string());
   args.push_back("build-bundle");
-  
+
   // Add modules
   for (const auto& module_zip : module_zips) {
     args.push_back("--modules=" + module_zip.string());
   }
-  
+
   args.push_back("--output=" + config.output_aab.string());
 
   if (config.verbose) {
@@ -119,9 +120,9 @@ auto AndroidAabPackager::generate_universal_apk(const UniversalApkConfig& config
     return tl::unexpected(AndroidAabPackagerError::InvalidConfiguration);
   }
 
-  auto bundletool = config.bundletool_jar.value_or(
-      bundletool_path_.value_or(std::filesystem::path()));
-  
+  auto bundletool =
+      config.bundletool_jar.value_or(bundletool_path_.value_or(std::filesystem::path()));
+
   if (!std::filesystem::exists(bundletool)) {
     return tl::unexpected(AndroidAabPackagerError::BundletoolNotFound);
   }
@@ -188,7 +189,7 @@ auto AndroidAabPackager::generate_universal_apk(const UniversalApkConfig& config
   // Copy to output location
   std::filesystem::create_directories(config.output_apk.parent_path());
   std::filesystem::copy_file(universal_apk, config.output_apk,
-                            std::filesystem::copy_options::overwrite_existing);
+                             std::filesystem::copy_options::overwrite_existing);
 
   // Clean up
   std::filesystem::remove_all(temp_dir);
@@ -203,8 +204,7 @@ auto AndroidAabPackager::generate_universal_apk(const UniversalApkConfig& config
   return apk_result;
 }
 
-auto AndroidAabPackager::get_bundletool_path() const
-    -> std::optional<std::filesystem::path> {
+auto AndroidAabPackager::get_bundletool_path() const -> std::optional<std::filesystem::path> {
   return bundletool_path_;
 }
 
@@ -264,8 +264,7 @@ auto AndroidAabPackager::validate_config(const AabPackagingConfig& config)
   return {};
 }
 
-auto AndroidAabPackager::compute_packaging_hash(const AabPackagingConfig& config)
-    -> std::string {
+auto AndroidAabPackager::compute_packaging_hash(const AabPackagingConfig& config) -> std::string {
   SHA256_CTX sha256_ctx;
   SHA256_Init(&sha256_ctx);
 
@@ -292,15 +291,14 @@ auto AndroidAabPackager::compute_packaging_hash(const AabPackagingConfig& config
   return oss.str();
 }
 
-auto AndroidAabPackager::find_bundletool() const
-    -> std::optional<std::filesystem::path> {
+auto AndroidAabPackager::find_bundletool() const -> std::optional<std::filesystem::path> {
   // Check common locations for bundletool
   std::vector<std::filesystem::path> search_paths = {
       toolchain_.sdk_root / "cmdline-tools" / "latest" / "bin" / "bundletool.jar",
       toolchain_.sdk_root / "tools" / "bin" / "bundletool.jar",
       std::filesystem::path("/usr/local/bin/bundletool.jar"),
-      std::filesystem::path(std::getenv("HOME") ? std::getenv("HOME") : "") / ".android" / "bundletool.jar"
-  };
+      std::filesystem::path(std::getenv("HOME") ? std::getenv("HOME") : "") / ".android" /
+          "bundletool.jar"};
 
   for (const auto& path : search_paths) {
     if (std::filesystem::exists(path)) {
@@ -317,7 +315,7 @@ auto AndroidAabPackager::execute_bundletool(const std::vector<std::string>& args
 }
 
 auto AndroidAabPackager::create_module_zip(const AabModuleConfig& module,
-                                            const std::filesystem::path& output_zip)
+                                           const std::filesystem::path& output_zip)
     -> tl::expected<void, AndroidAabPackagerError> {
   // Create module directory structure
   auto temp_dir = create_temp_dir();
@@ -449,10 +447,10 @@ auto AndroidAabPackager::execute_command(const std::vector<std::string>& args)
 auto AndroidAabPackager::create_temp_dir() const -> std::filesystem::path {
   auto temp_base = std::filesystem::temp_directory_path() / "horcrux_aab";
   std::filesystem::create_directories(temp_base);
-  
+
   auto temp_dir = temp_base / std::to_string(std::time(nullptr));
   std::filesystem::create_directories(temp_dir);
-  
+
   return temp_dir;
 }
 
@@ -481,8 +479,7 @@ auto validate_aab(const std::filesystem::path& aab_path)
   return true;
 }
 
-auto extract_aab(const std::filesystem::path& aab_path,
-                 const std::filesystem::path& output_dir)
+auto extract_aab(const std::filesystem::path& aab_path, const std::filesystem::path& output_dir)
     -> tl::expected<void, AndroidAabPackagerError> {
   std::filesystem::create_directories(output_dir);
 

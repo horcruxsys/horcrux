@@ -46,17 +46,17 @@ struct ApkSigningConfig {
 
 // APK packaging configuration
 struct ApkPackagingConfig {
-  std::filesystem::path resources_apk;     // resources.ap_ from AAPT2
-  std::vector<std::filesystem::path> dex_files; // classes.dex, classes2.dex, etc.
+  std::filesystem::path resources_apk;            // resources.ap_ from AAPT2
+  std::vector<std::filesystem::path> dex_files;   // classes.dex, classes2.dex, etc.
   std::vector<std::filesystem::path> native_libs; // .so files
-  std::vector<std::filesystem::path> assets; // Asset files
-  std::filesystem::path output_apk;        // Output APK path
+  std::vector<std::filesystem::path> assets;      // Asset files
+  std::filesystem::path output_apk;               // Output APK path
   std::optional<ApkSigningConfig> signing_config; // Signing configuration
-  bool zipalign = true;                    // Enable zipalign
-  int zipalign_alignment = 4;              // Alignment in bytes (4 or 8)
-  bool verify_signature = true;            // Verify signature after signing
-  bool verbose = false;                    // Enable verbose output
-  std::vector<std::string> additional_args; // Additional arguments
+  bool zipalign = true;                           // Enable zipalign
+  int zipalign_alignment = 4;                     // Alignment in bytes (4 or 8)
+  bool verify_signature = true;                   // Verify signature after signing
+  bool verbose = false;                           // Enable verbose output
+  std::vector<std::string> additional_args;       // Additional arguments
 };
 
 // APK packaging result
@@ -85,16 +85,12 @@ public:
       -> tl::expected<ApkPackagingResult, AndroidApkPackagerError>;
 
   // Zipalign APK: align APK file boundaries
-  auto zipalign(const std::filesystem::path& input_apk,
-                const std::filesystem::path& output_apk,
-                int alignment = 4)
-      -> tl::expected<void, AndroidApkPackagerError>;
+  auto zipalign(const std::filesystem::path& input_apk, const std::filesystem::path& output_apk,
+                int alignment = 4) -> tl::expected<void, AndroidApkPackagerError>;
 
   // Sign APK: add signature to APK
-  auto sign(const std::filesystem::path& input_apk,
-            const std::filesystem::path& output_apk,
-            const ApkSigningConfig& signing_config)
-      -> tl::expected<void, AndroidApkPackagerError>;
+  auto sign(const std::filesystem::path& input_apk, const std::filesystem::path& output_apk,
+            const ApkSigningConfig& signing_config) -> tl::expected<void, AndroidApkPackagerError>;
 
   // Verify APK signature
   auto verify(const std::filesystem::path& apk_path)
@@ -107,12 +103,11 @@ public:
   auto get_apksigner_path() const -> std::optional<std::filesystem::path>;
 
   // Validate configuration
-  static auto validate_config(const ApkPackagingConfig& config)
-      -> tl::expected<void, AndroidApkPackagerError>;
+  static auto
+  validate_config(const ApkPackagingConfig& config) -> tl::expected<void, AndroidApkPackagerError>;
 
   // Compute packaging hash (Merkle signature)
-  static auto compute_packaging_hash(const ApkPackagingConfig& config)
-      -> std::string;
+  static auto compute_packaging_hash(const ApkPackagingConfig& config) -> std::string;
 
 private:
   const AndroidToolchain& toolchain_;
@@ -134,8 +129,7 @@ private:
   auto create_temp_dir() const -> std::filesystem::path;
 
   // Package APK using zip (combines all components)
-  auto package_apk_internal(const ApkPackagingConfig& config,
-                            const std::filesystem::path& temp_dir)
+  auto package_apk_internal(const ApkPackagingConfig& config, const std::filesystem::path& temp_dir)
       -> tl::expected<std::filesystem::path, AndroidApkPackagerError>;
 };
 
@@ -146,8 +140,7 @@ namespace apk_utils {
 auto is_aligned(const std::filesystem::path& apk_path, int alignment = 4) -> bool;
 
 // Extract APK to directory
-auto extract_apk(const std::filesystem::path& apk_path,
-                 const std::filesystem::path& output_dir)
+auto extract_apk(const std::filesystem::path& apk_path, const std::filesystem::path& output_dir)
     -> tl::expected<void, AndroidApkPackagerError>;
 
 // Get APK information

@@ -10,41 +10,41 @@
 #include <fstream>
 #include <memory>
 #include <sstream>
+#include <unistd.h>
 
 #include <openssl/sha.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
 namespace horcrux::core {
 
 // Convert error to string
 auto to_string(AndroidApkPackagerError error) -> std::string {
   switch (error) {
-    case AndroidApkPackagerError::InvalidConfiguration:
-      return "Invalid configuration";
-    case AndroidApkPackagerError::ZipalignNotFound:
-      return "zipalign tool not found";
-    case AndroidApkPackagerError::ApksignerNotFound:
-      return "apksigner tool not found";
-    case AndroidApkPackagerError::SigningFailed:
-      return "APK signing failed";
-    case AndroidApkPackagerError::VerificationFailed:
-      return "APK verification failed";
-    case AndroidApkPackagerError::PackagingFailed:
-      return "APK packaging failed";
-    case AndroidApkPackagerError::IoError:
-      return "I/O error";
-    case AndroidApkPackagerError::UnknownError:
-      return "Unknown error";
+  case AndroidApkPackagerError::InvalidConfiguration:
+    return "Invalid configuration";
+  case AndroidApkPackagerError::ZipalignNotFound:
+    return "zipalign tool not found";
+  case AndroidApkPackagerError::ApksignerNotFound:
+    return "apksigner tool not found";
+  case AndroidApkPackagerError::SigningFailed:
+    return "APK signing failed";
+  case AndroidApkPackagerError::VerificationFailed:
+    return "APK verification failed";
+  case AndroidApkPackagerError::PackagingFailed:
+    return "APK packaging failed";
+  case AndroidApkPackagerError::IoError:
+    return "I/O error";
+  case AndroidApkPackagerError::UnknownError:
+    return "Unknown error";
   }
   return "Unknown error";
 }
 
 // AndroidApkPackager implementation
 AndroidApkPackager::AndroidApkPackager(const AndroidToolchain& toolchain)
-    : toolchain_(toolchain), zipalign_path_(find_zipalign()),
-      apksigner_path_(find_apksigner()) {}
+    : toolchain_(toolchain), zipalign_path_(find_zipalign()), apksigner_path_(find_apksigner()) {
+}
 
 auto AndroidApkPackager::package(const ApkPackagingConfig& config)
     -> tl::expected<ApkPackagingResult, AndroidApkPackagerError> {
@@ -69,8 +69,7 @@ auto AndroidApkPackager::package(const ApkPackagingConfig& config)
   // Zipalign if requested
   if (config.zipalign) {
     auto zipaligned_apk = temp_dir / "aligned.apk";
-    if (auto result = zipalign(current_apk, zipaligned_apk, config.zipalign_alignment);
-        !result) {
+    if (auto result = zipalign(current_apk, zipaligned_apk, config.zipalign_alignment); !result) {
       return tl::unexpected(result.error());
     }
     current_apk = zipaligned_apk;
@@ -100,7 +99,7 @@ auto AndroidApkPackager::package(const ApkPackagingConfig& config)
   // Copy final APK to output location
   std::filesystem::create_directories(config.output_apk.parent_path());
   std::filesystem::copy_file(current_apk, config.output_apk,
-                            std::filesystem::copy_options::overwrite_existing);
+                             std::filesystem::copy_options::overwrite_existing);
 
   // Clean up temporary directory
   std::filesystem::remove_all(temp_dir);
@@ -119,9 +118,8 @@ auto AndroidApkPackager::package(const ApkPackagingConfig& config)
 }
 
 auto AndroidApkPackager::zipalign(const std::filesystem::path& input_apk,
-                                   const std::filesystem::path& output_apk,
-                                   int alignment)
-    -> tl::expected<void, AndroidApkPackagerError> {
+                                  const std::filesystem::path& output_apk,
+                                  int alignment) -> tl::expected<void, AndroidApkPackagerError> {
   if (!zipalign_path_ || !std::filesystem::exists(*zipalign_path_)) {
     return tl::unexpected(AndroidApkPackagerError::ZipalignNotFound);
   }
@@ -141,10 +139,9 @@ auto AndroidApkPackager::zipalign(const std::filesystem::path& input_apk,
   return {};
 }
 
-auto AndroidApkPackager::sign(const std::filesystem::path& input_apk,
-                               const std::filesystem::path& output_apk,
-                               const ApkSigningConfig& signing_config)
-    -> tl::expected<void, AndroidApkPackagerError> {
+auto AndroidApkPackager::sign(
+    const std::filesystem::path& input_apk, const std::filesystem::path& output_apk,
+    const ApkSigningConfig& signing_config) -> tl::expected<void, AndroidApkPackagerError> {
   if (!apksigner_path_ || !std::filesystem::exists(*apksigner_path_)) {
     return tl::unexpected(AndroidApkPackagerError::ApksignerNotFound);
   }
@@ -216,13 +213,11 @@ auto AndroidApkPackager::verify(const std::filesystem::path& apk_path)
   return verification_result;
 }
 
-auto AndroidApkPackager::get_zipalign_path() const
-    -> std::optional<std::filesystem::path> {
+auto AndroidApkPackager::get_zipalign_path() const -> std::optional<std::filesystem::path> {
   return zipalign_path_;
 }
 
-auto AndroidApkPackager::get_apksigner_path() const
-    -> std::optional<std::filesystem::path> {
+auto AndroidApkPackager::get_apksigner_path() const -> std::optional<std::filesystem::path> {
   return apksigner_path_;
 }
 
@@ -259,8 +254,7 @@ auto AndroidApkPackager::validate_config(const ApkPackagingConfig& config)
   return {};
 }
 
-auto AndroidApkPackager::compute_packaging_hash(const ApkPackagingConfig& config)
-    -> std::string {
+auto AndroidApkPackager::compute_packaging_hash(const ApkPackagingConfig& config) -> std::string {
   SHA256_CTX sha256_ctx;
   SHA256_Init(&sha256_ctx);
 
@@ -297,8 +291,7 @@ auto AndroidApkPackager::compute_packaging_hash(const ApkPackagingConfig& config
   return oss.str();
 }
 
-auto AndroidApkPackager::find_zipalign() const
-    -> std::optional<std::filesystem::path> {
+auto AndroidApkPackager::find_zipalign() const -> std::optional<std::filesystem::path> {
   // Find the latest build tools with zipalign
   for (const auto& bt : toolchain_.build_tools) {
     if (std::filesystem::exists(bt.zipalign_path)) {
@@ -308,8 +301,7 @@ auto AndroidApkPackager::find_zipalign() const
   return std::nullopt;
 }
 
-auto AndroidApkPackager::find_apksigner() const
-    -> std::optional<std::filesystem::path> {
+auto AndroidApkPackager::find_apksigner() const -> std::optional<std::filesystem::path> {
   // Find apksigner in the latest build tools
   for (const auto& bt : toolchain_.build_tools) {
     // apksigner is a script (not .exe on Windows)
@@ -326,9 +318,8 @@ auto AndroidApkPackager::find_apksigner() const
   return std::nullopt;
 }
 
-auto AndroidApkPackager::execute_command(
-    const std::vector<std::string>& args,
-    const std::optional<std::filesystem::path>& working_dir)
+auto AndroidApkPackager::execute_command(const std::vector<std::string>& args,
+                                         const std::optional<std::filesystem::path>& working_dir)
     -> tl::expected<std::string, AndroidApkPackagerError> {
   // Build command string
   std::ostringstream cmd_oss;
@@ -373,17 +364,16 @@ auto AndroidApkPackager::execute_command(
 auto AndroidApkPackager::create_temp_dir() const -> std::filesystem::path {
   auto temp_base = std::filesystem::temp_directory_path() / "horcrux_apk";
   std::filesystem::create_directories(temp_base);
-  
+
   // Create unique temp directory
   auto temp_dir = temp_base / std::to_string(std::time(nullptr));
   std::filesystem::create_directories(temp_dir);
-  
+
   return temp_dir;
 }
 
-auto AndroidApkPackager::package_apk_internal(
-    const ApkPackagingConfig& config,
-    const std::filesystem::path& temp_dir)
+auto AndroidApkPackager::package_apk_internal(const ApkPackagingConfig& config,
+                                              const std::filesystem::path& temp_dir)
     -> tl::expected<std::filesystem::path, AndroidApkPackagerError> {
   // Create APK structure in temp directory
   auto apk_contents = temp_dir / "apk_contents";
@@ -406,8 +396,7 @@ auto AndroidApkPackager::package_apk_internal(
   // Copy DEX files
   for (const auto& dex_file : config.dex_files) {
     auto dest = apk_contents / dex_file.filename();
-    std::filesystem::copy_file(dex_file, dest,
-                              std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy_file(dex_file, dest, std::filesystem::copy_options::overwrite_existing);
   }
 
   // Copy native libraries
@@ -421,7 +410,7 @@ auto AndroidApkPackager::package_apk_internal(
       std::filesystem::create_directories(dest_abi_dir);
       auto dest = dest_abi_dir / native_lib.filename();
       std::filesystem::copy_file(native_lib, dest,
-                                std::filesystem::copy_options::overwrite_existing);
+                                 std::filesystem::copy_options::overwrite_existing);
     }
   }
 
@@ -431,8 +420,7 @@ auto AndroidApkPackager::package_apk_internal(
     std::filesystem::create_directories(assets_dir);
     for (const auto& asset : config.assets) {
       auto dest = assets_dir / asset.filename();
-      std::filesystem::copy_file(asset, dest,
-                                std::filesystem::copy_options::overwrite_existing);
+      std::filesystem::copy_file(asset, dest, std::filesystem::copy_options::overwrite_existing);
     }
   }
 
@@ -471,8 +459,7 @@ auto is_aligned(const std::filesystem::path& apk_path, int alignment) -> bool {
   return (file_size % alignment) == 0;
 }
 
-auto extract_apk(const std::filesystem::path& apk_path,
-                 const std::filesystem::path& output_dir)
+auto extract_apk(const std::filesystem::path& apk_path, const std::filesystem::path& output_dir)
     -> tl::expected<void, AndroidApkPackagerError> {
   std::filesystem::create_directories(output_dir);
 

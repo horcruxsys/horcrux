@@ -2,10 +2,10 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include <gtest/gtest.h>
-
 #include <filesystem>
 #include <fstream>
+
+#include <gtest/gtest.h>
 
 #include "android_aab_packager.h"
 #include "android_toolchain.h"
@@ -44,7 +44,7 @@ protected:
     platform.version = "14.0";
     platform.path = toolchain.sdk_root / "platforms" / "android-34";
     std::filesystem::create_directories(platform.path);
-    
+
     toolchain.platforms.push_back(platform);
     return toolchain;
   }
@@ -63,18 +63,18 @@ protected:
 
   auto create_mock_resources_apk() -> std::filesystem::path {
     auto resources_apk = test_dir_ / "resources.ap_";
-    
+
     // Create a mock ZIP file
     auto temp_content = test_dir_ / "temp_resources";
     std::filesystem::create_directories(temp_content);
-    
+
     // Create mock res directory
     auto res_dir = temp_content / "res";
     std::filesystem::create_directories(res_dir);
-    
+
     auto values_dir = res_dir / "values";
     std::filesystem::create_directories(values_dir);
-    
+
     auto strings_xml = values_dir / "strings.xml";
     std::ofstream strings_file(strings_xml);
     strings_file << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
@@ -84,8 +84,8 @@ protected:
     strings_file.close();
 
     // Create ZIP
-    std::string cmd = "cd " + temp_content.string() + " && zip -q -r " +
-                     resources_apk.string() + " .";
+    std::string cmd =
+        "cd " + temp_content.string() + " && zip -q -r " + resources_apk.string() + " .";
     std::system(cmd.c_str());
 
     std::filesystem::remove_all(temp_content);
@@ -107,14 +107,10 @@ protected:
 
 // Test error string conversion
 TEST_F(AabPackagerTestFixture, ErrorToString) {
-  EXPECT_EQ(to_string(AndroidAabPackagerError::InvalidConfiguration),
-            "Invalid configuration");
-  EXPECT_EQ(to_string(AndroidAabPackagerError::BundletoolNotFound),
-            "bundletool not found");
-  EXPECT_EQ(to_string(AndroidAabPackagerError::PackagingFailed),
-            "AAB packaging failed");
-  EXPECT_EQ(to_string(AndroidAabPackagerError::ModuleCreationFailed),
-            "Module creation failed");
+  EXPECT_EQ(to_string(AndroidAabPackagerError::InvalidConfiguration), "Invalid configuration");
+  EXPECT_EQ(to_string(AndroidAabPackagerError::BundletoolNotFound), "bundletool not found");
+  EXPECT_EQ(to_string(AndroidAabPackagerError::PackagingFailed), "AAB packaging failed");
+  EXPECT_EQ(to_string(AndroidAabPackagerError::ModuleCreationFailed), "Module creation failed");
   EXPECT_EQ(to_string(AndroidAabPackagerError::UniversalApkFailed),
             "Universal APK generation failed");
   EXPECT_EQ(to_string(AndroidAabPackagerError::IoError), "I/O error");
@@ -124,7 +120,7 @@ TEST_F(AabPackagerTestFixture, ErrorToString) {
 // Test packager construction
 TEST_F(AabPackagerTestFixture, PackagerConstruction) {
   AndroidAabPackager packager(mock_toolchain_);
-  
+
   // bundletool may or may not exist in test environment
   auto bundletool_path = packager.get_bundletool_path();
   // Just check that the method runs without error
@@ -268,10 +264,10 @@ TEST_F(AabPackagerTestFixture, ComputePackagingHash) {
 // Test AAB info extraction
 TEST_F(AabPackagerTestFixture, GetAabInfo) {
   auto aab_path = test_dir_ / "test.aab";
-  
+
   auto result = aab_utils::get_aab_info(aab_path);
   EXPECT_TRUE(result.has_value());
-  
+
   if (result) {
     EXPECT_FALSE(result->module_names.empty());
     EXPECT_FALSE(result->package_name.empty());
@@ -281,7 +277,7 @@ TEST_F(AabPackagerTestFixture, GetAabInfo) {
 // Test AAB validation
 TEST_F(AabPackagerTestFixture, ValidateAab) {
   auto aab_path = test_dir_ / "nonexistent.aab";
-  
+
   auto result = aab_utils::validate_aab(aab_path);
   EXPECT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), AndroidAabPackagerError::InvalidConfiguration);
@@ -334,7 +330,7 @@ TEST_F(AabPackagerTestFixture, UniversalApkConfigValidation) {
   config.output_apk = test_dir_ / "universal.apk";
 
   AndroidAabPackager packager(mock_toolchain_);
-  
+
   auto result = packager.generate_universal_apk(config);
   EXPECT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), AndroidAabPackagerError::InvalidConfiguration);

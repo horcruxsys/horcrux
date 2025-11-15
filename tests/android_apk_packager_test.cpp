@@ -2,10 +2,10 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include <gtest/gtest.h>
-
 #include <filesystem>
 #include <fstream>
+
+#include <gtest/gtest.h>
 
 #include "android_apk_packager.h"
 #include "android_toolchain.h"
@@ -58,17 +58,17 @@ protected:
     file << "exit 0\n";
     file.close();
     std::filesystem::permissions(path, std::filesystem::perms::owner_exec |
-                                       std::filesystem::perms::owner_read |
-                                       std::filesystem::perms::owner_write);
+                                           std::filesystem::perms::owner_read |
+                                           std::filesystem::perms::owner_write);
   }
 
   auto create_mock_resources_apk() -> std::filesystem::path {
     auto resources_apk = test_dir_ / "resources.ap_";
-    
+
     // Create a mock ZIP file (APK is a ZIP)
     auto temp_content = test_dir_ / "temp_resources";
     std::filesystem::create_directories(temp_content);
-    
+
     // Create mock AndroidManifest.xml
     auto manifest = temp_content / "AndroidManifest.xml";
     std::ofstream manifest_file(manifest);
@@ -78,8 +78,8 @@ protected:
     manifest_file.close();
 
     // Create ZIP
-    std::string cmd = "cd " + temp_content.string() + " && zip -q " +
-                     resources_apk.string() + " AndroidManifest.xml";
+    std::string cmd = "cd " + temp_content.string() + " && zip -q " + resources_apk.string() +
+                      " AndroidManifest.xml";
     std::system(cmd.c_str());
 
     std::filesystem::remove_all(temp_content);
@@ -101,17 +101,12 @@ protected:
 
 // Test error string conversion
 TEST_F(ApkPackagerTestFixture, ErrorToString) {
-  EXPECT_EQ(to_string(AndroidApkPackagerError::InvalidConfiguration),
-            "Invalid configuration");
-  EXPECT_EQ(to_string(AndroidApkPackagerError::ZipalignNotFound),
-            "zipalign tool not found");
-  EXPECT_EQ(to_string(AndroidApkPackagerError::ApksignerNotFound),
-            "apksigner tool not found");
+  EXPECT_EQ(to_string(AndroidApkPackagerError::InvalidConfiguration), "Invalid configuration");
+  EXPECT_EQ(to_string(AndroidApkPackagerError::ZipalignNotFound), "zipalign tool not found");
+  EXPECT_EQ(to_string(AndroidApkPackagerError::ApksignerNotFound), "apksigner tool not found");
   EXPECT_EQ(to_string(AndroidApkPackagerError::SigningFailed), "APK signing failed");
-  EXPECT_EQ(to_string(AndroidApkPackagerError::VerificationFailed),
-            "APK verification failed");
-  EXPECT_EQ(to_string(AndroidApkPackagerError::PackagingFailed),
-            "APK packaging failed");
+  EXPECT_EQ(to_string(AndroidApkPackagerError::VerificationFailed), "APK verification failed");
+  EXPECT_EQ(to_string(AndroidApkPackagerError::PackagingFailed), "APK packaging failed");
   EXPECT_EQ(to_string(AndroidApkPackagerError::IoError), "I/O error");
   EXPECT_EQ(to_string(AndroidApkPackagerError::UnknownError), "Unknown error");
 }
@@ -119,7 +114,7 @@ TEST_F(ApkPackagerTestFixture, ErrorToString) {
 // Test packager construction
 TEST_F(ApkPackagerTestFixture, PackagerConstruction) {
   AndroidApkPackager packager(mock_toolchain_);
-  
+
   // Check zipalign path is found
   auto zipalign_path = packager.get_zipalign_path();
   EXPECT_TRUE(zipalign_path.has_value());
@@ -197,10 +192,10 @@ TEST_F(ApkPackagerTestFixture, ComputePackagingHash) {
 // Test APK info extraction
 TEST_F(ApkPackagerTestFixture, GetApkInfo) {
   auto apk_path = test_dir_ / "test.apk";
-  
+
   auto result = apk_utils::get_apk_info(apk_path);
   EXPECT_TRUE(result.has_value());
-  
+
   if (result) {
     EXPECT_FALSE(result->package_name.empty());
     EXPECT_FALSE(result->version_name.empty());
@@ -211,7 +206,7 @@ TEST_F(ApkPackagerTestFixture, GetApkInfo) {
 // Test zipalign path detection
 TEST_F(ApkPackagerTestFixture, ZipalignPathDetection) {
   AndroidApkPackager packager(mock_toolchain_);
-  
+
   auto zipalign_path = packager.get_zipalign_path();
   EXPECT_TRUE(zipalign_path.has_value());
 }
@@ -219,7 +214,7 @@ TEST_F(ApkPackagerTestFixture, ZipalignPathDetection) {
 // Test apksigner path detection (may not exist in test environment)
 TEST_F(ApkPackagerTestFixture, ApksignerPathDetection) {
   AndroidApkPackager packager(mock_toolchain_);
-  
+
   auto apksigner_path = packager.get_apksigner_path();
   // apksigner may or may not exist in test environment
   // Just check that the method runs without error
@@ -255,13 +250,8 @@ TEST_F(ApkPackagerTestFixture, ValidateSigningConfig) {
 TEST_F(ApkPackagerTestFixture, PackagingHashDeterminism) {
   ApkPackagingConfig config;
   config.resources_apk = test_dir_ / "resources.ap_";
-  config.dex_files = {
-      test_dir_ / "classes.dex",
-      test_dir_ / "classes2.dex"
-  };
-  config.native_libs = {
-      test_dir_ / "lib" / "armeabi-v7a" / "libfoo.so"
-  };
+  config.dex_files = {test_dir_ / "classes.dex", test_dir_ / "classes2.dex"};
+  config.native_libs = {test_dir_ / "lib" / "armeabi-v7a" / "libfoo.so"};
   config.output_apk = test_dir_ / "output.apk";
 
   // Compute hash multiple times
