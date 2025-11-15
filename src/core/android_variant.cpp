@@ -6,8 +6,9 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <openssl/sha.h>
 #include <sstream>
+
+#include <openssl/sha.h>
 
 namespace horcrux::core {
 
@@ -92,7 +93,7 @@ auto VariantMatrixConfig::validate() const -> tl::expected<void, std::string> {
       }
       if (!found) {
         return tl::unexpected("Flavor '" + flavor.name + "' has invalid dimension '" +
-                             flavor.dimension + "'");
+                              flavor.dimension + "'");
       }
     }
 
@@ -114,8 +115,7 @@ auto VariantMatrixConfig::validate() const -> tl::expected<void, std::string> {
   return {};
 }
 
-auto VariantMatrix::find_variant(const std::string& name) const
-    -> std::optional<BuildVariant> {
+auto VariantMatrix::find_variant(const std::string& name) const -> std::optional<BuildVariant> {
   for (const auto& variant : variants) {
     if (variant.name == name) {
       return variant;
@@ -200,10 +200,9 @@ auto AndroidVariantBuilder::generate_variants(const VariantMatrixConfig& config)
   return variants;
 }
 
-auto AndroidVariantBuilder::merge_variant_config(const VariantMatrixConfig& config,
-                                                 const BuildType& build_type,
-                                                 const std::vector<ProductFlavor>& flavors)
-    -> BuildVariant {
+auto AndroidVariantBuilder::merge_variant_config(
+    const VariantMatrixConfig& config, const BuildType& build_type,
+    const std::vector<ProductFlavor>& flavors) -> BuildVariant {
   BuildVariant variant;
 
   // Generate variant name
@@ -213,7 +212,7 @@ auto AndroidVariantBuilder::merge_variant_config(const VariantMatrixConfig& conf
 
   // Merge application ID
   std::string base_app_id = config.base_application_id;
-  
+
   // Override with flavor application ID if specified
   for (const auto& flavor : flavors) {
     if (flavor.application_id.has_value()) {
@@ -221,7 +220,7 @@ auto AndroidVariantBuilder::merge_variant_config(const VariantMatrixConfig& conf
       break; // Use first flavor that specifies application ID
     }
   }
-  
+
   variant.application_id = merge_application_id(base_app_id, build_type, flavors);
 
   // Merge version code
@@ -265,15 +264,13 @@ auto AndroidVariantBuilder::merge_variant_config(const VariantMatrixConfig& conf
   variant.resource_dirs = merge_resource_dirs(config.base_resource_dirs, build_type, flavors);
 
   // Merge manifest files
-  variant.manifest_files =
-      merge_manifest_files(config.base_manifest_files, build_type, flavors);
+  variant.manifest_files = merge_manifest_files(config.base_manifest_files, build_type, flavors);
 
   return variant;
 }
 
-auto AndroidVariantBuilder::generate_variant_name(const BuildType& build_type,
-                                                  const std::vector<ProductFlavor>& flavors)
-    -> std::string {
+auto AndroidVariantBuilder::generate_variant_name(
+    const BuildType& build_type, const std::vector<ProductFlavor>& flavors) -> std::string {
   if (flavors.empty()) {
     return build_type.name;
   }
@@ -291,17 +288,17 @@ auto AndroidVariantBuilder::generate_variant_name(const BuildType& build_type,
   // Capitalize first letter of build type
   std::string build_type_name = build_type.name;
   if (!build_type_name.empty()) {
-    build_type_name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(build_type_name[0])));
+    build_type_name[0] =
+        static_cast<char>(std::toupper(static_cast<unsigned char>(build_type_name[0])));
   }
 
   name += build_type_name;
   return name;
 }
 
-auto AndroidVariantBuilder::merge_application_id(const std::string& base_id,
-                                                 const BuildType& build_type,
-                                                 const std::vector<ProductFlavor>& flavors)
-    -> std::string {
+auto AndroidVariantBuilder::merge_application_id(
+    const std::string& base_id, const BuildType& build_type,
+    const std::vector<ProductFlavor>& flavors) -> std::string {
   std::string result = base_id;
 
   // Add flavor suffixes
@@ -319,10 +316,9 @@ auto AndroidVariantBuilder::merge_application_id(const std::string& base_id,
   return result;
 }
 
-auto AndroidVariantBuilder::merge_version_name(const std::string& base_version,
-                                               const BuildType& build_type,
-                                               const std::vector<ProductFlavor>& flavors)
-    -> std::string {
+auto AndroidVariantBuilder::merge_version_name(
+    const std::string& base_version, const BuildType& build_type,
+    const std::vector<ProductFlavor>& flavors) -> std::string {
   std::string result = base_version;
 
   // Add flavor version if specified
@@ -342,8 +338,7 @@ auto AndroidVariantBuilder::merge_version_name(const std::string& base_version,
 }
 
 auto AndroidVariantBuilder::merge_source_dirs(
-    const std::vector<std::filesystem::path>& base_dirs,
-    const BuildType& build_type,
+    const std::vector<std::filesystem::path>& base_dirs, const BuildType& build_type,
     const std::vector<ProductFlavor>& flavors) -> std::vector<std::filesystem::path> {
   std::vector<std::filesystem::path> result = base_dirs;
 
@@ -359,8 +354,7 @@ auto AndroidVariantBuilder::merge_source_dirs(
 }
 
 auto AndroidVariantBuilder::merge_resource_dirs(
-    const std::vector<std::filesystem::path>& base_dirs,
-    const BuildType& build_type,
+    const std::vector<std::filesystem::path>& base_dirs, const BuildType& build_type,
     const std::vector<ProductFlavor>& flavors) -> std::vector<std::filesystem::path> {
   std::vector<std::filesystem::path> result = base_dirs;
 
@@ -370,15 +364,13 @@ auto AndroidVariantBuilder::merge_resource_dirs(
   }
 
   // Add build type resource directories
-  result.insert(result.end(), build_type.resource_dirs.begin(),
-                build_type.resource_dirs.end());
+  result.insert(result.end(), build_type.resource_dirs.begin(), build_type.resource_dirs.end());
 
   return result;
 }
 
 auto AndroidVariantBuilder::merge_manifest_files(
-    const std::vector<std::filesystem::path>& base_files,
-    const BuildType& build_type,
+    const std::vector<std::filesystem::path>& base_files, const BuildType& build_type,
     const std::vector<ProductFlavor>& flavors) -> std::vector<std::filesystem::path> {
   std::vector<std::filesystem::path> result = base_files;
 
@@ -388,8 +380,7 @@ auto AndroidVariantBuilder::merge_manifest_files(
   }
 
   // Add build type manifest files
-  result.insert(result.end(), build_type.manifest_files.begin(),
-                build_type.manifest_files.end());
+  result.insert(result.end(), build_type.manifest_files.begin(), build_type.manifest_files.end());
 
   return result;
 }

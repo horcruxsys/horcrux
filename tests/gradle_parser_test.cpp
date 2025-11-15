@@ -333,7 +333,7 @@ android {
   auto result = GradleParser::parse_build(build_file);
 
   ASSERT_TRUE(result.has_value());
-  
+
   // Should have 4 variants: freeDebug, freeRelease, proDebug, proRelease
   EXPECT_GE(result->build_variants.size(), 4);
 
@@ -404,7 +404,7 @@ android {
   auto result = GradleParser::parse_build(build_file);
 
   ASSERT_TRUE(result.has_value());
-  
+
   // Should have 8 variants: 2 tiers × 2 stores × 2 build types = 8
   EXPECT_GE(result->build_variants.size(), 8);
 
@@ -456,7 +456,7 @@ android {
   auto result = GradleParser::parse_build(build_file);
 
   ASSERT_TRUE(result.has_value());
-  
+
   // Should have 3 build types
   EXPECT_GE(result->build_variants.size(), 3);
 
@@ -465,9 +465,12 @@ android {
   bool found_staging = false;
 
   for (const auto& variant : result->build_variants) {
-    if (variant.name == "debug") found_debug = true;
-    if (variant.name == "release") found_release = true;
-    if (variant.name == "staging") found_staging = true;
+    if (variant.name == "debug")
+      found_debug = true;
+    if (variant.name == "release")
+      found_release = true;
+    if (variant.name == "staging")
+      found_staging = true;
   }
 
   EXPECT_TRUE(found_debug);
