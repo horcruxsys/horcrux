@@ -184,33 +184,28 @@ See [docs/git-hooks.md](docs/git-hooks.md) for details.
 
 ```bash
 # Check Horcrux version
-horcrux --version
+horcrux-cli --version
 
-# Run basic health check
-horcrux doctor
+# Run help to see available commands
+horcrux-cli help
 ```
 
 ### Quick Start
 
-Create a simple `BUILD` file in your project:
-
-```python
-# BUILD file example
-cc_binary(
-    name = "hello",
-    srcs = ["main.cpp"],
-)
-```
-
-Build and run:
+Try the example projects:
 
 ```bash
-# Build the target
-horcrux build //:hello
+# Build the hello example
+horcrux-cli build //examples/hello:app
 
-# Run the binary
-./bazel-bin/hello
+# Build the simple example
+horcrux-cli build //examples/simple:app
+
+# Rebuild (uses cache - instant!)
+horcrux-cli build //examples/hello:app
 ```
+
+For detailed CLI documentation, see [docs/cli-implementation.md](docs/cli-implementation.md).
 
 ### Troubleshooting
 
@@ -377,7 +372,8 @@ Results are automatically collected and posted on pull requests.
 | Milestone | Description | Status |
 |-----------|-------------|--------|
 | M1 | Create core engine skeleton (BuildEngine) | ✅ |
-| M2 | Implement dependency graph & caching layer | ⏳ |
+| M2 | Implement dependency graph & caching layer | ✅ |
+| M2.5 | CLI interface with build command | ✅ |
 | M3 | Add language adapters (C++, Rust, Python, Java) | ⏳ |
 | M4 | Introduce sandboxing and hermetic builds | ⏳ |
 | M5 | Integrate plugin and registry system | ⏳ |
