@@ -15,6 +15,8 @@
 
 #include <openssl/sha.h>
 
+#include "android_manifest_merger.h"
+
 namespace horcrux::core {
 
 // Error to string conversion
@@ -555,16 +557,29 @@ auto AndroidResourceProcessor::merge_manifests(const ManifestMergeConfig& config
     -> tl::expected<ManifestMergeResult, AndroidResourceError> {
   auto start_time = std::chrono::steady_clock::now();
 
-  // Simple manifest merge: copy main manifest
-  // In production, use proper manifest merger tool
-  std::filesystem::create_directories(config.output_manifest.parent_path());
-  std::filesystem::copy_file(config.main_manifest, config.output_manifest,
-                             std::filesystem::copy_options::overwrite_existing);
+  // Use AndroidManifestMerger for proper manifest merging
+  AndroidManifestMerger merger;
+  
+  AndroidManifestMerger::MergeConfig merge_config;
+  merge_config.main_manifest = config.main_manifest;
+  merge_config.library_manifests = config.library_manifests;
+  merge_config.output_manifest = config.output_manifest;
+  merge_config.verbose = config.verbose;
+  merge_config.strict = false;
+
+  auto merge_result = merger.merge(merge_config);
+  if (!merge_result) {
+    return tl::unexpected(merge_result.error());
+  }
+
+  if (!merge_result->success) {
+    return tl::unexpected(AndroidResourceError::MergingFailed);
+  }
 
   auto end_time = std::chrono::steady_clock::now();
 
   ManifestMergeResult result;
-  result.merged_manifest = config.output_manifest;
+  result.merged_manifest = merge_result->merged_manifest;
   result.merge_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
   // Compute merge hash
