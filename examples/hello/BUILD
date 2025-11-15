@@ -10,7 +10,7 @@ cc_binary(
 # This is a simple cc_binary target that demonstrates basic build functionality
 
 cc_binary(
-    name = "app",
+    name = "hello",
     srcs = ["main.cpp"],
-    deps = [":lib"],
+    visibility = ["//visibility:public"],
 )

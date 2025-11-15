@@ -91,16 +91,15 @@ add_executable(target_parser_test
     target_parser_test.cpp
 )
 
-target_link_libraries(target_parser_test
+target_link_libraries(integration_test
     PRIVATE
-    horcrux_cli
     horcrux_cli
     horcrux_core
     gtest
     gtest_main
 )
 
-target_compile_options(target_parser_test PRIVATE
+target_compile_options(integration_test PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:
         -std=c++23
         -Wall -Wextra
@@ -116,7 +115,7 @@ target_compile_options(target_parser_test PRIVATE
 
 # Register test with CTest
 gtest_discover_tests(target_parser_test)
-gtest_discover_tests(target_parser_test)
+gtest_discover_tests(integration_test)
 
 # Custom target to run all tests
 add_custom_target(run_tests
