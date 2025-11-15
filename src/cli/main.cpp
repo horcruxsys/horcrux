@@ -9,6 +9,7 @@
 
 #include "build_executor.h"
 #include "doctor_command.h"
+#include "import_command.h"
 #include "logger.h"
 
 namespace horcrux::cli {
@@ -23,16 +24,18 @@ void print_version() {
 void print_usage() {
   std::cout << "Usage: horcrux [command] [options]\n\n";
   std::cout << "Commands:\n";
-  std::cout << "  build <target>  Build the specified target (e.g., //examples/hello:app)\n";
-  std::cout << "  doctor <system> Validate toolchain and system configuration\n";
-  std::cout << "  test            Run tests (not yet implemented)\n";
-  std::cout << "  clean           Remove build artifacts (not yet implemented)\n";
-  std::cout << "  query           Query the build graph (not yet implemented)\n";
-  std::cout << "  version         Show version information\n";
-  std::cout << "  help            Show this help message\n\n";
+  std::cout << "  build <target>    Build the specified target (e.g., //examples/hello:app)\n";
+  std::cout << "  import <path>     Import Gradle project and generate horcrux.yaml\n";
+  std::cout << "  doctor <system>   Validate toolchain and system configuration\n";
+  std::cout << "  test              Run tests (not yet implemented)\n";
+  std::cout << "  clean             Remove build artifacts (not yet implemented)\n";
+  std::cout << "  query             Query the build graph (not yet implemented)\n";
+  std::cout << "  version           Show version information\n";
+  std::cout << "  help              Show this help message\n\n";
   std::cout << "Options:\n";
-  std::cout << "  --verbose, -v   Enable verbose logging\n";
-  std::cout << "  --cache-dir=DIR Set cache directory (default: .horcrux-cache)\n";
+  std::cout << "  --verbose, -v     Enable verbose logging\n";
+  std::cout << "  --cache-dir=DIR   Set cache directory (default: .horcrux-cache)\n";
+  std::cout << "  --output=FILE, -o Output file path for import command\n";
 }
 
 auto handle_build_command(int argc, char* argv[], Logger& logger) -> int {
@@ -115,6 +118,10 @@ int main(int argc, char* argv[]) {
 
   if (command == "build") {
     return handle_build_command(argc, argv, global_logger);
+  }
+
+  if (command == "import") {
+    return handle_import_command(argc, argv, global_logger);
   }
 
   if (command == "doctor") {
