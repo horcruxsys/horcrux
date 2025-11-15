@@ -36,8 +36,11 @@ FetchContent_MakeAvailable(tl_expected)
 add_subdirectory(src/core)
 add_subdirectory(src/cli)
 
+# ---- Testing ----
 option(HORCRUX_BUILD_TESTS "Build unit tests" ON)
 if(HORCRUX_BUILD_TESTS)
+    enable_testing()
+    include(CTest)
     add_subdirectory(tests)
 endif()
 

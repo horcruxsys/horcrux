@@ -3,6 +3,7 @@ build/
 build-*/
 out/
 cmake-build-*/
+bazel-bin/
 
 # Compiled object files
 *.o
