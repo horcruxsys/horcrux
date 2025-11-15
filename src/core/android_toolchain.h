@@ -46,6 +46,8 @@ struct AndroidBuildTools {
   std::filesystem::path aapt2_path;
   std::filesystem::path aidl_path;
   std::filesystem::path dx_path;
+  std::filesystem::path d8_path;
+  std::filesystem::path r8_path;
   std::filesystem::path zipalign_path;
 };
 

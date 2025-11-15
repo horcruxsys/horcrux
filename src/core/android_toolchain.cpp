@@ -369,6 +369,8 @@ auto AndroidToolchainDetector::scan_build_tools(const std::filesystem::path& sdk
       bt.aapt2_path = bt.path / ("aapt2" + exe_ext);
       bt.aidl_path = bt.path / ("aidl" + exe_ext);
       bt.dx_path = bt.path / ("dx" + exe_ext);
+      bt.d8_path = bt.path / ("d8" + exe_ext);
+      bt.r8_path = bt.path / ("r8" + exe_ext);
       bt.zipalign_path = bt.path / ("zipalign" + exe_ext);
 
       build_tools.push_back(std::move(bt));
