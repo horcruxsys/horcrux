@@ -88,6 +88,11 @@ add_executable(target_parser_test
     target_parser_test.cpp
 )
 
+# Integration tests
+add_executable(integration_test
+    integration_test.cpp
+)
+
 target_link_libraries(integration_test
     PRIVATE
     horcrux_cli
