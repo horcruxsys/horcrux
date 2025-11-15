@@ -223,6 +223,15 @@ auto AndroidKotlinCompiler::validate_config(const KotlinCompileConfig& config)
     return tl::unexpected(KotlinCompilerError::InvalidClasspath);
   }
 
+  // Validate Compose configuration if enabled
+  if (config.compose_config && config.compose_config->enabled) {
+    auto compose_validation = compose_compiler::validate_compose_config(*config.compose_config);
+    if (!compose_validation) {
+      // Convert Compose validation error to Kotlin compiler error
+      return tl::unexpected(KotlinCompilerError::InvalidConfiguration);
+    }
+  }
+
   return {};
 }
 
@@ -278,6 +287,26 @@ auto AndroidKotlinCompiler::compute_compilation_hash(const KotlinCompileConfig& 
     ss << "ksp:enabled\n";
     for (const auto& opt : config.ksp_config->processor_options) {
       ss << "ksp_option:" << opt << "\n";
+    }
+  }
+
+  // Hash Compose compiler configuration
+  if (config.compose_config && config.compose_config->enabled) {
+    ss << "compose:enabled\n";
+    ss << "compose_version:" << config.compose_config->version << "\n";
+    ss << "compose_kotlin_version:" << config.compose_config->kotlin_version << "\n";
+    ss << "compose_metrics:" << config.compose_config->enable_metrics << "\n";
+    ss << "compose_reports:" << config.compose_config->enable_reports << "\n";
+    ss << "compose_live_literals:" << config.compose_config->enable_live_literals << "\n";
+    ss << "compose_source_info:" << config.compose_config->enable_source_information << "\n";
+    ss << "compose_intrinsic_remember:" << config.compose_config->enable_intrinsic_remember << "\n";
+    
+    if (config.compose_config->stability_config_path) {
+      ss << "compose_stability:" << config.compose_config->stability_config_path->string() << "\n";
+    }
+    
+    for (const auto& opt : config.compose_config->additional_options) {
+      ss << "compose_option:" << opt << "\n";
     }
   }
 
@@ -383,6 +412,12 @@ auto AndroidKotlinCompiler::build_kotlinc_command(const KotlinCompileConfig& con
   for (const auto& opt : config.plugin_options) {
     command.push_back("-P");
     command.push_back(opt);
+  }
+
+  // Add Compose compiler plugin options
+  if (config.compose_config && config.compose_config->enabled) {
+    auto compose_options = compose_compiler::build_compose_plugin_options(*config.compose_config);
+    command.insert(command.end(), compose_options.begin(), compose_options.end());
   }
 
   // Add additional kotlinc options

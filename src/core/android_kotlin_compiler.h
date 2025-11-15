@@ -12,6 +12,7 @@
 
 #include <tl/expected.hpp>
 
+#include "android_compose_compiler.h"
 #include "android_toolchain.h"
 
 namespace horcrux::core {
@@ -95,6 +96,9 @@ struct KotlinCompileConfig {
     std::vector<std::string> processor_options;
   };
   std::optional<KspConfig> ksp_config;
+
+  // Jetpack Compose compiler configuration
+  std::optional<ComposeCompilerConfig> compose_config;
 };
 
 // Kotlin compilation result
