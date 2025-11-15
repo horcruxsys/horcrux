@@ -128,7 +128,8 @@ auto BuildGraph::Builder::build() -> tl::expected<BuildGraph, GraphError> {
   std::unordered_set<Label> visited;
   std::unordered_set<Label> rec_stack;
 
-  for (const auto& [label, _] : nodes_) {
+  for (const auto& it : nodes_) {
+    const auto& label = it.first;
     if (!visited.contains(label)) {
       if (dfs_cycle_check(label, visited, rec_stack)) {
         return tl::unexpected(GraphError::CycleDetected);
@@ -159,7 +160,8 @@ auto BuildGraph::get_all_nodes() const -> std::vector<const BuildNode*> {
   std::vector<const BuildNode*> result;
   result.reserve(nodes_.size());
 
-  for (const auto& [_, node] : nodes_) {
+  for (const auto& it : nodes_) {
+    const auto& node = it.second;
     result.push_back(node.get());
   }
 
@@ -237,7 +239,8 @@ auto BuildGraph::topological_sort() const -> std::vector<Label> {
   std::vector<Label> result;
   std::unordered_set<Label> visited;
 
-  for (const auto& [label, _] : nodes_) {
+  for (const auto& it : nodes_) {
+    const auto& label = it.first;
     if (!visited.contains(label)) {
       topological_sort_dfs(label, visited, result);
     }
@@ -266,7 +269,8 @@ auto BuildGraph::topological_sort_dfs(const Label& node, std::unordered_set<Labe
 
 auto BuildGraph::edge_count() const -> size_t {
   size_t count = 0;
-  for (const auto& [_, edges] : outgoing_edges_) {
+  for (const auto& it : outgoing_edges_) {
+    const auto& edges = it.second;
     count += edges.size();
   }
   return count;
@@ -279,7 +283,8 @@ auto BuildGraph::serialize() const -> tl::expected<std::string, GraphError> {
   oss << "{\n  \"nodes\": [\n";
 
   bool first_node = true;
-  for (const auto& [label, node] : nodes_) {
+  for (const auto& it : nodes_) {
+    const auto& node = it.second;
     if (!first_node) {
       oss << ",\n";
     }
@@ -314,7 +319,8 @@ auto BuildGraph::serialize() const -> tl::expected<std::string, GraphError> {
   oss << "\n  ],\n  \"edges\": [\n";
 
   bool first_edge = true;
-  for (const auto& [_, edges] : outgoing_edges_) {
+  for (const auto& it : outgoing_edges_) {
+    const auto& edges = it.second;
     for (const auto& edge : edges) {
       if (!first_edge) {
         oss << ",\n";
