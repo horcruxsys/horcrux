@@ -249,8 +249,20 @@ The Android toolchain detection system consists of:
 - [ ] Toolchain verification from manifest
 - [ ] Auto-update notifications for outdated components
 
+## NDK Build Support
+
+For information on building native C/C++ libraries for Android using the NDK, see [Android NDK Build Support](android-ndk-build.md).
+
+Key features:
+- Build JNI libraries for all Android ABIs (arm64-v8a, armeabi-v7a, x86, x86_64)
+- CMake toolchain file generation
+- Hermetic and reproducible native builds
+- Per-ABI build caching
+- Full C++17/C++20/C++23 support
+
 ## See Also
 
+- [Android NDK Build Support](android-ndk-build.md)
 - [Coding Standards](coding-standards.md)
 - [CLI Implementation](cli-implementation.md)
 - [Architecture](architecture.md)
