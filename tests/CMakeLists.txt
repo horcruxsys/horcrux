@@ -83,11 +83,6 @@ target_compile_options(local_cache_test PRIVATE
 # Register test with CTest
 gtest_discover_tests(local_cache_test)
 
-# Target parser tests
-add_executable(target_parser_test
-    target_parser_test.cpp
-)
-
 # Integration tests
 add_executable(integration_test
     integration_test.cpp
@@ -95,7 +90,6 @@ add_executable(integration_test
 
 target_link_libraries(integration_test
     PRIVATE
-    horcrux_cli
     horcrux_core
     gtest
     gtest_main
