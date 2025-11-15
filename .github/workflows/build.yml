@@ -43,8 +43,8 @@ jobs:
           if find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) | grep -q .; then
             echo "Running clang-format check..."
             find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) \
-              -not -path "./build/*" -not -path "./third_party/*" -not -path "./_deps/*" | \
-              xargs clang-format --dry-run --Werror
+              -not -path "./build/*" -not -path "./third_party/*" -not -path "./_deps/*" \
+              -print0 | xargs -0 clang-format --dry-run --Werror
           else
             echo "No C++ source files found. Skipping clang-format check."
           fi
@@ -173,7 +173,7 @@ jobs:
         run: |
           if [ -f "build/build.ninja" ] || [ -f "build/Makefile" ]; then
             echo "Building project..."
-            cmake --build build --config ${{ env.BUILD_TYPE }} -j $(nproc)
+            cmake --build build --config ${{ env.BUILD_TYPE }} -j "$(nproc)"
           else
             echo "No build files generated. Skipping build step."
             echo "This is expected for a project without source code yet."
