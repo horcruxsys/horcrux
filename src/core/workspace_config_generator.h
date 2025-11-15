@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include <expected>
 #include <filesystem>
 #include <string>
+
+#include <tl/expected.hpp>
 
 #include "gradle_parser.h"
 
@@ -24,7 +25,7 @@ class WorkspaceConfigGenerator {
 public:
   static auto generate_from_gradle(
       const GradleProject& project, const GradleBuildConfig& build_config,
-      const std::filesystem::path& output_path) -> std::expected<void, ConfigGeneratorError>;
+      const std::filesystem::path& output_path) -> tl::expected<void, ConfigGeneratorError>;
 
 private:
   static auto generate_yaml_content(const GradleProject& project,

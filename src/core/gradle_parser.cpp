@@ -27,10 +27,10 @@ auto to_string(GradleParserError error) -> std::string {
 }
 
 auto GradleParser::parse_groovy_file(const std::filesystem::path& file)
-    -> std::expected<std::string, GradleParserError> {
+    -> tl::expected<std::string, GradleParserError> {
   std::ifstream input(file);
   if (!input.is_open()) {
-    return std::unexpected(GradleParserError::FileNotFound);
+    return tl::unexpected(GradleParserError::FileNotFound);
   }
 
   std::stringstream buffer;
@@ -39,7 +39,7 @@ auto GradleParser::parse_groovy_file(const std::filesystem::path& file)
 }
 
 auto GradleParser::parse_kotlin_dsl_file(const std::filesystem::path& file)
-    -> std::expected<std::string, GradleParserError> {
+    -> tl::expected<std::string, GradleParserError> {
   // Kotlin DSL files are parsed similarly to Groovy for basic extraction
   return parse_groovy_file(file);
 }
@@ -161,14 +161,14 @@ auto GradleParser::extract_build_variants(const std::string& content)
 }
 
 auto GradleParser::parse_settings(const std::filesystem::path& settings_file)
-    -> std::expected<GradleProject, GradleParserError> {
+    -> tl::expected<GradleProject, GradleParserError> {
   if (!std::filesystem::exists(settings_file)) {
-    return std::unexpected(GradleParserError::FileNotFound);
+    return tl::unexpected(GradleParserError::FileNotFound);
   }
 
   auto content_result = parse_groovy_file(settings_file);
   if (!content_result) {
-    return std::unexpected(content_result.error());
+    return tl::unexpected(content_result.error());
   }
 
   const auto& content = *content_result;
@@ -195,16 +195,16 @@ auto GradleParser::parse_settings(const std::filesystem::path& settings_file)
 }
 
 auto GradleParser::parse_build(const std::filesystem::path& build_file)
-    -> std::expected<GradleBuildConfig, GradleParserError> {
+    -> tl::expected<GradleBuildConfig, GradleParserError> {
   if (!std::filesystem::exists(build_file)) {
-    return std::unexpected(GradleParserError::FileNotFound);
+    return tl::unexpected(GradleParserError::FileNotFound);
   }
 
   auto content_result = (build_file.extension() == ".kts") ? parse_kotlin_dsl_file(build_file)
                                                            : parse_groovy_file(build_file);
 
   if (!content_result) {
-    return std::unexpected(content_result.error());
+    return tl::unexpected(content_result.error());
   }
 
   const auto& content = *content_result;
@@ -251,16 +251,16 @@ auto GradleParser::parse_build(const std::filesystem::path& build_file)
 }
 
 auto GradleParser::detect_project_type(const std::filesystem::path& build_file)
-    -> std::expected<std::string, GradleParserError> {
+    -> tl::expected<std::string, GradleParserError> {
   if (!std::filesystem::exists(build_file)) {
-    return std::unexpected(GradleParserError::FileNotFound);
+    return tl::unexpected(GradleParserError::FileNotFound);
   }
 
   auto content_result = (build_file.extension() == ".kts") ? parse_kotlin_dsl_file(build_file)
                                                            : parse_groovy_file(build_file);
 
   if (!content_result) {
-    return std::unexpected(content_result.error());
+    return tl::unexpected(content_result.error());
   }
 
   const auto& content = *content_result;

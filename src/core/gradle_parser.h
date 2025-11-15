@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include <expected>
 #include <filesystem>
 #include <map>
 #include <string>
 #include <vector>
+
+#include <tl/expected.hpp>
 
 namespace horcrux::core {
 
@@ -71,20 +72,20 @@ struct GradleBuildConfig {
 class GradleParser {
 public:
   static auto parse_settings(const std::filesystem::path& settings_file)
-      -> std::expected<GradleProject, GradleParserError>;
+      -> tl::expected<GradleProject, GradleParserError>;
 
   static auto parse_build(const std::filesystem::path& build_file)
-      -> std::expected<GradleBuildConfig, GradleParserError>;
+      -> tl::expected<GradleBuildConfig, GradleParserError>;
 
   static auto detect_project_type(const std::filesystem::path& build_file)
-      -> std::expected<std::string, GradleParserError>;
+      -> tl::expected<std::string, GradleParserError>;
 
 private:
   static auto parse_groovy_file(const std::filesystem::path& file)
-      -> std::expected<std::string, GradleParserError>;
+      -> tl::expected<std::string, GradleParserError>;
 
   static auto parse_kotlin_dsl_file(const std::filesystem::path& file)
-      -> std::expected<std::string, GradleParserError>;
+      -> tl::expected<std::string, GradleParserError>;
 
   static auto extract_string_value(const std::string& content,
                                    const std::string& key) -> std::string;

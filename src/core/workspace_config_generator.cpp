@@ -186,14 +186,14 @@ auto WorkspaceConfigGenerator::generate_yaml_content(
 
 auto WorkspaceConfigGenerator::generate_from_gradle(
     const GradleProject& project, const GradleBuildConfig& build_config,
-    const std::filesystem::path& output_path) -> std::expected<void, ConfigGeneratorError> {
+    const std::filesystem::path& output_path) -> tl::expected<void, ConfigGeneratorError> {
   // Generate YAML content
   std::string yaml_content = generate_yaml_content(project, build_config);
 
   // Write to file
   std::ofstream output(output_path);
   if (!output.is_open()) {
-    return std::unexpected(ConfigGeneratorError::FileWriteError);
+    return tl::unexpected(ConfigGeneratorError::FileWriteError);
   }
 
   output << yaml_content;
