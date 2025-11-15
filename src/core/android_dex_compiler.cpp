@@ -122,7 +122,7 @@ AndroidDexCompiler::AndroidDexCompiler(const AndroidToolchain& toolchain)
     : toolchain_(toolchain) {}
 
 auto AndroidDexCompiler::compile_d8(const D8CompileConfig& config)
-    -> tl::expected<horcrux::core::DexCompileResult, horcrux::core::DexCompilerError> {
+    -> tl::expected<DexCompileResult, DexCompilerError> {
   // Validate configuration
   if (auto validation = validate_d8_config(config); !validation) {
     return tl::unexpected(validation.error());
@@ -137,7 +137,7 @@ auto AndroidDexCompiler::compile_d8(const D8CompileConfig& config)
   if (config.incremental) {
     auto state_file = config.output_dir / ".horcrux_d8_state";
     if (std::filesystem::exists(state_file)) {
-      auto cached_state = horcrux::core::dex_incremental::load_compilation_state(state_file);
+      auto cached_state = dex_incremental::load_compilation_state(state_file);
       if (cached_state) {
         auto current_hash = compute_d8_hash(config);
         if (cached_state->first == current_hash) {
@@ -174,14 +174,14 @@ auto AndroidDexCompiler::compile_d8(const D8CompileConfig& config)
   if (config.incremental) {
     auto state_file = config.output_dir / ".horcrux_d8_state";
     auto config_hash = compute_d8_hash(config);
-    horcrux::core::dex_incremental::save_compilation_state(state_file, config_hash, result.compilation_hash);
+    dex_incremental::save_compilation_state(state_file, config_hash, result.compilation_hash);
   }
 
   return result;
 }
 
 auto AndroidDexCompiler::compile_r8(const R8CompileConfig& config)
-    -> tl::expected<horcrux::core::DexCompileResult, horcrux::core::DexCompilerError> {
+    -> tl::expected<DexCompileResult, DexCompilerError> {
   // Validate configuration
   if (auto validation = validate_r8_config(config); !validation) {
     return tl::unexpected(validation.error());
@@ -196,7 +196,7 @@ auto AndroidDexCompiler::compile_r8(const R8CompileConfig& config)
   if (config.incremental) {
     auto state_file = config.output_dir / ".horcrux_r8_state";
     if (std::filesystem::exists(state_file)) {
-      auto cached_state = horcrux::core::dex_incremental::load_compilation_state(state_file);
+      auto cached_state = dex_incremental::load_compilation_state(state_file);
       if (cached_state) {
         auto current_hash = compute_r8_hash(config);
         if (cached_state->first == current_hash) {
@@ -243,22 +243,22 @@ auto AndroidDexCompiler::compile_r8(const R8CompileConfig& config)
   if (config.incremental) {
     auto state_file = config.output_dir / ".horcrux_r8_state";
     auto config_hash = compute_r8_hash(config);
-    horcrux::core::dex_incremental::save_compilation_state(state_file, config_hash, result.compilation_hash);
+    dex_incremental::save_compilation_state(state_file, config_hash, result.compilation_hash);
   }
 
   return result;
 }
 
 auto AndroidDexCompiler::merge_dex(const DexMergeConfig& config)
-    -> tl::expected<horcrux::core::DexCompileResult, horcrux::core::DexCompilerError> {
+    -> tl::expected<DexCompileResult, DexCompilerError> {
   if (config.dex_files.empty()) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   // Validate all input files exist
   for (const auto& dex_file : config.dex_files) {
     if (!std::filesystem::exists(dex_file)) {
-      return tl::unexpected(horcrux::core::DexCompilerError::InvalidInputFile);
+      return tl::unexpected(DexCompilerError::InvalidInputFile);
     }
   }
 
@@ -266,83 +266,83 @@ auto AndroidDexCompiler::merge_dex(const DexMergeConfig& config)
   bool success = dex_merge::merge_dex_files(config.dex_files, config.output_file, config.min_api);
 
   if (!success) {
-    return tl::unexpected(horcrux::core::DexCompilerError::MergeFailed);
+    return tl::unexpected(DexCompilerError::MergeFailed);
   }
 
   DexCompileResult result;
   result.success = true;
   result.output_dir = config.output_file.parent_path();
   result.dex_files = {config.output_file};
-  result.compilation_hash = horcrux::core::dex_incremental::compute_input_hash(config.dex_files);
+  result.compilation_hash = dex_incremental::compute_input_hash(config.dex_files);
   result.compilation_time = std::chrono::milliseconds(0);
 
   return result;
 }
 
 auto AndroidDexCompiler::validate_d8_config(const D8CompileConfig& config)
-    -> tl::expected<void, horcrux::core::DexCompilerError> {
+    -> tl::expected<void, DexCompilerError> {
   if (config.inputs.empty()) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   // Validate input files exist
   for (const auto& input : config.inputs) {
     if (!std::filesystem::exists(input)) {
-      return tl::unexpected(horcrux::core::DexCompilerError::InvalidInputFile);
+      return tl::unexpected(DexCompilerError::InvalidInputFile);
     }
   }
 
   // Validate output directory
   if (config.output_dir.empty()) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   // Validate min API
   if (config.min_api < 1 || config.min_api > 100) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   // Validate main dex list if specified
   if (config.main_dex_list && !std::filesystem::exists(*config.main_dex_list)) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   return {};
 }
 
 auto AndroidDexCompiler::validate_r8_config(const R8CompileConfig& config)
-    -> tl::expected<void, horcrux::core::DexCompilerError> {
+    -> tl::expected<void, DexCompilerError> {
   if (config.inputs.empty()) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   // Validate input files exist
   for (const auto& input : config.inputs) {
     if (!std::filesystem::exists(input)) {
-      return tl::unexpected(horcrux::core::DexCompilerError::InvalidInputFile);
+      return tl::unexpected(DexCompilerError::InvalidInputFile);
     }
   }
 
   // Validate output directory
   if (config.output_dir.empty()) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   // Validate min API
   if (config.min_api < 1 || config.min_api > 100) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   // Validate ProGuard config files
   for (const auto& pg_file : config.proguard_config.config_files) {
     if (!std::filesystem::exists(pg_file)) {
-      return tl::unexpected(horcrux::core::DexCompilerError::ProguardConfigNotFound);
+      return tl::unexpected(DexCompilerError::ProguardConfigNotFound);
     }
   }
 
   // Validate main dex list if specified
   if (config.main_dex_list && !std::filesystem::exists(*config.main_dex_list)) {
-    return tl::unexpected(horcrux::core::DexCompilerError::InvalidConfiguration);
+    return tl::unexpected(DexCompilerError::InvalidConfiguration);
   }
 
   return {};
@@ -384,8 +384,8 @@ auto AndroidDexCompiler::compute_d8_hash(const D8CompileConfig& config) -> std::
   // Compute SHA-256 hash of the input string
   std::string input_str = hash_input.str();
   std::vector<uint8_t> input_bytes(input_str.begin(), input_str.end());
-  auto hash = horcrux::core::compute_sha256(input_bytes);
-  return horcrux::core::hash_to_string(hash);
+  auto hash = compute_sha256(input_bytes);
+  return hash_to_string(hash);
 }
 
 auto AndroidDexCompiler::compute_r8_hash(const R8CompileConfig& config) -> std::string {
@@ -435,8 +435,8 @@ auto AndroidDexCompiler::compute_r8_hash(const R8CompileConfig& config) -> std::
   // Compute SHA-256 hash of the input string
   std::string input_str = hash_input.str();
   std::vector<uint8_t> input_bytes(input_str.begin(), input_str.end());
-  auto hash = horcrux::core::compute_sha256(input_bytes);
-  return horcrux::core::hash_to_string(hash);
+  auto hash = compute_sha256(input_bytes);
+  return hash_to_string(hash);
 }
 
   // Hash inputs (sorted for determinism)
@@ -498,7 +498,7 @@ auto AndroidDexCompiler::is_r8_compilation_needed(const R8CompileConfig& config,
 auto AndroidDexCompiler::parse_proguard_config(const std::filesystem::path& config_path)
     -> tl::expected<ProguardConfig, DexCompilerError> {
   if (!std::filesystem::exists(config_path)) {
-    return tl::unexpected(horcrux::core::DexCompilerError::ProguardConfigNotFound);
+    return tl::unexpected(DexCompilerError::ProguardConfigNotFound);
   }
 
   ProguardConfig config;
@@ -660,7 +660,7 @@ auto AndroidDexCompiler::build_r8_command(const R8CompileConfig& config) const
 }
 
 auto AndroidDexCompiler::execute_d8(const std::vector<std::string>& command) const
-    -> tl::expected<horcrux::core::DexCompileResult, horcrux::core::DexCompilerError> {
+    -> tl::expected<DexCompileResult, DexCompilerError> {
   // Create output directory
   std::filesystem::create_directories(command[2]); // output_dir is at index 2
 
@@ -673,7 +673,7 @@ auto AndroidDexCompiler::execute_d8(const std::vector<std::string>& command) con
 
   if (cmd_result.exit_code != 0) {
     result.success = false;
-    return tl::unexpected(horcrux::core::DexCompilerError::CompilationFailed);
+    return tl::unexpected(DexCompilerError::CompilationFailed);
   }
 
   result.success = true;
@@ -684,13 +684,13 @@ auto AndroidDexCompiler::execute_d8(const std::vector<std::string>& command) con
   AndroidDexCompiler::sort_dex_files_deterministic(result.dex_files);
 
   // Compute output hash
-  result.compilation_hash = horcrux::core::dex_incremental::compute_input_hash(result.dex_files);
+  result.compilation_hash = dex_incremental::compute_input_hash(result.dex_files);
 
   return result;
 }
 
 auto AndroidDexCompiler::execute_r8(const std::vector<std::string>& command) const
-    -> tl::expected<horcrux::core::DexCompileResult, horcrux::core::DexCompilerError> {
+    -> tl::expected<DexCompileResult, DexCompilerError> {
   // Create output directory
   std::filesystem::create_directories(command[2]); // output_dir is at index 2
 
@@ -703,7 +703,7 @@ auto AndroidDexCompiler::execute_r8(const std::vector<std::string>& command) con
 
   if (cmd_result.exit_code != 0) {
     result.success = false;
-    return tl::unexpected(horcrux::core::DexCompilerError::CompilationFailed);
+    return tl::unexpected(DexCompilerError::CompilationFailed);
   }
 
   result.success = true;
@@ -714,7 +714,7 @@ auto AndroidDexCompiler::execute_r8(const std::vector<std::string>& command) con
   AndroidDexCompiler::sort_dex_files_deterministic(result.dex_files);
 
   // Compute output hash
-  result.compilation_hash = horcrux::core::dex_incremental::compute_input_hash(result.dex_files);
+  result.compilation_hash = dex_incremental::compute_input_hash(result.dex_files);
 
   // Try to extract shrunk classes count from output
   std::regex shrunk_regex(R"(Removed\s+(\d+)\s+classes)");
@@ -747,18 +747,36 @@ auto AndroidDexCompiler::scan_dex_files(const std::filesystem::path& output_dir)
   return dex_files;
 }
 
-auto AndroidDexCompiler::validate_d8_tool() const -> tl::expected<void, horcrux::core::DexCompilerError> {
+auto AndroidDexCompiler::get_d8_path() const -> std::optional<std::filesystem::path> {
+  if (toolchain_.build_tools.empty()) {
+    return std::nullopt;
+  }
+
+  // Use the first (newest) build tools
+  const auto& bt = toolchain_.build_tools[0];
+  if (std::filesystem::exists(bt.d8_path)) {
+    return bt.d8_path;
+  }
+
+  return std::nullopt;
+}
+
+auto AndroidDexCompiler::get_r8_path() const -> std::optional<std::filesystem::path> {
+  if (toolchain_.build_tools.empty()) {
+    return std::nullopt;
+  }
+auto AndroidDexCompiler::validate_d8_tool() const -> tl::expected<void, DexCompilerError> {
   auto d8_path = get_d8_path();
   if (!d8_path || !std::filesystem::exists(*d8_path)) {
-    return tl::unexpected(horcrux::core::DexCompilerError::CompilerNotFound);
+    return tl::unexpected(DexCompilerError::CompilerNotFound);
   }
   return {};
 }
 
-auto AndroidDexCompiler::validate_r8_tool() const -> tl::expected<void, horcrux::core::DexCompilerError> {
+auto AndroidDexCompiler::validate_r8_tool() const -> tl::expected<void, DexCompilerError> {
   auto r8_path = get_r8_path();
   if (!r8_path || !std::filesystem::exists(*r8_path)) {
-    return tl::unexpected(horcrux::core::DexCompilerError::CompilerNotFound);
+    return tl::unexpected(DexCompilerError::CompilerNotFound);
   }
   return {};
 }
@@ -795,24 +813,6 @@ auto AndroidDexCompiler::sort_dex_files_deterministic(std::vector<std::filesyste
             });
 }
 
-auto AndroidDexCompiler::get_d8_path() const -> std::optional<std::filesystem::path> {
-  if (toolchain_.build_tools.empty()) {
-    return std::nullopt;
-  }
-
-  // Use the first (newest) build tools
-  const auto& bt = toolchain_.build_tools[0];
-  if (std::filesystem::exists(bt.d8_path)) {
-    return bt.d8_path;
-  }
-
-  return std::nullopt;
-}
-
-auto AndroidDexCompiler::get_r8_path() const -> std::optional<std::filesystem::path> {
-  if (toolchain_.build_tools.empty()) {
-    return std::nullopt;
-  }
 
   // Use the first (newest) build tools
   const auto& bt = toolchain_.build_tools[0];
@@ -846,18 +846,21 @@ auto split_dex(const std::filesystem::path& input_dex,
   return false; // Not implemented yet
 }
 
-auto needs_multi_dex(const std::filesystem::path& dex_file) -> bool {
-  return horcrux::core::dex_merge::get_method_count(dex_file) > 65536;
-}
-
 auto get_method_count(const std::filesystem::path& dex_file) -> size_t {
   (void)dex_file;
   return 0; // Not implemented yet - would need to parse DEX file
 }
 
+auto needs_multi_dex(const std::filesystem::path& dex_file) -> bool {
+  return get_method_count(dex_file) > 65536;
+}
+
 } // namespace dex_merge
 
 namespace dex_incremental {
+
+using horcrux::core::compute_sha256;
+using horcrux::core::hash_to_string;
 
 auto compute_input_hash(const std::vector<std::filesystem::path>& inputs) -> std::string {
   std::ostringstream hash_input;
@@ -877,8 +880,8 @@ auto compute_input_hash(const std::vector<std::filesystem::path>& inputs) -> std
   // Compute SHA-256 hash of the input string
   std::string input_str = hash_input.str();
   std::vector<uint8_t> input_bytes(input_str.begin(), input_str.end());
-  auto hash = horcrux::core::compute_sha256(input_bytes);
-  return horcrux::core::hash_to_string(hash);
+  auto hash = compute_sha256(input_bytes);
+  return hash_to_string(hash);
 }
 
 auto has_input_changed(const std::vector<std::filesystem::path>& inputs,
@@ -930,14 +933,17 @@ auto load_compilation_state(const std::filesystem::path& state_file)
 
 namespace proguard_utils {
 
+using horcrux::core::ProguardConfig;
+using horcrux::core::DexCompilerError;
+
 auto load_proguard_rules(const std::filesystem::path& config_path)
-    -> tl::expected<std::vector<std::string>, horcrux::core::DexCompilerError> {
+    -> tl::expected<std::vector<std::string>, DexCompilerError> {
   std::vector<std::string> rules;
 
   try {
     std::ifstream file(config_path);
     if (!file.is_open()) {
-      return tl::unexpected(horcrux::core::DexCompilerError::ProguardConfigNotFound);
+      return tl::unexpected(DexCompilerError::ProguardConfigNotFound);
     }
 
     std::string line;
@@ -956,7 +962,7 @@ auto load_proguard_rules(const std::filesystem::path& config_path)
 
     return rules;
   } catch (...) {
-    return tl::unexpected(horcrux::core::DexCompilerError::IoError);
+    return tl::unexpected(DexCompilerError::IoError);
   }
 }
 
@@ -972,7 +978,7 @@ auto generate_default_keep_rules() -> std::vector<std::string> {
   };
 }
 
-auto validate_proguard_config(const horcrux::core::ProguardConfig& config) -> bool {
+auto validate_proguard_config(const ProguardConfig& config) -> bool {
   // Check that all config files exist
   for (const auto& config_file : config.config_files) {
     if (!std::filesystem::exists(config_file)) {
@@ -982,9 +988,9 @@ auto validate_proguard_config(const horcrux::core::ProguardConfig& config) -> bo
   return true;
 }
 
-auto merge_proguard_configs(const std::vector<horcrux::core::ProguardConfig>& configs)
-    -> horcrux::core::ProguardConfig {
-  horcrux::core::ProguardConfig merged;
+auto merge_proguard_configs(const std::vector<ProguardConfig>& configs)
+    -> ProguardConfig {
+  ProguardConfig merged;
 
   for (const auto& config : configs) {
     // Merge config files
@@ -1008,6 +1014,5 @@ auto merge_proguard_configs(const std::vector<horcrux::core::ProguardConfig>& co
   return merged;
 }
 
-} // namespace proguard_utils
 
 } // namespace horcrux::core
