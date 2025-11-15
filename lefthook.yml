@@ -11,11 +11,15 @@ pre-commit:
       run: |
         if command -v clang-format-18 >/dev/null 2>&1; then
           echo "🎨 Formatting C++ code with clang-format-18..."
-          find src tests benchmarks -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | xargs clang-format-18 -i
+          find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) \
+            -not -path "./build/*" -not -path "./third_party/*" -not -path "./_deps/*" \
+            -print0 | xargs -0 clang-format-18 -i
           git add -A
         elif command -v clang-format >/dev/null 2>&1; then
           echo "🎨 Formatting C++ code with clang-format (fallback)..."
-          find src tests benchmarks -name "*.cpp" -o -name "*.h" -o -name "*.hpp" | xargs clang-format -i
+          find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) \
+            -not -path "./build/*" -not -path "./third_party/*" -not -path "./_deps/*" \
+            -print0 | xargs -0 clang-format -i
           git add -A
         else
           echo "⚠️  clang-format not found, install with: sudo apt install clang-format-18"
