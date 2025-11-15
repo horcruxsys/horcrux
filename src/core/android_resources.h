@@ -36,16 +36,16 @@ auto to_string(AndroidResourceError error) -> std::string;
 
 // Resource type enumeration
 enum class ResourceType {
-  Values,      // strings, colors, dimensions, etc. in res/values/
-  Layout,      // XML layouts in res/layout/
-  Drawable,    // Drawables in res/drawable/
-  Mipmap,      // Mipmaps in res/mipmap/
-  Raw,         // Raw resources in res/raw/
-  Xml,         // XML resources in res/xml/
-  Anim,        // Animations in res/anim/
-  Animator,    // Property animations in res/animator/
-  Color,       // Color state lists in res/color/
-  Menu,        // Menu resources in res/menu/
+  Values,   // strings, colors, dimensions, etc. in res/values/
+  Layout,   // XML layouts in res/layout/
+  Drawable, // Drawables in res/drawable/
+  Mipmap,   // Mipmaps in res/mipmap/
+  Raw,      // Raw resources in res/raw/
+  Xml,      // XML resources in res/xml/
+  Anim,     // Animations in res/anim/
+  Animator, // Property animations in res/animator/
+  Color,    // Color state lists in res/color/
+  Menu,     // Menu resources in res/menu/
   Unknown
 };
 
@@ -65,17 +65,17 @@ enum class ResourceDensity {
 
 // Resource configuration qualifiers
 struct ResourceQualifiers {
-  std::optional<std::string> locale;         // e.g., "en", "es"
-  std::optional<std::string> region;         // e.g., "US", "GB"
+  std::optional<std::string> locale; // e.g., "en", "es"
+  std::optional<std::string> region; // e.g., "US", "GB"
   std::optional<ResourceDensity> density;
-  std::optional<std::string> screen_size;    // e.g., "small", "large"
-  std::optional<std::string> orientation;    // e.g., "port", "land"
-  std::optional<std::string> night_mode;     // e.g., "night", "notnight"
-  std::optional<int> api_level;              // e.g., 21, 28, 34
+  std::optional<std::string> screen_size; // e.g., "small", "large"
+  std::optional<std::string> orientation; // e.g., "port", "land"
+  std::optional<std::string> night_mode;  // e.g., "night", "notnight"
+  std::optional<int> api_level;           // e.g., 21, 28, 34
 
   // Parse qualifiers from directory name (e.g., "values-en-rUS-v21")
   static auto parse(const std::string& dir_name) -> ResourceQualifiers;
-  
+
   // Convert to string (for sorting/hashing)
   auto to_string() const -> std::string;
 };
@@ -86,13 +86,13 @@ struct ResourceFile {
   ResourceType type;
   ResourceQualifiers qualifiers;
   std::string content_hash; // SHA-256 hash for incremental builds
-  
+
   // Parse resource type from path
   static auto get_type(const std::filesystem::path& path) -> ResourceType;
-  
+
   // Compute content hash
-  static auto compute_hash(const std::filesystem::path& path) 
-    -> tl::expected<std::string, AndroidResourceError>;
+  static auto compute_hash(const std::filesystem::path& path)
+      -> tl::expected<std::string, AndroidResourceError>;
 };
 
 // Android manifest configuration
@@ -105,19 +105,19 @@ struct AndroidManifest {
   int target_sdk_version;
   std::optional<int> max_sdk_version;
   std::string content_hash;
-  
+
   // Parse manifest XML
   static auto parse(const std::filesystem::path& manifest_path)
-    -> tl::expected<AndroidManifest, AndroidResourceError>;
+      -> tl::expected<AndroidManifest, AndroidResourceError>;
 };
 
 // AAPT2 compile configuration
 struct Aapt2CompileConfig {
   std::vector<ResourceFile> resources;      // Resources to compile
-  std::filesystem::path output_dir;          // Output directory for flat files
-  bool incremental = true;                   // Enable incremental compilation
-  bool verbose = false;                      // Enable verbose output
-  std::vector<std::string> additional_args;  // Additional AAPT2 arguments
+  std::filesystem::path output_dir;         // Output directory for flat files
+  bool incremental = true;                  // Enable incremental compilation
+  bool verbose = false;                     // Enable verbose output
+  std::vector<std::string> additional_args; // Additional AAPT2 arguments
 };
 
 // AAPT2 compile result
@@ -130,32 +130,32 @@ struct Aapt2CompileResult {
 // AAPT2 link configuration
 struct Aapt2LinkConfig {
   std::vector<std::filesystem::path> compiled_resources; // .flat files
-  std::filesystem::path manifest;                         // AndroidManifest.xml
-  std::filesystem::path output_apk;                       // Output APK (resources.ap_)
-  std::optional<std::filesystem::path> r_java_output;     // R.java output dir
-  std::optional<std::filesystem::path> proguard_output;   // ProGuard rules output
-  std::filesystem::path android_jar;                      // android.jar for linking
-  std::vector<std::filesystem::path> overlays;            // Resource overlays
-  std::optional<std::string> package_name;                // Override package name
-  bool auto_add_overlay = false;                          // Auto-add overlay resources
-  bool verbose = false;                                   // Enable verbose output
-  std::vector<std::string> additional_args;               // Additional AAPT2 arguments
+  std::filesystem::path manifest;                        // AndroidManifest.xml
+  std::filesystem::path output_apk;                      // Output APK (resources.ap_)
+  std::optional<std::filesystem::path> r_java_output;    // R.java output dir
+  std::optional<std::filesystem::path> proguard_output;  // ProGuard rules output
+  std::filesystem::path android_jar;                     // android.jar for linking
+  std::vector<std::filesystem::path> overlays;           // Resource overlays
+  std::optional<std::string> package_name;               // Override package name
+  bool auto_add_overlay = false;                         // Auto-add overlay resources
+  bool verbose = false;                                  // Enable verbose output
+  std::vector<std::string> additional_args;              // Additional AAPT2 arguments
 };
 
 // AAPT2 link result
 struct Aapt2LinkResult {
-  std::filesystem::path output_apk;               // resources.ap_
-  std::optional<std::filesystem::path> r_jar;     // R.jar
-  std::optional<std::filesystem::path> proguard;  // proguard.txt
+  std::filesystem::path output_apk;              // resources.ap_
+  std::optional<std::filesystem::path> r_jar;    // R.jar
+  std::optional<std::filesystem::path> proguard; // proguard.txt
   std::chrono::milliseconds link_time;
   std::string link_hash; // Hash of link operation
 };
 
 // Resource merging configuration
 struct ResourceMergeConfig {
-  std::vector<std::filesystem::path> resource_dirs;  // Directories to merge
-  std::filesystem::path output_dir;                  // Merged output directory
-  bool deterministic = true;                         // Deterministic merge (sorted)
+  std::vector<std::filesystem::path> resource_dirs; // Directories to merge
+  std::filesystem::path output_dir;                 // Merged output directory
+  bool deterministic = true;                        // Deterministic merge (sorted)
   bool verbose = false;
 };
 
@@ -169,9 +169,9 @@ struct ResourceMergeResult {
 
 // Manifest merging configuration
 struct ManifestMergeConfig {
-  std::filesystem::path main_manifest;               // Main AndroidManifest.xml
+  std::filesystem::path main_manifest;                  // Main AndroidManifest.xml
   std::vector<std::filesystem::path> library_manifests; // Library manifests
-  std::filesystem::path output_manifest;             // Merged manifest output
+  std::filesystem::path output_manifest;                // Merged manifest output
   bool verbose = false;
 };
 
@@ -184,24 +184,23 @@ struct ManifestMergeResult {
 
 // Main Android resource processor class
 class AndroidResourceProcessor {
- public:
+public:
   explicit AndroidResourceProcessor(const AndroidToolchain& toolchain);
 
   // AAPT2 compile: res/*.xml -> compiled flat files
   auto compile(const Aapt2CompileConfig& config)
-    -> tl::expected<Aapt2CompileResult, AndroidResourceError>;
+      -> tl::expected<Aapt2CompileResult, AndroidResourceError>;
 
   // AAPT2 link: flat files + manifest -> resources.ap_ + R.jar
-  auto link(const Aapt2LinkConfig& config)
-    -> tl::expected<Aapt2LinkResult, AndroidResourceError>;
+  auto link(const Aapt2LinkConfig& config) -> tl::expected<Aapt2LinkResult, AndroidResourceError>;
 
   // Resource merging: multiple resource dirs -> single merged dir
   auto merge_resources(const ResourceMergeConfig& config)
-    -> tl::expected<ResourceMergeResult, AndroidResourceError>;
+      -> tl::expected<ResourceMergeResult, AndroidResourceError>;
 
   // Manifest merging: multiple manifests -> single merged manifest
   auto merge_manifests(const ManifestMergeConfig& config)
-    -> tl::expected<ManifestMergeResult, AndroidResourceError>;
+      -> tl::expected<ManifestMergeResult, AndroidResourceError>;
 
   // Complete pipeline: resources + manifest -> R.jar + resources.ap_
   struct PipelineConfig {
@@ -223,23 +222,23 @@ class AndroidResourceProcessor {
   };
 
   auto process_pipeline(const PipelineConfig& config)
-    -> tl::expected<PipelineResult, AndroidResourceError>;
+      -> tl::expected<PipelineResult, AndroidResourceError>;
 
   // Get AAPT2 path from toolchain
   auto get_aapt2_path() const -> std::optional<std::filesystem::path>;
 
   // Validate configuration
   static auto validate_compile_config(const Aapt2CompileConfig& config)
-    -> tl::expected<void, AndroidResourceError>;
-  
-  static auto validate_link_config(const Aapt2LinkConfig& config)
-    -> tl::expected<void, AndroidResourceError>;
+      -> tl::expected<void, AndroidResourceError>;
+
+  static auto
+  validate_link_config(const Aapt2LinkConfig& config) -> tl::expected<void, AndroidResourceError>;
 
   // Compute compilation hash (Merkle signature)
   static auto compute_compile_hash(const Aapt2CompileConfig& config) -> std::string;
   static auto compute_link_hash(const Aapt2LinkConfig& config) -> std::string;
 
- private:
+private:
   const AndroidToolchain& toolchain_;
   std::optional<std::filesystem::path> aapt2_path_;
 
@@ -248,7 +247,7 @@ class AndroidResourceProcessor {
 
   // Execute AAPT2 command
   auto execute_aapt2(const std::vector<std::string>& args)
-    -> tl::expected<std::string, AndroidResourceError>;
+      -> tl::expected<std::string, AndroidResourceError>;
 };
 
 // Utility namespace for resource operations
@@ -256,19 +255,18 @@ namespace resource_utils {
 
 // Scan directory for Android resources
 auto scan_resources(const std::filesystem::path& res_dir)
-  -> tl::expected<std::vector<ResourceFile>, AndroidResourceError>;
+    -> tl::expected<std::vector<ResourceFile>, AndroidResourceError>;
 
 // Sort resources deterministically
 auto sort_resources(std::vector<ResourceFile>& resources) -> void;
 
 // Filter resources by type
-auto filter_by_type(const std::vector<ResourceFile>& resources, ResourceType type)
-  -> std::vector<ResourceFile>;
+auto filter_by_type(const std::vector<ResourceFile>& resources,
+                    ResourceType type) -> std::vector<ResourceFile>;
 
 // Filter resources by qualifiers
 auto filter_by_qualifiers(const std::vector<ResourceFile>& resources,
-                          const ResourceQualifiers& qualifiers)
-  -> std::vector<ResourceFile>;
+                          const ResourceQualifiers& qualifiers) -> std::vector<ResourceFile>;
 
 // Convert ResourceType to string
 auto resource_type_to_string(ResourceType type) -> std::string;
@@ -292,7 +290,7 @@ auto compute_resource_hash(const std::filesystem::path& resource_path) -> std::s
 
 // Check if resource has changed
 auto has_resource_changed(const std::filesystem::path& resource_path,
-                         const std::string& cached_hash) -> bool;
+                          const std::string& cached_hash) -> bool;
 
 // Compilation state for incremental builds
 struct CompilationState {
@@ -308,7 +306,7 @@ auto save_compilation_state(const std::filesystem::path& state_file,
 
 // Load compilation state
 auto load_compilation_state(const std::filesystem::path& state_file)
-  -> std::optional<CompilationState>;
+    -> std::optional<CompilationState>;
 
 } // namespace resource_incremental
 
