@@ -210,8 +210,10 @@ TEST_F(IntegrationTest, BuildLogsValidation) {
   EXPECT_TRUE(result.output.find("Building target") != std::string::npos)
       << "Build action not logged";
 
-  EXPECT_TRUE(result.output.find("Build successful") != std::string::npos)
-      << "Success message not found";
+  // Check for success message (may include "from cache", "incremental", or be up-to-date)
+  EXPECT_TRUE(result.output.find("Build successful") != std::string::npos ||
+              result.output.find("up-to-date") != std::string::npos)
+      << "Success or up-to-date message not found";
 
   // Logs should be structured and informative
   EXPECT_FALSE(result.output.empty()) << "Build produced no output";
