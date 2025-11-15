@@ -148,22 +148,32 @@ auto GradleParser::extract_build_variants(const std::string& content)
 
   // Extract flavor dimensions (comma-separated or quoted strings)
   std::vector<std::string> dimensions;
-  std::regex dim_re("flavorDimensions\\s+[\"'\\(]([^\"'\\)]+)");
-  std::smatch dim_match;
-  if (std::regex_search(content, dim_match, dim_re)) {
-    std::string dims_str = dim_match[1].str();
-    // Split by comma and clean up
-    std::stringstream ss(dims_str);
-    std::string item;
-    while (std::getline(ss, item, ',')) {
-      // Remove quotes and whitespace
-      item.erase(std::remove(item.begin(), item.end(), '"'), item.end());
-      item.erase(std::remove(item.begin(), item.end(), '\''), item.end());
-      // Trim whitespace
-      size_t start = item.find_first_not_of(" \t\n\r");
-      size_t end = item.find_last_not_of(" \t\n\r");
-      if (start != std::string::npos && end != std::string::npos) {
-        dimensions.push_back(item.substr(start, end - start + 1));
+  
+  // Look for flavorDimensions line
+  size_t dim_start = content.find("flavorDimensions");
+  if (dim_start != std::string::npos) {
+    // Find end of line or closing brace
+    size_t dim_end = content.find('\n', dim_start);
+    if (dim_end == std::string::npos) {
+      dim_end = content.find('}', dim_start);
+    }
+    
+    if (dim_end != std::string::npos) {
+      std::string dim_line = content.substr(dim_start, dim_end - dim_start);
+      
+      // Extract all quoted strings from the line
+      std::regex quoted_re(R"(["']([^"']+)["'])");
+      auto quote_begin = std::sregex_iterator(dim_line.begin(), dim_line.end(), quoted_re);
+      auto quote_end = std::sregex_iterator();
+      
+      for (auto it = quote_begin; it != quote_end; ++it) {
+        std::string dim = (*it)[1].str();
+        // Trim whitespace
+        size_t start = dim.find_first_not_of(" \t\n\r");
+        size_t end = dim.find_last_not_of(" \t\n\r");
+        if (start != std::string::npos && end != std::string::npos) {
+          dimensions.push_back(dim.substr(start, end - start + 1));
+        }
       }
     }
   }
