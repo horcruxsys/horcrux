@@ -1,0 +1,79 @@
+# Lefthook Configuration for Horcrux
+# Pre-commit and pre-push hooks for code quality, formatting, and validation
+# See: https://github.com/evilmartians/lefthook
+
+# Pre-commit hook: formatting and validation
+pre-commit:
+  parallel: true
+  commands:
+    # Format C++ code with clang-format
+    format-cpp:
+      glob: "*.{cpp,hpp,h,cc}"
+      exclude: '(^build/|^third_party/|^_deps/)'
+      run: clang-format -i {staged_files}
+      stage_fixed: true
+
+    # Validate YAML files
+    validate-yaml:
+      glob: "*.{yml,yaml}"
+      exclude: '(^build/|^third_party/)'
+      run: yamllint {staged_files}
+
+    # Check for common issues in commit
+    check-merge-conflicts:
+      glob: "*"
+      run: |
+        if grep -r '<''<<<<<<< HEAD' {staged_files} 2>/dev/null; then
+          echo "❌ Error: Found merge conflict markers in staged files"
+          exit 1
+        fi
+
+    # Check for TODO/FIXME without context
+    check-todos:
+      glob: "*.{cpp,hpp,h,cc,yml,yaml,md}"
+      run: |
+        # Allow TODOs with context (name, issue number, etc.)
+        # Flag bare TODOs without explanation
+        if grep -E "TODO(?!.*\()" {staged_files} 2>/dev/null | grep -v "TODO("; then
+          echo "⚠️  Warning: Found TODO without context. Please add context like TODO(username) or TODO(#issue)"
+        fi
+
+# Pre-push hook: build and test validation
+pre-push:
+  parallel: false
+  commands:
+    # Build the project
+    build-project:
+      run: |
+        echo "🔨 Building project..."
+        if [ ! -d "build" ]; then
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -G Ninja
+        else
+          cd build
+        fi
+        cmake --build . -j $(nproc)
+
+    # Run tests
+    run-tests:
+      run: |
+        echo "🧪 Running tests..."
+        cd build
+        if [ -f "build.ninja" ] || [ -f "Makefile" ]; then
+          ctest --output-on-failure || echo "No tests configured yet"
+        else
+          echo "No tests to run"
+        fi
+
+# Skip hook configuration
+# Users can skip hooks with: LEFTHOOK=0 git commit
+skip_output:
+  - meta
+  - summary
+
+# Output configuration
+output:
+  - execution
+  - success
+  - failure

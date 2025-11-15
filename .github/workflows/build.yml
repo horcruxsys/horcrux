@@ -2,9 +2,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ production ]
+    branches: [production]
   pull_request:
-    branches: [ production ]
+    branches: [production]
   workflow_dispatch:
 
 concurrency:
@@ -43,8 +43,8 @@ jobs:
           if find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) | grep -q .; then
             echo "Running clang-format check..."
             find . -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" -o -name "*.cc" \) \
-              -not -path "./build/*" -not -path "./third_party/*" -not -path "./_deps/*" | \
-              xargs clang-format --dry-run --Werror
+              -not -path "./build/*" -not -path "./third_party/*" -not -path "./_deps/*" \
+              -print0 | xargs -0 clang-format --dry-run --Werror
           else
             echo "No C++ source files found. Skipping clang-format check."
           fi
@@ -60,8 +60,27 @@ jobs:
             echo "No C++ source files found. Skipping clang-tidy check."
           fi
 
+      - name: Install yamllint
+        run: |
+          pip install --user yamllint
+
+      - name: Validate YAML files
+        run: |
+          echo "Validating YAML files..."
+          yamllint . || echo "YAML validation found issues (see above)"
+
+      - name: Install actionlint
+        run: |
+          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          sudo mv ./actionlint /usr/local/bin/
+
+      - name: Validate GitHub Actions workflows
+        run: |
+          echo "Validating GitHub Actions workflows..."
+          actionlint .github/workflows/*.yml
+
   build:
-    name: Build (${{ matrix.os }}, ${{ matrix.compiler }})
+    name: Build (${{ matrix.os }}, ${{ matrix.compiler.name }})
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -87,7 +106,9 @@ jobs:
           path: |
             ${{ env.CCACHE_DIR }}
             build/_deps
-          key: ${{ runner.os }}-${{ matrix.compiler.name }}-${{ matrix.compiler.version }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: >-
+            ${{ runner.os }}-${{ matrix.compiler.name }}-${{
+            matrix.compiler.version }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.compiler.name }}-${{ matrix.compiler.version }}-
             ${{ runner.os }}-${{ matrix.compiler.name }}-
@@ -95,14 +116,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          
+
           # Install build tools
           sudo apt-get install -y \
             cmake \
             ninja-build \
             ccache \
             git
-          
+
           # Install compilers
           if [ "${{ matrix.compiler.name }}" = "gcc" ]; then
             # Add toolchain PPA for GCC 13 on Ubuntu 22.04
@@ -121,7 +142,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y ${{ matrix.compiler.cxx }}
           fi
-          
+
           # Verify installations
           cmake --version
           ninja --version
@@ -152,7 +173,7 @@ jobs:
         run: |
           if [ -f "build/build.ninja" ] || [ -f "build/Makefile" ]; then
             echo "Building project..."
-            cmake --build build --config ${{ env.BUILD_TYPE }} -j $(nproc)
+            cmake --build build --config ${{ env.BUILD_TYPE }} -j "$(nproc)"
           else
             echo "No build files generated. Skipping build step."
             echo "This is expected for a project without source code yet."

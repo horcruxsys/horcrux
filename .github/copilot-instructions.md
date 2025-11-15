@@ -457,6 +457,79 @@ TEST(BuildEngineTest, ExecutesSimpleGraph) {
 - **Avoid command injection** - sanitize shell commands
 - **Use cryptographically secure RNG** for security-sensitive operations
 
+## 🤖 Code Generation and Formatting Requirements
+
+When generating code with GitHub Copilot or AI assistance:
+
+### Always Generate Properly Formatted Code
+
+- **C++ Code**: Must follow `.clang-format` style
+  - Use 2-space indentation (not 4 spaces or tabs)
+  - K&R bracing style (opening brace on same line)
+  - Max line length: 100 characters
+  - Pre-commit hooks will auto-format, but generate correct format to save time
+
+- **YAML Files**: Must pass yamllint validation
+  - 2-space indentation for YAML
+  - No trailing spaces
+  - Line length ≤ 120 characters
+  - Proper bracket spacing: `[item]` not `[ item ]`
+
+- **GitHub Actions Workflows**: Must pass actionlint validation
+  - Valid GitHub Actions syntax
+  - No undefined variables or expressions
+  - Proper shell script syntax (shellcheck compliant)
+  - Use quotes appropriately in shell commands
+  - Avoid placeholders like `YOUR_TOKEN_HERE` - use proper secrets syntax
+
+### Always Include Complete Code
+
+- **Include all necessary imports** - never leave import statements as TODO
+- **No placeholder values** - use proper configuration or secrets
+- **Complete implementations** - avoid stub functions unless explicitly requested
+- **Error handling** - use std::expected, not bare throw statements
+
+### Validation Before Committing
+
+All code must pass these checks (automated via pre-commit hooks):
+
+1. **clang-format** - C++ code formatting
+2. **yamllint** - YAML file validation  
+3. **actionlint** - GitHub Actions workflow validation
+4. **No merge conflict markers** - `<<<<<<<` strings
+5. **Contextual TODOs** - Use `TODO(username)` or `TODO(#issue)` not bare `TODO`
+
+If hooks fail, fix the issues before committing. To check manually:
+
+```bash
+# Format C++ code
+clang-format -i src/**/*.cpp src/**/*.hpp
+
+# Validate YAML
+yamllint .github/workflows/*.yml
+
+# Validate GitHub Actions
+actionlint .github/workflows/*.yml
+```
+
+### Pre-Push Requirements
+
+Before pushing, ensure:
+
+1. **Project builds successfully** - `cmake --build build`
+2. **Tests pass** - `ctest --output-on-failure` (when tests exist)
+3. **No breaking changes** to existing functionality
+
+### Emergency Hook Skip
+
+Only in emergencies, you can skip hooks with:
+
+```bash
+LEFTHOOK=0 git commit -m "emergency fix"
+```
+
+**Never skip hooks for Copilot-generated code** - the validation ensures code quality.
+
 ## 🎯 Summary
 
 When contributing to Horcrux:
@@ -469,6 +542,8 @@ When contributing to Horcrux:
 6. **Document everything** - APIs, rationale, examples
 7. **Use conventional commits** - clear history
 8. **Include benchmarks** for performance-critical changes
-9. **Be a good open source citizen** - respectful, collaborative, thorough
+9. **Generate properly formatted code** - follows style guides, passes linting
+10. **Validate before committing** - pre-commit hooks catch issues early
+11. **Be a good open source citizen** - respectful, collaborative, thorough
 
 Together, we're building the world's fastest, most correct, and most developer-friendly build system. Thank you for contributing to Horcrux! 🚀

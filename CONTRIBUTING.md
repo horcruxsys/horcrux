@@ -126,6 +126,10 @@ Feel free to ask questions in the issue comments or on our discussion forum.
 git clone https://github.com/horcruxsys/horcrux.git
 cd horcrux
 
+# Install git hooks (lefthook)
+# This sets up pre-commit and pre-push hooks for code quality
+lefthook install
+
 # Create build directory
 mkdir build && cd build
 
@@ -142,6 +146,55 @@ ctest --output-on-failure
 sudo cmake --install .
 ```
 
+### Setting Up Git Hooks
+
+Horcrux uses [Lefthook](https://github.com/evilmartians/lefthook) for managing git hooks. The hooks automatically:
+
+**Pre-commit:**
+- Format C++ code with clang-format
+- Validate YAML files with yamllint
+- Validate GitHub Actions with actionlint
+- Check for merge conflicts and TODOs
+
+**Pre-push:**
+- Build the project
+- Run tests
+
+**Installing Lefthook:**
+
+```bash
+# On Linux/macOS
+curl -fsSL https://raw.githubusercontent.com/evilmartians/lefthook/master/install.sh | bash
+
+# Or download from releases
+# https://github.com/evilmartians/lefthook/releases
+
+# After installation, run in the repository root:
+lefthook install
+```
+
+**Testing hooks without committing:**
+
+```bash
+# Test pre-commit hooks
+lefthook run pre-commit
+
+# Test pre-push hooks
+lefthook run pre-push
+```
+
+**Skipping hooks (emergency only):**
+
+```bash
+# Skip all hooks for one commit
+LEFTHOOK=0 git commit -m "emergency fix"
+
+# Skip specific hook
+LEFTHOOK_EXCLUDE=build-project git push
+```
+
+**Note:** Hooks are essential for code quality. Only skip them in true emergencies.
+
 ### Development Tips
 
 - Use **Debug builds** during development for better error messages
@@ -152,10 +205,14 @@ sudo cmake --install .
   ```
 - Use **compiler warnings** as errors to maintain code quality
 - Run tests frequently to catch regressions early
+- **Pre-commit hooks auto-format code** - stage files and commit, hooks will fix formatting
+- If hooks fail, read the error messages and fix the issues before committing
 
 ## Coding Standards
 
 **For comprehensive coding standards, see [docs/coding-standards.md](../docs/coding-standards.md).**
+
+**For AI-assisted development, see [.github/copilot-instructions.md](.github/copilot-instructions.md).**
 
 This document covers all aspects of C++23 development for Horcrux, including:
 - Project-wide C++23 conventions (RAII, smart pointers, const correctness, error handling)

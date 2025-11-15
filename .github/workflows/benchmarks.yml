@@ -2,7 +2,7 @@ name: Benchmarks
 
 on:
   pull_request:
-    branches: [ production ]
+    branches: [production]
     paths:
       - 'src/**'
       - 'benchmarks/**'
@@ -28,7 +28,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,20 +38,20 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          
+
           # Install build tools
           sudo apt-get install -y \
             cmake \
             ninja-build \
             git
-          
+
           # Add toolchain PPA for GCC 13
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
-          
+
           # Install GCC 13
           sudo apt-get install -y g++-13 gcc-13
-          
+
           # Verify installations
           cmake --version
           ninja --version
@@ -71,7 +71,7 @@ jobs:
 
       - name: Build project and benchmarks
         run: |
-          cmake --build build --config ${{ env.BUILD_TYPE }} -j $(nproc)
+          cmake --build build --config ${{ env.BUILD_TYPE }} -j "$(nproc)"
 
       - name: Run dependency resolution benchmarks
         run: |
@@ -80,7 +80,7 @@ jobs:
             --benchmark_format=json \
             --benchmark_out=dependency_resolution_results.json \
             --benchmark_min_time=0.5s
-          
+
           # Also output to console for immediate viewing
           ./bin/dependency_resolution_bench --benchmark_min_time=0.5s
 
@@ -91,7 +91,7 @@ jobs:
             --benchmark_format=json \
             --benchmark_out=cache_lookup_results.json \
             --benchmark_min_time=0.5s
-          
+
           ./bin/cache_lookup_bench --benchmark_min_time=0.5s
 
       - name: Run task scheduling benchmarks
@@ -101,7 +101,7 @@ jobs:
             --benchmark_format=json \
             --benchmark_out=task_scheduling_results.json \
             --benchmark_min_time=0.5s
-          
+
           ./bin/task_scheduling_bench --benchmark_min_time=0.5s
 
       - name: Upload benchmark results
@@ -116,16 +116,17 @@ jobs:
 
       - name: Create benchmark summary
         run: |
-          echo "# 📊 Benchmark Results" > benchmark_summary.md
-          echo "" >> benchmark_summary.md
-          echo "Benchmarks completed successfully! Results are available as artifacts." >> benchmark_summary.md
-          echo "" >> benchmark_summary.md
-          echo "## Quick Summary" >> benchmark_summary.md
-          echo "" >> benchmark_summary.md
-          
+          {
+            echo "# 📊 Benchmark Results"
+            echo ""
+            echo "Benchmarks completed successfully! Results are available as artifacts."
+            echo ""
+            echo "## Quick Summary"
+            echo ""
+            echo "### Dependency Resolution"
+            echo "\`\`\`"
+          } > benchmark_summary.md
           # Extract and display key metrics from JSON results
-          echo "### Dependency Resolution" >> benchmark_summary.md
-          echo "\`\`\`" >> benchmark_summary.md
           cd build
           if [ -f dependency_resolution_results.json ]; then
             python3 -c "
@@ -141,11 +142,14 @@ jobs:
           " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
           fi
           cd ..
-          echo "\`\`\`" >> benchmark_summary.md
-          echo "" >> benchmark_summary.md
           
-          echo "### Cache Lookup" >> benchmark_summary.md
-          echo "\`\`\`" >> benchmark_summary.md
+          {
+            echo "\`\`\`"
+            echo ""
+            echo "### Cache Lookup"
+            echo "\`\`\`"
+          } >> benchmark_summary.md
+          
           cd build
           if [ -f cache_lookup_results.json ]; then
             python3 -c "
@@ -161,11 +165,14 @@ jobs:
           " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
           fi
           cd ..
-          echo "\`\`\`" >> benchmark_summary.md
-          echo "" >> benchmark_summary.md
           
-          echo "### Task Scheduling" >> benchmark_summary.md
-          echo "\`\`\`" >> benchmark_summary.md
+          {
+            echo "\`\`\`"
+            echo ""
+            echo "### Task Scheduling"
+            echo "\`\`\`"
+          } >> benchmark_summary.md
+          
           cd build
           if [ -f task_scheduling_results.json ]; then
             python3 -c "
@@ -181,19 +188,21 @@ jobs:
           " 2>/dev/null || echo "Results in JSON format (run locally for detailed view)"
           fi
           cd ..
-          echo "\`\`\`" >> benchmark_summary.md
-          echo "" >> benchmark_summary.md
-          
-          echo "---" >> benchmark_summary.md
-          echo "" >> benchmark_summary.md
-          echo "📦 **Download full results:** Check the 'Artifacts' section above for detailed JSON files." >> benchmark_summary.md
-          echo "" >> benchmark_summary.md
-          echo "🔍 **To run locally:**" >> benchmark_summary.md
-          echo "\`\`\`bash" >> benchmark_summary.md
-          echo "cmake -B build -DHORCRUX_BUILD_BENCHMARKS=ON" >> benchmark_summary.md
-          echo "cmake --build build" >> benchmark_summary.md
-          echo "cd build && cmake --build . --target run_benchmarks" >> benchmark_summary.md
-          echo "\`\`\`" >> benchmark_summary.md
+
+          {
+            echo "\`\`\`"
+            echo ""
+            echo "---"
+            echo ""
+            echo "📦 **Download full results:** Check 'Artifacts' for detailed JSON."
+            echo ""
+            echo "🔍 **To run locally:**"
+            echo "\`\`\`bash"
+            echo "cmake -B build -DHORCRUX_BUILD_BENCHMARKS=ON"
+            echo "cmake --build build"
+            echo "cd build && cmake --build . --target run_benchmarks"
+            echo "\`\`\`"
+          } >> benchmark_summary.md
 
       - name: Comment PR with benchmark results
         if: github.event_name == 'pull_request'
@@ -203,27 +212,28 @@ jobs:
           script: |
             const fs = require('fs');
             const summary = fs.readFileSync('benchmark_summary.md', 'utf8');
-            
+
             // Ensure we have an issue number
             if (!context.issue || !context.issue.number) {
               console.log('No issue number found, skipping PR comment');
               return;
             }
-            
+
             // Find existing benchmark comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
               comment.body.includes('📊 Benchmark Results')
             );
-            
-            const commentBody = summary + '\n\n---\n*This comment is automatically updated when benchmarks are re-run.*';
-            
+
+            const commentBody = summary +
+              '\n\n---\n*Auto-updated when benchmarks re-run.*';
+
             if (botComment) {
               // Update existing comment
               await github.rest.issues.updateComment({
@@ -251,7 +261,7 @@ jobs:
           cp build/dependency_resolution_results.json benchmark_baselines/
           cp build/cache_lookup_results.json benchmark_baselines/
           cp build/task_scheduling_results.json benchmark_baselines/
-          
+
           # In a real implementation, these would be committed to a separate branch
           # or stored in an external storage system
           echo "Baseline metrics stored for commit ${{ github.sha }}"
