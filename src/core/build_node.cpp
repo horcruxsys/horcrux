@@ -44,7 +44,9 @@ auto BuildNode::compute_hash() const -> Hash {
                                                                 attributes_.end());
   std::sort(sorted_attrs.begin(), sorted_attrs.end());
 
-  for (const auto& [key, value] : sorted_attrs) {
+  for (const auto& attr : sorted_attrs) {
+    const auto& key = attr.first;
+    const auto& value = attr.second;
     oss << "|" << key << "=" << value;
   }
 
