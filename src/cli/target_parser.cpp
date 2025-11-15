@@ -42,7 +42,7 @@ auto parse_target(std::string_view target_spec) -> tl::expected<Target, TargetPa
   if (colon_pos == std::string_view::npos) {
     // No colon - use package name as target name
     package = std::string(target_spec);
-    
+
     // Extract last component as target name
     auto last_slash = package.find_last_of('/');
     if (last_slash != std::string::npos) {

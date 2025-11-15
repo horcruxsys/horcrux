@@ -13,20 +13,15 @@
 namespace horcrux::cli {
 
 /// @brief Error types for target parsing
-enum class TargetParseError {
-  InvalidFormat,
-  EmptyTarget,
-  MissingPackage,
-  MissingTargetName
-};
+enum class TargetParseError { InvalidFormat, EmptyTarget, MissingPackage, MissingTargetName };
 
 /// @brief Convert TargetParseError to human-readable string
 [[nodiscard]] auto to_string(TargetParseError error) -> std::string;
 
 /// @brief Represents a parsed build target
 struct Target {
-  std::string package;      // e.g., "examples/hello"
-  std::string target_name;  // e.g., "app"
+  std::string package;     // e.g., "examples/hello"
+  std::string target_name; // e.g., "app"
 
   /// @brief Get the full label (e.g., "//examples/hello:app")
   [[nodiscard]] auto label() const -> std::string {

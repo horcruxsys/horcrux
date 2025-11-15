@@ -11,7 +11,7 @@ namespace horcrux::cli::test {
 // Test successful parsing
 TEST(TargetParserTest, ParseFullTargetSpec) {
   auto result = parse_target("//examples/hello:app");
-  
+
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->package, "examples/hello");
   EXPECT_EQ(result->target_name, "app");
@@ -20,7 +20,7 @@ TEST(TargetParserTest, ParseFullTargetSpec) {
 
 TEST(TargetParserTest, ParsePackageWithImplicitTarget) {
   auto result = parse_target("//examples/hello");
-  
+
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->package, "examples/hello");
   EXPECT_EQ(result->target_name, "hello");
@@ -29,7 +29,7 @@ TEST(TargetParserTest, ParsePackageWithImplicitTarget) {
 
 TEST(TargetParserTest, ParseSingleLevelPackage) {
   auto result = parse_target("//core:lib");
-  
+
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->package, "core");
   EXPECT_EQ(result->target_name, "lib");
@@ -39,28 +39,28 @@ TEST(TargetParserTest, ParseSingleLevelPackage) {
 // Test error cases
 TEST(TargetParserTest, RejectEmptyTarget) {
   auto result = parse_target("");
-  
+
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), TargetParseError::EmptyTarget);
 }
 
 TEST(TargetParserTest, RejectInvalidFormat) {
-  auto result = parse_target("examples/hello:app");  // Missing "//"
-  
+  auto result = parse_target("examples/hello:app"); // Missing "//"
+
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), TargetParseError::InvalidFormat);
 }
 
 TEST(TargetParserTest, RejectEmptyTargetName) {
   auto result = parse_target("//examples/hello:");
-  
+
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), TargetParseError::MissingTargetName);
 }
 
 TEST(TargetParserTest, RejectEmptyPackage) {
   auto result = parse_target("//:target");
-  
+
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(result.error(), TargetParseError::MissingPackage);
 }
@@ -68,7 +68,7 @@ TEST(TargetParserTest, RejectEmptyPackage) {
 // Test edge cases
 TEST(TargetParserTest, ParseDeepPackagePath) {
   auto result = parse_target("//src/main/cpp/core:library");
-  
+
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->package, "src/main/cpp/core");
   EXPECT_EQ(result->target_name, "library");
@@ -76,7 +76,7 @@ TEST(TargetParserTest, ParseDeepPackagePath) {
 
 TEST(TargetParserTest, ParseTargetWithNumbers) {
   auto result = parse_target("//app2:lib3");
-  
+
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->package, "app2");
   EXPECT_EQ(result->target_name, "lib3");

@@ -28,8 +28,8 @@ auto to_string(BuildError error) -> std::string {
   return "Unknown error";
 }
 
-auto BuildExecutor::create(const std::filesystem::path& cache_dir, Logger& logger)
-    -> tl::expected<BuildExecutor, BuildError> {
+auto BuildExecutor::create(const std::filesystem::path& cache_dir,
+                           Logger& logger) -> tl::expected<BuildExecutor, BuildError> {
   auto cache_result = core::LocalCache::create(cache_dir);
   if (!cache_result) {
     logger.error("Failed to create cache: ", cache_dir.string());
@@ -45,8 +45,8 @@ auto BuildExecutor::create_demo_graph() -> tl::expected<core::BuildGraph, BuildE
   auto builder = core::BuildGraph::builder();
 
   // Add example targets
-  builder.add_node(core::BuildNode("//examples/hello:app", "cc_binary",
-                                   {"examples/hello/main.cpp"}, {"examples/hello/app"}, {}));
+  builder.add_node(core::BuildNode("//examples/hello:app", "cc_binary", {"examples/hello/main.cpp"},
+                                   {"examples/hello/app"}, {}));
 
   builder.add_node(core::BuildNode("//examples/hello:lib", "cc_library",
                                    {"examples/hello/lib.cpp", "examples/hello/lib.h"},
@@ -76,8 +76,8 @@ auto BuildExecutor::check_cache(const Target& target) -> bool {
   return cache_.contains(hash);
 }
 
-auto BuildExecutor::execute_build(const Target& target, const core::BuildGraph& graph)
-    -> tl::expected<void, BuildError> {
+auto BuildExecutor::execute_build(const Target& target,
+                                  const core::BuildGraph& graph) -> tl::expected<void, BuildError> {
   auto label = target.label();
 
   // Check if target exists in graph
@@ -108,7 +108,7 @@ auto BuildExecutor::execute_build(const Target& target, const core::BuildGraph& 
     auto* dep_node = graph.get_node(dep_label);
     if (dep_node) {
       logger_.info("  Building dependency: ", dep_label);
-      
+
       // Simulate build time
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -116,12 +116,12 @@ auto BuildExecutor::execute_build(const Target& target, const core::BuildGraph& 
 
   // Build the target
   logger_.info("  Compiling ", node->inputs().size(), " source file(s)");
-  
+
   // Simulate build
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
   logger_.info("  Linking ", node->outputs().size(), " output(s)");
-  
+
   // Simulate linking
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -132,7 +132,8 @@ auto BuildExecutor::execute_build(const Target& target, const core::BuildGraph& 
 
   // Create a dummy artifact
   std::vector<uint8_t> artifact_data{'b', 'u', 'i', 'l', 't'};
-  core::Artifact artifact{artifact_data, std::chrono::system_clock::now().time_since_epoch().count()};
+  core::Artifact artifact{artifact_data,
+                          std::chrono::system_clock::now().time_since_epoch().count()};
 
   auto store_result = cache_.store(hash, artifact);
   if (!store_result) {

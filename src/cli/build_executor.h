@@ -19,13 +19,7 @@
 namespace horcrux::cli {
 
 /// @brief Error types for build execution
-enum class BuildError {
-  TargetNotFound,
-  GraphError,
-  CacheError,
-  ExecutionError,
-  InvalidTarget
-};
+enum class BuildError { TargetNotFound, GraphError, CacheError, ExecutionError, InvalidTarget };
 
 /// @brief Convert BuildError to human-readable string
 [[nodiscard]] auto to_string(BuildError error) -> std::string;
@@ -36,8 +30,8 @@ public:
   /// @brief Create a BuildExecutor with a cache directory
   /// @param cache_dir Directory for build cache
   /// @param logger Logger instance
-  static auto create(const std::filesystem::path& cache_dir, Logger& logger)
-      -> tl::expected<BuildExecutor, BuildError>;
+  static auto create(const std::filesystem::path& cache_dir,
+                     Logger& logger) -> tl::expected<BuildExecutor, BuildError>;
 
   /// @brief Build a target
   /// @param target_spec Target specification (e.g., "//examples/hello:app")
@@ -46,15 +40,16 @@ public:
 
 private:
   BuildExecutor(core::LocalCache cache, Logger& logger)
-      : cache_(std::move(cache)), logger_(logger) {}
+      : cache_(std::move(cache)), logger_(logger) {
+  }
 
   /// @brief Create a build graph for demonstration
   /// Currently returns a simple example graph
   auto create_demo_graph() -> tl::expected<core::BuildGraph, BuildError>;
 
   /// @brief Execute build for a target
-  auto execute_build(const Target& target, const core::BuildGraph& graph)
-      -> tl::expected<void, BuildError>;
+  auto execute_build(const Target& target,
+                     const core::BuildGraph& graph) -> tl::expected<void, BuildError>;
 
   /// @brief Check if target is in cache
   auto check_cache(const Target& target) -> bool;

@@ -15,7 +15,8 @@ enum class LogLevel { Debug, Info, Warning, Error };
 /// @brief Simple logger for CLI output
 class Logger {
 public:
-  explicit Logger(LogLevel level = LogLevel::Info) : level_(level) {}
+  explicit Logger(LogLevel level = LogLevel::Info) : level_(level) {
+  }
 
   /// @brief Log a debug message
   template <typename... Args>
@@ -54,10 +55,14 @@ public:
   }
 
   /// @brief Set the log level
-  void set_level(LogLevel level) { level_ = level; }
+  void set_level(LogLevel level) {
+    level_ = level;
+  }
 
   /// @brief Get the current log level
-  [[nodiscard]] auto level() const -> LogLevel { return level_; }
+  [[nodiscard]] auto level() const -> LogLevel {
+    return level_;
+  }
 
 private:
   LogLevel level_;
