@@ -53,6 +53,7 @@ Horcrux solves these problems with intelligent dependency tracking, aggressive c
 Horcrux is designed for diverse build scenarios:
 
 ### Large Monorepos
+
 Build massive codebases efficiently with intelligent caching and parallel execution. Perfect for organizations with multi-language monorepos requiring consistent, fast builds.
 
 ```bash
@@ -61,6 +62,7 @@ horcrux build //...
 ```
 
 ### Polyglot Projects
+
 Seamlessly build projects mixing C++, Rust, Python, JavaScript, and more — all with a single build system and unified dependency graph.
 
 ```bash
@@ -69,6 +71,7 @@ horcrux build //frontend:app //backend:server //native:lib
 ```
 
 ### CI/CD Pipelines
+
 Accelerate continuous integration with hermetic builds, distributed caching, and precise incremental rebuilds. Only rebuild what changed, across all machines.
 
 ```bash
@@ -77,6 +80,7 @@ horcrux build --remote-cache=redis://cache-server:6379 //...
 ```
 
 ### Local Development
+
 Fast feedback loops with watch mode, incremental compilation, and instant rebuilds. See changes reflected in seconds, not minutes.
 
 ```bash
@@ -85,6 +89,7 @@ horcrux watch //app:dev-server
 ```
 
 ### Cross-Platform Builds
+
 Build for multiple platforms from a single configuration. Consistent builds across Linux, macOS, and Windows with reproducible outputs.
 
 ```bash
@@ -168,6 +173,7 @@ sudo cmake --install .
 ```
 
 **Note for contributors:** Git hooks using [Lefthook](https://github.com/evilmartians/lefthook) ensure code quality by:
+
 - Auto-formatting C++ code with clang-format before commit
 - Validating YAML files and checking for common issues
 - Building and testing before push
@@ -222,18 +228,21 @@ cmake .. -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_BUILD_TYPE=Release
 If the build fails:
 
 1. **Check compiler version**: Ensure you have C++23 support
+
    ```bash
    g++ --version    # Should be 13.0 or higher
    clang++ --version  # Should be 17.0 or higher
    ```
 
 2. **Clean build directory**: Start fresh
+
    ```bash
    cd .. && rm -rf build && mkdir build && cd build
    cmake .. -DCMAKE_BUILD_TYPE=Release
    ```
 
 3. **Check dependencies**: Ensure CMake and Ninja are up to date
+
    ```bash
    cmake --version  # Should be 3.25 or higher
    ninja --version
@@ -242,16 +251,19 @@ If the build fails:
 #### Platform-Specific Issues
 
 **On macOS:**
+
 - Install Xcode Command Line Tools: `xcode-select --install`
 - Or use Homebrew: `brew install cmake ninja llvm`
 
 **On Ubuntu/Debian:**
+
 ```bash
 sudo apt update
 sudo apt install build-essential cmake ninja-build g++-13
 ```
 
 **On Windows:**
+
 - Install Visual Studio 2022 with C++ workload
 - Or use MSYS2/MinGW-w64 with GCC 13+
 
@@ -311,6 +323,7 @@ horcrux build --platform=linux-arm64 //app:binary
 For comprehensive documentation, visit our [documentation site](https://horcruxsys.github.io/horcrux) (coming soon).
 
 ## 🧩 Design Guidelines
+
 All modules must follow **Zero Undefined Behavior** and **RAII** principles.
 
 Use `constexpr`, `concepts`, and `std::expected` for safety and clarity.
