@@ -5,45 +5,46 @@
 #include "android_sandbox.h"
 
 #include <array>
+#include <chrono>
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include <chrono>
 #include <regex>
+#include <sstream>
 
 // sys/wait.h is needed for WIFEXITED, WEXITSTATUS, etc.
 #include <sys/wait.h>
 
 #ifdef __linux__
+#include <fcntl.h>
 #include <sched.h>
+#include <signal.h>
+#include <unistd.h>
+
 #include <sys/mount.h>
 #include <sys/resource.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <signal.h>
 #endif
 
 namespace horcrux::core {
 
 auto to_string(SandboxError error) -> std::string {
   switch (error) {
-    case SandboxError::InvalidConfiguration:
-      return "Invalid sandbox configuration";
-    case SandboxError::MountFailed:
-      return "Mount operation failed";
-    case SandboxError::NamespaceCreationFailed:
-      return "Failed to create namespace";
-    case SandboxError::ProcessExecutionFailed:
-      return "Process execution failed";
-    case SandboxError::ViolationDetected:
-      return "Sandbox violation detected";
-    case SandboxError::UnsupportedPlatform:
-      return "Sandboxing not supported on this platform";
-    case SandboxError::IoError:
-      return "I/O error";
-    case SandboxError::UnknownError:
-      return "Unknown error";
+  case SandboxError::InvalidConfiguration:
+    return "Invalid sandbox configuration";
+  case SandboxError::MountFailed:
+    return "Mount operation failed";
+  case SandboxError::NamespaceCreationFailed:
+    return "Failed to create namespace";
+  case SandboxError::ProcessExecutionFailed:
+    return "Process execution failed";
+  case SandboxError::ViolationDetected:
+    return "Sandbox violation detected";
+  case SandboxError::UnsupportedPlatform:
+    return "Sandboxing not supported on this platform";
+  case SandboxError::IoError:
+    return "I/O error";
+  case SandboxError::UnknownError:
+    return "Unknown error";
   }
   return "Unknown error";
 }
@@ -102,12 +103,9 @@ auto AndroidSandbox::validate_config(const SandboxConfig& config)
 }
 
 auto AndroidSandbox::create_android_build_sandbox(
-    const std::filesystem::path& executable,
-    const std::vector<std::string>& arguments,
-    const std::filesystem::path& sdk_path,
-    const std::filesystem::path& source_path,
+    const std::filesystem::path& executable, const std::vector<std::string>& arguments,
+    const std::filesystem::path& sdk_path, const std::filesystem::path& source_path,
     const std::filesystem::path& scratch_path) -> SandboxConfig {
-  
   SandboxConfig config;
   config.executable = executable;
   config.arguments = arguments;
@@ -115,20 +113,17 @@ auto AndroidSandbox::create_android_build_sandbox(
 
   // Mount SDK as read-only
   if (std::filesystem::exists(sdk_path)) {
-    config.mounts.push_back(
-        MountRule::read_only(sdk_path, "/sandbox/sdk"));
+    config.mounts.push_back(MountRule::read_only(sdk_path, "/sandbox/sdk"));
   }
 
   // Mount source as read-only
   if (std::filesystem::exists(source_path)) {
-    config.mounts.push_back(
-        MountRule::read_only(source_path, "/sandbox/src"));
+    config.mounts.push_back(MountRule::read_only(source_path, "/sandbox/src"));
   }
 
   // Mount scratch as read-write
   if (std::filesystem::exists(scratch_path)) {
-    config.mounts.push_back(
-        MountRule::read_write(scratch_path, "/sandbox/work"));
+    config.mounts.push_back(MountRule::read_write(scratch_path, "/sandbox/work"));
   }
 
   // Add tmpfs for /tmp
@@ -150,7 +145,6 @@ auto AndroidSandbox::create_android_build_sandbox(
 
 auto AndroidSandbox::execute(const SandboxConfig& config)
     -> tl::expected<SandboxResult, SandboxError> {
-  
   // Validate configuration
   auto validation = validate_config(config);
   if (!validation) {
@@ -168,9 +162,8 @@ auto AndroidSandbox::execute(const SandboxConfig& config)
 #ifdef __linux__
   // Try namespace-based execution, fall back to basic if it fails
   auto result = execute_with_namespaces(config);
-  if (!result.has_value() && 
-      (result.error() == SandboxError::NamespaceCreationFailed ||
-       result.error() == SandboxError::ProcessExecutionFailed)) {
+  if (!result.has_value() && (result.error() == SandboxError::NamespaceCreationFailed ||
+                              result.error() == SandboxError::ProcessExecutionFailed)) {
     // Fall back to basic execution if namespace creation fails (e.g., no privileges)
     if (config.verbose) {
       std::cerr << "Warning: Namespace creation failed, falling back to basic execution\n";
@@ -186,7 +179,6 @@ auto AndroidSandbox::execute(const SandboxConfig& config)
 #ifdef __linux__
 auto AndroidSandbox::execute_with_namespaces(const SandboxConfig& config)
     -> tl::expected<SandboxResult, SandboxError> {
-  
   auto start_time = std::chrono::steady_clock::now();
 
   // Create pipes for stdout and stderr
@@ -198,14 +190,19 @@ auto AndroidSandbox::execute_with_namespaces(const SandboxConfig& config)
 
   // Build clone flags for namespaces
   int clone_flags = SIGCHLD;
-  if (config.enable_mount_namespace) clone_flags |= CLONE_NEWNS;
-  if (config.enable_pid_namespace) clone_flags |= CLONE_NEWPID;
-  if (config.enable_network_isolation) clone_flags |= CLONE_NEWNET;
-  if (config.enable_ipc_namespace) clone_flags |= CLONE_NEWIPC;
-  if (config.enable_uts_namespace) clone_flags |= CLONE_NEWUTS;
+  if (config.enable_mount_namespace)
+    clone_flags |= CLONE_NEWNS;
+  if (config.enable_pid_namespace)
+    clone_flags |= CLONE_NEWPID;
+  if (config.enable_network_isolation)
+    clone_flags |= CLONE_NEWNET;
+  if (config.enable_ipc_namespace)
+    clone_flags |= CLONE_NEWIPC;
+  if (config.enable_uts_namespace)
+    clone_flags |= CLONE_NEWUTS;
 
   pid_t pid = fork();
-  
+
   if (pid == -1) {
     close(stdout_pipe[0]);
     close(stdout_pipe[1]);
@@ -216,7 +213,7 @@ auto AndroidSandbox::execute_with_namespaces(const SandboxConfig& config)
 
   if (pid == 0) {
     // Child process
-    
+
     // Redirect stdout and stderr to pipes
     close(stdout_pipe[0]);
     close(stderr_pipe[0]);
@@ -303,11 +300,11 @@ auto AndroidSandbox::execute_with_namespaces(const SandboxConfig& config)
     std::string result;
     std::array<char, 4096> buffer;
     ssize_t bytes_read;
-    
+
     // Set non-blocking
     int flags = fcntl(fd, F_GETFL, 0);
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-    
+
     while ((bytes_read = read(fd, buffer.data(), buffer.size())) > 0) {
       result.append(buffer.data(), static_cast<size_t>(bytes_read));
     }
@@ -323,7 +320,7 @@ auto AndroidSandbox::execute_with_namespaces(const SandboxConfig& config)
   // Wait for child process
   int status;
   pid_t wait_result = waitpid(pid, &status, 0);
-  
+
   if (config.timeout) {
     alarm(0); // Cancel alarm
   }
@@ -368,7 +365,6 @@ auto AndroidSandbox::execute_with_namespaces(const SandboxConfig& config)
 
 auto AndroidSandbox::execute_basic(const SandboxConfig& config)
     -> tl::expected<SandboxResult, SandboxError> {
-  
   auto start_time = std::chrono::steady_clock::now();
 
   // Build command string
@@ -439,10 +435,9 @@ auto AndroidSandbox::execute_basic(const SandboxConfig& config)
   return result;
 }
 
-auto AndroidSandbox::detect_violations(const std::string& stdout_output,
-                                       const std::string& stderr_output,
-                                       const SandboxConfig& config)
-    -> std::vector<SandboxViolation> {
+auto AndroidSandbox::detect_violations(
+    const std::string& stdout_output, const std::string& stderr_output,
+    const SandboxConfig& config) -> std::vector<SandboxViolation> {
   std::vector<SandboxViolation> violations;
 
   // Combine output for scanning
@@ -450,14 +445,13 @@ auto AndroidSandbox::detect_violations(const std::string& stdout_output,
 
   // Common patterns that indicate violations
   std::vector<std::pair<std::regex, ViolationType>> patterns = {
-    {std::regex(R"(Permission denied|Access denied)", std::regex::icase),
-     ViolationType::UnauthorizedFileAccess},
-    {std::regex(R"(Read-only file system)", std::regex::icase),
-     ViolationType::UnauthorizedWrite},
-    {std::regex(R"(No such file or directory: /(?!sandbox))", std::regex::icase),
-     ViolationType::UnauthorizedFileAccess},
-    {std::regex(R"(Network unreachable|Connection refused)", std::regex::icase),
-     ViolationType::UnauthorizedNetworkAccess},
+      {std::regex(R"(Permission denied|Access denied)", std::regex::icase),
+       ViolationType::UnauthorizedFileAccess},
+      {std::regex(R"(Read-only file system)", std::regex::icase), ViolationType::UnauthorizedWrite},
+      {std::regex(R"(No such file or directory: /(?!sandbox))", std::regex::icase),
+       ViolationType::UnauthorizedFileAccess},
+      {std::regex(R"(Network unreachable|Connection refused)", std::regex::icase),
+       ViolationType::UnauthorizedNetworkAccess},
   };
 
   for (const auto& [pattern, type] : patterns) {
@@ -493,25 +487,25 @@ auto AndroidSandbox::setup_mounts(const std::vector<MountRule>& mounts)
     const char* fstype = nullptr;
 
     switch (mount.type) {
-      case MountType::ReadOnly:
-        flags = MS_BIND | MS_RDONLY;
-        break;
-      case MountType::ReadWrite:
-        flags = MS_BIND;
-        break;
-      case MountType::TmpFs:
-        fstype = "tmpfs";
-        break;
-      case MountType::Proc:
-        fstype = "proc";
-        break;
-      case MountType::DevNull:
-        // Special handling for /dev/null
-        continue;
+    case MountType::ReadOnly:
+      flags = MS_BIND | MS_RDONLY;
+      break;
+    case MountType::ReadWrite:
+      flags = MS_BIND;
+      break;
+    case MountType::TmpFs:
+      fstype = "tmpfs";
+      break;
+    case MountType::Proc:
+      fstype = "proc";
+      break;
+    case MountType::DevNull:
+      // Special handling for /dev/null
+      continue;
     }
 
     const char* source = mount.source.empty() ? nullptr : mount.source.c_str();
-    
+
     if (::mount(source, mount.target.c_str(), fstype, flags, nullptr) == -1) {
       if (!mount.optional) {
         return tl::unexpected(SandboxError::MountFailed);
@@ -537,8 +531,7 @@ auto AndroidSandbox::apply_resource_limits(const SandboxConfig& config)
   return {};
 }
 
-SandboxGuard::SandboxGuard(const std::filesystem::path& scratch_dir)
-    : scratch_dir_(scratch_dir) {
+SandboxGuard::SandboxGuard(const std::filesystem::path& scratch_dir) : scratch_dir_(scratch_dir) {
   // Create scratch directory if it doesn't exist
   if (!std::filesystem::exists(scratch_dir_)) {
     std::filesystem::create_directories(scratch_dir_);

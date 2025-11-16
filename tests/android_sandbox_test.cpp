@@ -2,14 +2,14 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#include "android_sandbox.h"
-
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <thread>
+
+#include <gtest/gtest.h>
+
+#include "android_sandbox.h"
 
 using namespace horcrux::core;
 
@@ -119,7 +119,7 @@ TEST_F(AndroidSandboxTest, ValidateConfigMissingMountSource) {
 TEST_F(AndroidSandboxTest, ValidateConfigOptionalMount) {
   SandboxConfig config;
   config.executable = "/bin/echo";
-  
+
   MountRule optional_mount = MountRule::read_only("/nonexistent", "/sandbox/test");
   optional_mount.optional = true;
   config.mounts.push_back(optional_mount);
@@ -130,8 +130,8 @@ TEST_F(AndroidSandboxTest, ValidateConfigOptionalMount) {
 
 // Test: Create standard Android build sandbox configuration
 TEST_F(AndroidSandboxTest, CreateAndroidBuildSandbox) {
-  auto config = AndroidSandbox::create_android_build_sandbox(
-      "/bin/echo", {"test"}, sdk_dir_, source_dir_, scratch_dir_);
+  auto config = AndroidSandbox::create_android_build_sandbox("/bin/echo", {"test"}, sdk_dir_,
+                                                             source_dir_, scratch_dir_);
 
   EXPECT_EQ(config.executable, "/bin/echo");
   EXPECT_EQ(config.arguments.size(), 1);
@@ -253,7 +253,7 @@ TEST_F(AndroidSandboxTest, ExecutionTimeMeasurement) {
   auto result = sandbox.execute(config);
 
   ASSERT_TRUE(result.has_value());
-  EXPECT_GT(result->execution_time.count(), 50); // At least 50ms
+  EXPECT_GT(result->execution_time.count(), 50);  // At least 50ms
   EXPECT_LT(result->execution_time.count(), 500); // Less than 500ms
 }
 
@@ -326,7 +326,7 @@ TEST_F(AndroidSandboxTest, FailOnViolation) {
 TEST_F(AndroidSandboxTest, SandboxGuardCleanup) {
   auto temp_scratch = test_dir_ / "temp_scratch";
   std::filesystem::create_directories(temp_scratch);
-  
+
   // Create file in scratch
   std::ofstream temp_file(temp_scratch / "test.txt");
   temp_file << "test content\n";
@@ -343,22 +343,15 @@ TEST_F(AndroidSandboxTest, SandboxGuardCleanup) {
 
 // Test: Error to string conversion
 TEST_F(AndroidSandboxTest, ErrorToString) {
-  EXPECT_EQ(to_string(SandboxError::InvalidConfiguration), 
-            "Invalid sandbox configuration");
-  EXPECT_EQ(to_string(SandboxError::MountFailed), 
-            "Mount operation failed");
-  EXPECT_EQ(to_string(SandboxError::NamespaceCreationFailed), 
-            "Failed to create namespace");
-  EXPECT_EQ(to_string(SandboxError::ProcessExecutionFailed), 
-            "Process execution failed");
-  EXPECT_EQ(to_string(SandboxError::ViolationDetected), 
-            "Sandbox violation detected");
-  EXPECT_EQ(to_string(SandboxError::UnsupportedPlatform), 
+  EXPECT_EQ(to_string(SandboxError::InvalidConfiguration), "Invalid sandbox configuration");
+  EXPECT_EQ(to_string(SandboxError::MountFailed), "Mount operation failed");
+  EXPECT_EQ(to_string(SandboxError::NamespaceCreationFailed), "Failed to create namespace");
+  EXPECT_EQ(to_string(SandboxError::ProcessExecutionFailed), "Process execution failed");
+  EXPECT_EQ(to_string(SandboxError::ViolationDetected), "Sandbox violation detected");
+  EXPECT_EQ(to_string(SandboxError::UnsupportedPlatform),
             "Sandboxing not supported on this platform");
-  EXPECT_EQ(to_string(SandboxError::IoError), 
-            "I/O error");
-  EXPECT_EQ(to_string(SandboxError::UnknownError), 
-            "Unknown error");
+  EXPECT_EQ(to_string(SandboxError::IoError), "I/O error");
+  EXPECT_EQ(to_string(SandboxError::UnknownError), "Unknown error");
 }
 
 // Test: Hermetic build - same inputs produce same outputs
@@ -370,9 +363,8 @@ TEST_F(AndroidSandboxTest, HermeticBuildSameOutput) {
   script << "echo 'Build output' > output.txt\n";
   script << "echo 'Done'\n";
   script.close();
-  std::filesystem::permissions(script_path, 
-                               std::filesystem::perms::owner_exec | 
-                               std::filesystem::perms::owner_read);
+  std::filesystem::permissions(script_path, std::filesystem::perms::owner_exec |
+                                                std::filesystem::perms::owner_read);
 
   SandboxConfig config;
   config.executable = script_path;
@@ -417,8 +409,8 @@ TEST_F(AndroidSandboxTest, HermeticBuildSameOutput) {
 
 // Test: Namespace isolation features enabled
 TEST_F(AndroidSandboxTest, NamespaceIsolationFeatures) {
-  auto config = AndroidSandbox::create_android_build_sandbox(
-      "/bin/echo", {"test"}, sdk_dir_, source_dir_, scratch_dir_);
+  auto config = AndroidSandbox::create_android_build_sandbox("/bin/echo", {"test"}, sdk_dir_,
+                                                             source_dir_, scratch_dir_);
 
   EXPECT_TRUE(config.enable_network_isolation);
   EXPECT_TRUE(config.enable_pid_namespace);

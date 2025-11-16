@@ -5,11 +5,11 @@
 #ifndef HORCRUX_CORE_ANDROID_SANDBOX_H_
 #define HORCRUX_CORE_ANDROID_SANDBOX_H_
 
+#include <chrono>
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <vector>
-#include <chrono>
 
 #include <tl/expected.hpp>
 
@@ -32,27 +32,27 @@ auto to_string(SandboxError error) -> std::string;
 
 /// @brief Mount rule type for sandbox filesystem isolation
 enum class MountType {
-  ReadOnly,    // Read-only bind mount
-  ReadWrite,   // Read-write bind mount (scratch directories)
-  TmpFs,       // Temporary filesystem in memory
-  Proc,        // /proc filesystem
-  DevNull      // /dev/null device
+  ReadOnly,  // Read-only bind mount
+  ReadWrite, // Read-write bind mount (scratch directories)
+  TmpFs,     // Temporary filesystem in memory
+  Proc,      // /proc filesystem
+  DevNull    // /dev/null device
 };
 
 /// @brief Individual mount rule for sandbox
 struct MountRule {
-  std::filesystem::path source;      // Source path on host
-  std::filesystem::path target;      // Target path in sandbox
-  MountType type;                    // Mount type
-  bool optional = false;             // If true, don't fail if source doesn't exist
+  std::filesystem::path source; // Source path on host
+  std::filesystem::path target; // Target path in sandbox
+  MountType type;               // Mount type
+  bool optional = false;        // If true, don't fail if source doesn't exist
 
   // Create a read-only mount rule
   static auto read_only(const std::filesystem::path& source,
-                       const std::filesystem::path& target) -> MountRule;
+                        const std::filesystem::path& target) -> MountRule;
 
   // Create a read-write mount rule (for scratch directories)
   static auto read_write(const std::filesystem::path& source,
-                        const std::filesystem::path& target) -> MountRule;
+                         const std::filesystem::path& target) -> MountRule;
 
   // Create a tmpfs mount rule
   static auto tmpfs(const std::filesystem::path& target) -> MountRule;
@@ -91,22 +91,22 @@ struct SandboxConfig {
   std::vector<std::pair<std::string, std::string>> env_vars;
 
   // Isolation features
-  bool enable_network_isolation = true;   // Disable network access
-  bool enable_pid_namespace = true;       // Isolate process tree
-  bool enable_mount_namespace = true;     // Isolate filesystem mounts
-  bool enable_ipc_namespace = true;       // Isolate IPC
-  bool enable_uts_namespace = true;       // Isolate hostname
+  bool enable_network_isolation = true; // Disable network access
+  bool enable_pid_namespace = true;     // Isolate process tree
+  bool enable_mount_namespace = true;   // Isolate filesystem mounts
+  bool enable_ipc_namespace = true;     // Isolate IPC
+  bool enable_uts_namespace = true;     // Isolate hostname
 
   // Violation detection
-  bool detect_violations = true;          // Enable violation detection
-  bool fail_on_violation = true;          // Fail build on violation
+  bool detect_violations = true; // Enable violation detection
+  bool fail_on_violation = true; // Fail build on violation
 
   // Resource limits
   std::optional<size_t> max_memory_bytes;      // Max memory usage
   std::optional<std::chrono::seconds> timeout; // Execution timeout
 
   // Debugging
-  bool verbose = false;                   // Enable verbose output
+  bool verbose = false; // Enable verbose output
 };
 
 /// @brief Sandbox execution result
@@ -127,7 +127,9 @@ struct SandboxResult {
   std::vector<SandboxViolation> violations;
 
   // Success status
-  bool success() const { return exit_code == 0 && violations.empty(); }
+  bool success() const {
+    return exit_code == 0 && violations.empty();
+  }
 };
 
 /// @brief Android Build Sandbox - provides hermetic build execution
@@ -176,8 +178,7 @@ public:
   /// @brief Execute command in sandbox
   /// @param config Sandbox configuration
   /// @return Sandbox result or error
-  auto execute(const SandboxConfig& config)
-      -> tl::expected<SandboxResult, SandboxError>;
+  auto execute(const SandboxConfig& config) -> tl::expected<SandboxResult, SandboxError>;
 
   /// @brief Check if sandboxing is supported on current platform
   /// @return true if sandboxing is supported
@@ -186,8 +187,7 @@ public:
   /// @brief Validate sandbox configuration
   /// @param config Configuration to validate
   /// @return Error if configuration is invalid
-  static auto validate_config(const SandboxConfig& config)
-      -> tl::expected<void, SandboxError>;
+  static auto validate_config(const SandboxConfig& config) -> tl::expected<void, SandboxError>;
 
   /// @brief Create standard Android build sandbox configuration
   /// @param executable Build tool executable
@@ -197,34 +197,27 @@ public:
   /// @param scratch_path Scratch directory (mounted read-write)
   /// @return Configured sandbox
   static auto create_android_build_sandbox(
-      const std::filesystem::path& executable,
-      const std::vector<std::string>& arguments,
-      const std::filesystem::path& sdk_path,
-      const std::filesystem::path& source_path,
+      const std::filesystem::path& executable, const std::vector<std::string>& arguments,
+      const std::filesystem::path& sdk_path, const std::filesystem::path& source_path,
       const std::filesystem::path& scratch_path) -> SandboxConfig;
 
 private:
   /// @brief Execute in sandbox using Linux namespaces
-  auto execute_with_namespaces(const SandboxConfig& config)
-      -> tl::expected<SandboxResult, SandboxError>;
+  auto
+  execute_with_namespaces(const SandboxConfig& config) -> tl::expected<SandboxResult, SandboxError>;
 
   /// @brief Execute in sandbox using basic isolation (fallback)
-  auto execute_basic(const SandboxConfig& config)
-      -> tl::expected<SandboxResult, SandboxError>;
+  auto execute_basic(const SandboxConfig& config) -> tl::expected<SandboxResult, SandboxError>;
 
   /// @brief Setup mount namespace
-  auto setup_mounts(const std::vector<MountRule>& mounts)
-      -> tl::expected<void, SandboxError>;
+  auto setup_mounts(const std::vector<MountRule>& mounts) -> tl::expected<void, SandboxError>;
 
   /// @brief Detect sandbox violations from process output
-  auto detect_violations(const std::string& stdout_output,
-                        const std::string& stderr_output,
-                        const SandboxConfig& config)
-      -> std::vector<SandboxViolation>;
+  auto detect_violations(const std::string& stdout_output, const std::string& stderr_output,
+                         const SandboxConfig& config) -> std::vector<SandboxViolation>;
 
   /// @brief Apply resource limits to process
-  auto apply_resource_limits(const SandboxConfig& config)
-      -> tl::expected<void, SandboxError>;
+  auto apply_resource_limits(const SandboxConfig& config) -> tl::expected<void, SandboxError>;
 };
 
 /// @brief RAII helper for sandbox cleanup

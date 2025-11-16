@@ -14,7 +14,7 @@
 #include <sstream>
 
 #include "android_java_compiler.h" // For classpath helpers
-#include "android_sandbox.h"        // For sandboxed execution
+#include "android_sandbox.h"       // For sandboxed execution
 #include "local_cache.h"           // For SHA-256 hashing
 
 namespace horcrux::core {
@@ -174,7 +174,7 @@ auto AndroidKotlinCompiler::compile(const KotlinCompileConfig& config)
     // Execute directly
     std::tie(exit_code, stdout_str, stderr_str) = execute_command(command);
   }
-  
+
   auto end_time = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
@@ -703,11 +703,9 @@ auto load_compilation_state(const std::filesystem::path& state_file) -> std::opt
 
 } // namespace kotlin_incremental
 
-auto AndroidKotlinCompiler::execute_sandboxed(
-    const std::vector<std::string>& command,
-    const KotlinCompileConfig& config) const
+auto AndroidKotlinCompiler::execute_sandboxed(const std::vector<std::string>& command,
+                                              const KotlinCompileConfig& config) const
     -> tl::expected<SandboxResult, KotlinCompilerError> {
-  
   // Get SDK path for sandbox
   std::filesystem::path sdk_path;
   if (config.sdk_path) {
@@ -731,12 +729,9 @@ auto AndroidKotlinCompiler::execute_sandboxed(
 
   // Create sandbox configuration
   SandboxConfig sandbox_config = AndroidSandbox::create_android_build_sandbox(
-      command[0],  // Executable (kotlinc)
-      std::vector<std::string>(command.begin() + 1, command.end()),  // Arguments
-      sdk_path,
-      source_dir,
-      config.output_dir
-  );
+      command[0],                                                   // Executable (kotlinc)
+      std::vector<std::string>(command.begin() + 1, command.end()), // Arguments
+      sdk_path, source_dir, config.output_dir);
 
   // Disable namespace isolation for compatibility
   sandbox_config.enable_mount_namespace = false;
