@@ -238,6 +238,18 @@ horcrux-cli build //examples/hello:app
 
 For detailed CLI documentation, see [docs/cli-implementation.md](docs/cli-implementation.md).
 
+#### Android Examples
+
+For comprehensive Android development examples, see the separate [horcrux-android-examples](https://github.com/horcruxsys/horcrux-android-examples) repository, which includes:
+
+- **Basic XML App** - Traditional Android app with XML layouts
+- **Jetpack Compose App** - Modern Compose-based Android app
+- **NDK App** - Android app with native C++ code (JNI)
+- **Multi-Flavor App** - Android app with product flavors and build variants
+- **Multi-Module App** - Complex multi-module Android project
+
+These production-ready examples serve as learning resources and integration tests for Horcrux's Android build capabilities. See [docs/android-examples.md](docs/android-examples.md) for details.
+
 ### Troubleshooting
 
 #### Compiler Not Found
