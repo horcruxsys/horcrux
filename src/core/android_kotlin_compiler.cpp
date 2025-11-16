@@ -14,6 +14,7 @@
 #include <sstream>
 
 #include "android_java_compiler.h" // For classpath helpers
+#include "android_sandbox.h"       // For sandboxed execution
 #include "local_cache.h"           // For SHA-256 hashing
 
 namespace horcrux::core {
@@ -154,9 +155,26 @@ auto AndroidKotlinCompiler::compile(const KotlinCompileConfig& config)
   // Build kotlinc command
   auto command = build_kotlinc_command(config);
 
-  // Execute compilation
+  // Execute compilation (sandboxed or direct)
   auto start_time = std::chrono::steady_clock::now();
-  auto [exit_code, stdout_str, stderr_str] = execute_command(command);
+  int exit_code;
+  std::string stdout_str;
+  std::string stderr_str;
+
+  if (config.enable_sandbox) {
+    // Execute in sandbox
+    auto sandbox_result = execute_sandboxed(command, config);
+    if (!sandbox_result) {
+      return tl::unexpected(sandbox_result.error());
+    }
+    exit_code = sandbox_result->exit_code;
+    stdout_str = sandbox_result->stdout_output;
+    stderr_str = sandbox_result->stderr_output;
+  } else {
+    // Execute directly
+    std::tie(exit_code, stdout_str, stderr_str) = execute_command(command);
+  }
+
   auto end_time = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
@@ -684,5 +702,52 @@ auto load_compilation_state(const std::filesystem::path& state_file) -> std::opt
 }
 
 } // namespace kotlin_incremental
+
+auto AndroidKotlinCompiler::execute_sandboxed(const std::vector<std::string>& command,
+                                              const KotlinCompileConfig& config) const
+    -> tl::expected<SandboxResult, KotlinCompilerError> {
+  // Get SDK path for sandbox
+  std::filesystem::path sdk_path;
+  if (config.sdk_path) {
+    sdk_path = *config.sdk_path;
+  } else if (!toolchain_.platforms.empty()) {
+    sdk_path = toolchain_.platforms[0].android_jar_path.parent_path().parent_path();
+  } else {
+    // No SDK path available, fall back to non-sandboxed execution
+    return tl::unexpected(KotlinCompilerError::InvalidConfiguration);
+  }
+
+  // Determine source directory (parent of all sources)
+  std::filesystem::path source_dir;
+  if (!config.kotlin_sources.empty()) {
+    source_dir = config.kotlin_sources[0].path.parent_path();
+  } else if (!config.java_sources.empty()) {
+    source_dir = config.java_sources[0].parent_path();
+  } else {
+    source_dir = std::filesystem::current_path();
+  }
+
+  // Create sandbox configuration
+  SandboxConfig sandbox_config = AndroidSandbox::create_android_build_sandbox(
+      command[0],                                                   // Executable (kotlinc)
+      std::vector<std::string>(command.begin() + 1, command.end()), // Arguments
+      sdk_path, source_dir, config.output_dir);
+
+  // Disable namespace isolation for compatibility
+  sandbox_config.enable_mount_namespace = false;
+  sandbox_config.enable_pid_namespace = false;
+  sandbox_config.enable_network_isolation = false;
+
+  // Execute in sandbox
+  AndroidSandbox sandbox;
+  auto result = sandbox.execute(sandbox_config);
+
+  if (!result) {
+    // Convert sandbox error to Kotlin compiler error
+    return tl::unexpected(KotlinCompilerError::CompilationFailed);
+  }
+
+  return *result;
+}
 
 } // namespace horcrux::core
