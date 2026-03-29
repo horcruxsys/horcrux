@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flavor_name">Paid</string>
+    <string name="features_paid">Features: Ad-free, unlimited storage, premium support</string>
+</resources>

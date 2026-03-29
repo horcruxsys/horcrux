@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Basic XML App</string>
+    <string name="button_detail">Open Detail</string>
+    <string name="detail_message">Hello from the Detail screen!\nBuilt with Horcrux.</string>
+</resources>
