@@ -84,6 +84,19 @@ Unsure where to begin? Look for issues labeled:
 
 Feel free to ask questions in the issue comments or on our discussion forum.
 
+**Contributing to Examples:**
+
+For Android development examples, contribute to the separate [horcrux-android-examples](https://github.com/horcruxsys/horcrux-android-examples) repository:
+
+- Add new Android example applications
+- Improve existing examples with better patterns
+- Add unit and instrumentation tests
+- Improve documentation and migration guides
+- Fix build issues and update dependencies
+- Update to latest Android/Kotlin/Compose versions
+
+See [docs/android-examples.md](docs/android-examples.md) for the complete specification of the Android examples repository.
+
 ### Pull Requests
 
 1. **Fork the repository** and create your branch from `main`:

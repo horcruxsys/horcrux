@@ -2,7 +2,19 @@
 
 This directory contains example projects demonstrating Horcrux build system usage.
 
-## Examples
+## 🤖 Android Examples
+
+For comprehensive, production-ready Android examples, see the separate **[horcrux-android-examples](https://github.com/horcruxsys/horcrux-android-examples)** repository:
+
+- **Basic XML App** - Traditional Android app with XML layouts
+- **Jetpack Compose App** - Modern Compose-based Android app  
+- **NDK App** - Android app with native C++ code (JNI)
+- **Multi-Flavor App** - Android app with product flavors and variants
+- **Multi-Module App** - Complex multi-module Android project
+
+These examples are used in CI for full Android regression testing and serve as migration guides from Gradle to Horcrux. See [docs/android-examples.md](../docs/android-examples.md) for detailed documentation.
+
+## C++ Examples
 
 ### Hello Example
 
