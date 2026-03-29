@@ -17,6 +17,7 @@ It aims to be **10x faster**, **more deterministic**, and **easier to extend** t
 - [Use Cases](#-use-cases)
 - [Goals](#-goals)
 - [Core Architecture](#-core-architecture)
+- [Documentation](#-documentation)
 - [Getting Started](#-getting-started)
 - [Usage](#-usage)
 - [Design Guidelines](#-design-guidelines)
@@ -130,6 +131,14 @@ Horcrux follows a **Hexagonal (Ports & Adapters)** architecture for modularity a
 ```
 
 Each module will live in its own repository (polyrepo structure), versioned and published to the **Horcrux Central Registry**, allowing reuse and independent evolution.
+
+## 📚 Documentation
+
+- [Documentation index](docs/README.md)
+- [Current project status](docs/project-status.md)
+- [Architecture](docs/architecture.md)
+- [CLI implementation](docs/cli-implementation.md)
+- [Android build docs](docs/android-toolchain.md)
 
 ## 🏗️ Getting Started
 
@@ -381,7 +390,7 @@ horcrux build --jobs=8 //...
 horcrux build --platform=linux-arm64 //app:binary
 ```
 
-For comprehensive documentation, visit our [documentation site](https://horcruxsys.github.io/horcrux) (coming soon).
+For comprehensive documentation, see [docs/README.md](docs/README.md).
 
 ## 🧩 Design Guidelines
 
@@ -469,7 +478,7 @@ Contributions should:
 
 - 🐛 **Report bugs** - Found an issue? Let us know!
 - 💡 **Suggest features** - Have ideas? We want to hear them!
-- �� **Improve docs** - Documentation is always appreciated
+- 📝 **Improve docs** - Documentation is always appreciated
 - 🧪 **Write tests** - Help us maintain quality
 - 💻 **Submit code** - Fix bugs or add features
 - 🎨 **Design** - UI/UX improvements welcome
@@ -479,7 +488,7 @@ Contributions should:
 
 Need help or have questions? We're here for you!
 
-- 📖 **Documentation**: [Coming soon] - Comprehensive guides and API docs
+- 📖 **Documentation**: [docs/README.md](docs/README.md) - Comprehensive guides and references
 - 💬 **GitHub Discussions**: [Ask questions and discuss ideas](https://github.com/horcruxsys/horcrux/discussions)
 - 🐛 **Issue Tracker**: [Report bugs and request features](https://github.com/horcruxsys/horcrux/issues)
 - 📧 **Email**: For private matters, contact [maintainers@horcruxsys.org](mailto:maintainers@horcruxsys.org)
@@ -507,4 +516,3 @@ The above copyright notice and this permission notice shall be included in all c
 <p align="center">
   Made with ❤️ by the Horcrux community
 </p>
-# Test change
