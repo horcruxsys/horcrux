@@ -31,7 +31,8 @@ auto to_string(QueryError error) -> std::string {
 namespace {
 
 void print_query_usage() {
-  std::cout << "Usage: horcrux query [--deps|--trans-deps|--rdeps|--topo|--all] <target> [options]\n\n";
+  std::cout
+      << "Usage: horcrux query [--deps|--trans-deps|--rdeps|--topo|--all] <target> [options]\n\n";
   std::cout << "Query build graph metadata for the specified target.\n\n";
   std::cout << "Query types:\n";
   std::cout << "  --deps         Show direct dependencies of <target> (default)\n";
@@ -132,25 +133,10 @@ auto handle_query_command(int argc, char* argv[], Logger& logger) -> int {
     return 1;
   }
 
-  // Build a demo graph (same graph used by the build command)
-  auto graph_builder = core::BuildGraph::builder();
-  graph_builder.add_node(
-      core::BuildNode("//examples/hello:app", "cc_binary", {"examples/hello/main.cpp"},
-                      {"examples/hello/app"}, {}));
-  graph_builder.add_node(
-      core::BuildNode("//examples/hello:lib", "cc_library",
-                      {"examples/hello/lib.cpp", "examples/hello/lib.h"},
-                      {"examples/hello/libhello.a"}, {}));
-  graph_builder.add_node(
-      core::BuildNode("//examples/simple:app", "cc_binary", {"examples/simple/main.cpp"},
-                      {"examples/simple/app"}, {}));
-
-  graph_builder.add_edge(core::BuildEdge("//examples/hello:app", "//examples/hello:lib"));
-
-  auto graph_result = graph_builder.build();
+  // Build the workspace graph (includes C++ and Android example targets)
+  auto graph_result = BuildExecutor::create_workspace_graph();
   if (!graph_result) {
-    logger.error("Failed to build graph: ",
-                 core::to_string(graph_result.error()));
+    logger.error("Failed to build graph: ", to_string(graph_result.error()));
     return 1;
   }
 

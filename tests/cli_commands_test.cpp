@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 
+#include "../src/cli/build_executor.h"
 #include "../src/cli/clean_command.h"
 #include "../src/cli/logger.h"
 #include "../src/cli/query_command.h"
@@ -23,7 +24,8 @@ class FakeArgv {
 public:
   explicit FakeArgv(std::vector<std::string> args) : args_(std::move(args)) {
     for (auto& a : args_) {
-      ptrs_.push_back(const_cast<char*>(a.c_str())); // NOLINT(cppcoreguidelines-pro-type-const-cast)
+      ptrs_.push_back(
+          const_cast<char*>(a.c_str())); // NOLINT(cppcoreguidelines-pro-type-const-cast)
     }
   }
 
@@ -106,25 +108,24 @@ TEST(CleanCommandTest, HelpFlagReturnsZero) {
 
 TEST(CleanCommandTest, DryRunReturnsZero) {
   Logger logger;
-  FakeArgv args({"horcrux", "clean", "--dry-run",
-                  "--output-dir=/tmp/horcrux_test_clean_out",
-                  "--cache-dir=/tmp/horcrux_test_clean_cache"});
+  FakeArgv args({"horcrux", "clean", "--dry-run", "--output-dir=/tmp/horcrux_test_clean_out",
+                 "--cache-dir=/tmp/horcrux_test_clean_cache"});
   int rc = handle_clean_command(args.argc(), args.argv(), logger);
   EXPECT_EQ(rc, 0);
 }
 
 TEST(CleanCommandTest, DryRunWithScopeOutputsReturnsZero) {
   Logger logger;
-  FakeArgv args({"horcrux", "clean", "--outputs", "--dry-run",
-                  "--output-dir=/tmp/horcrux_test_clean_out2"});
+  FakeArgv args(
+      {"horcrux", "clean", "--outputs", "--dry-run", "--output-dir=/tmp/horcrux_test_clean_out2"});
   int rc = handle_clean_command(args.argc(), args.argv(), logger);
   EXPECT_EQ(rc, 0);
 }
 
 TEST(CleanCommandTest, DryRunWithScopeCacheReturnsZero) {
   Logger logger;
-  FakeArgv args({"horcrux", "clean", "--cache", "--dry-run",
-                  "--cache-dir=/tmp/horcrux_test_clean_cache2"});
+  FakeArgv args(
+      {"horcrux", "clean", "--cache", "--dry-run", "--cache-dir=/tmp/horcrux_test_clean_cache2"});
   int rc = handle_clean_command(args.argc(), args.argv(), logger);
   EXPECT_EQ(rc, 0);
 }
@@ -133,8 +134,8 @@ TEST(CleanCommandTest, DefaultScopeIsAll) {
   // Verify both default output_dir and cache_dir are handled in dry-run
   Logger logger;
   FakeArgv args({"horcrux", "clean", "--all", "--dry-run",
-                  "--output-dir=/tmp/horcrux_test_clean_all_out",
-                  "--cache-dir=/tmp/horcrux_test_clean_all_cache"});
+                 "--output-dir=/tmp/horcrux_test_clean_all_out",
+                 "--cache-dir=/tmp/horcrux_test_clean_all_cache"});
   int rc = handle_clean_command(args.argc(), args.argv(), logger);
   EXPECT_EQ(rc, 0);
 }
@@ -149,9 +150,8 @@ TEST(CleanCommandTest, RemovesExistingDirectory) {
   fs::create_directories(tmp_cache);
 
   Logger logger;
-  FakeArgv args({"horcrux", "clean", "--all",
-                  "--output-dir=" + tmp_out.string(),
-                  "--cache-dir=" + tmp_cache.string()});
+  FakeArgv args({"horcrux", "clean", "--all", "--output-dir=" + tmp_out.string(),
+                 "--cache-dir=" + tmp_cache.string()});
   int rc = handle_clean_command(args.argc(), args.argv(), logger);
   EXPECT_EQ(rc, 0);
   EXPECT_FALSE(fs::exists(tmp_out));
@@ -234,6 +234,60 @@ TEST(QueryCommandTest, UnknownTargetReturnsError) {
   FakeArgv args({"horcrux", "query", "--deps", "//does/not:exist"});
   int rc = handle_query_command(args.argc(), args.argv(), logger);
   EXPECT_NE(rc, 0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Android example targets are visible via query
+// ─────────────────────────────────────────────────────────────────────────────
+
+TEST(QueryCommandTest, AndroidTargetDirectDepsReturnsZero) {
+  // ndk-app:app depends on ndk-app:native_lib (a cc_library)
+  Logger logger;
+  FakeArgv args({"horcrux", "query", "--deps", "//examples/android/ndk-app:app"});
+  int rc = handle_query_command(args.argc(), args.argv(), logger);
+  EXPECT_EQ(rc, 0);
+}
+
+TEST(QueryCommandTest, AndroidTargetTransitiveDepsReturnsZero) {
+  Logger logger;
+  FakeArgv args({"horcrux", "query", "--trans-deps", "//examples/android/ndk-app:app"});
+  int rc = handle_query_command(args.argc(), args.argv(), logger);
+  EXPECT_EQ(rc, 0);
+}
+
+TEST(QueryCommandTest, AndroidNativeLibReverseDepsReturnsZero) {
+  // native_lib is depended upon by ndk-app:app
+  Logger logger;
+  FakeArgv args({"horcrux", "query", "--rdeps", "//examples/android/ndk-app:native_lib"});
+  int rc = handle_query_command(args.argc(), args.argv(), logger);
+  EXPECT_EQ(rc, 0);
+}
+
+TEST(QueryCommandTest, BasicXmlAndroidAppQueryReturnsZero) {
+  Logger logger;
+  FakeArgv args({"horcrux", "query", "--deps", "//examples/android/basic-xml-app:app"});
+  int rc = handle_query_command(args.argc(), args.argv(), logger);
+  EXPECT_EQ(rc, 0);
+}
+
+TEST(QueryCommandTest, BuildExecutorWorkspaceGraphIncludesAndroidTargets) {
+  // Verify the workspace graph exposed by BuildExecutor includes Android targets
+  auto graph_result = BuildExecutor::create_workspace_graph();
+  ASSERT_TRUE(graph_result.has_value());
+
+  const auto& graph = *graph_result;
+  EXPECT_NE(graph.get_node("//examples/android/basic-xml-app:app"), nullptr);
+  EXPECT_NE(graph.get_node("//examples/android/ndk-app:app"), nullptr);
+  EXPECT_NE(graph.get_node("//examples/android/ndk-app:native_lib"), nullptr);
+  EXPECT_NE(graph.get_node("//examples/android/compose-app:app"), nullptr);
+  EXPECT_NE(graph.get_node("//examples/android/multi-flavor-app:app"), nullptr);
+  EXPECT_NE(graph.get_node("//examples/android/multi-module-app:app"), nullptr);
+
+  // ndk-app:app must depend on ndk-app:native_lib
+  auto deps = graph.get_dependencies("//examples/android/ndk-app:app");
+  ASSERT_TRUE(deps.has_value());
+  EXPECT_EQ(deps->size(), 1u);
+  EXPECT_EQ((*deps)[0], "//examples/android/ndk-app:native_lib");
 }
 
 } // namespace horcrux::cli::test

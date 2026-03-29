@@ -38,13 +38,19 @@ public:
   /// @return Empty expected on success, or error
   auto build(std::string_view target_spec) -> tl::expected<void, BuildError>;
 
+  /// @brief Create a workspace build graph containing all known example targets
+  ///
+  /// Includes C++ examples (cc_library, cc_binary) and Android examples
+  /// (android_binary, cc_library for JNI). In a real implementation this
+  /// would be populated by parsing BUILD files in the workspace.
+  static auto create_workspace_graph() -> tl::expected<core::BuildGraph, BuildError>;
+
 private:
   BuildExecutor(core::LocalCache cache, Logger& logger)
       : cache_(std::move(cache)), logger_(logger) {
   }
 
-  /// @brief Create a build graph for demonstration
-  /// Currently returns a simple example graph
+  /// @brief Internal alias for create_workspace_graph() (kept for backward compat)
   auto create_demo_graph() -> tl::expected<core::BuildGraph, BuildError>;
 
   /// @brief Execute build for a target
