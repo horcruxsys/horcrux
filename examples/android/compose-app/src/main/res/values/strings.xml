@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Compose App</string>
+    <string name="home_description">A modern Android app built with Jetpack Compose and Horcrux.</string>
+    <string name="button_detail">Open Detail</string>
+    <string name="detail_title">Detail Screen</string>
+    <string name="detail_description">This screen was navigated to using Compose Navigation.</string>
+    <string name="button_back">Go Back</string>
+</resources>

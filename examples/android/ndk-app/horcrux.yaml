@@ -1,0 +1,40 @@
+workspace:
+  name: ndk-app
+  version: "1.0.0"
+  type: android-app
+
+android:
+  compileSdk: 34
+  minSdk: 21
+  targetSdk: 34
+  applicationId: com.example.ndk
+  versionCode: 1
+  versionName: "1.0"
+
+ndk:
+  version: "26.0.0"
+  abiFilters:
+    - arm64-v8a
+    - armeabi-v7a
+    - x86_64
+  cppStandard: c++17
+  apiLevel: 21
+
+sourceSets:
+  main:
+    java:
+      - src/main/java
+    kotlin:
+      - src/main/java
+    resources:
+      - src/main/res
+    manifest: src/main/AndroidManifest.xml
+    cpp:
+      - src/main/cpp
+
+dependencies:
+  implementation:
+    - androidx.appcompat:appcompat:1.6.1
+    - androidx.constraintlayout:constraintlayout:2.1.4
+  testImplementation:
+    - junit:junit:4.13.2

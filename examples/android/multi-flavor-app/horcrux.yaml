@@ -1,0 +1,68 @@
+workspace:
+  name: multi-flavor-app
+  version: "1.0.0"
+  type: android-app
+
+android:
+  compileSdk: 34
+  minSdk: 21
+  targetSdk: 34
+  applicationId: com.example.flavor
+  versionCode: 1
+  versionName: "1.0"
+
+  flavorDimensions:
+    - tier
+
+  productFlavors:
+    free:
+      dimension: tier
+      applicationIdSuffix: .free
+      versionNameSuffix: -free
+      resValue:
+        string:
+          flavor_name: "Free"
+    paid:
+      dimension: tier
+      applicationIdSuffix: .paid
+      versionNameSuffix: -paid
+      versionCode: 100
+      resValue:
+        string:
+          flavor_name: "Paid"
+
+  buildTypes:
+    debug:
+      debuggable: true
+      applicationIdSuffix: .debug
+    release:
+      minifyEnabled: true
+      shrinkResources: true
+      proguardFiles:
+        - proguard-rules.pro
+
+sourceSets:
+  main:
+    java:
+      - src/main/java
+    resources:
+      - src/main/res
+    manifest: src/main/AndroidManifest.xml
+  free:
+    java:
+      - src/free/java
+    resources:
+      - src/free/res
+  paid:
+    java:
+      - src/paid/java
+    resources:
+      - src/paid/res
+
+dependencies:
+  implementation:
+    - androidx.appcompat:appcompat:1.6.1
+    - androidx.constraintlayout:constraintlayout:2.1.4
+    - com.google.android.material:material:1.11.0
+  testImplementation:
+    - junit:junit:4.13.2

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Flavor App</string>
+    <string name="flavor_greeting">Welcome to %s edition!</string>
+    <string name="features_base">Features: Core functionality</string>
+</resources>

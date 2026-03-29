@@ -1,0 +1,30 @@
+workspace:
+  name: multi-module-app
+  version: "1.0.0"
+  type: android-app
+
+android:
+  compileSdk: 34
+  minSdk: 21
+  targetSdk: 34
+
+modules:
+  - path: app
+    type: android-app
+    applicationId: com.example.multimodule
+    versionCode: 1
+    versionName: "1.0"
+  - path: libraries/network
+    type: android-library
+  - path: libraries/utils
+    type: android-library
+  - path: features/home
+    type: android-library
+
+dependencies:
+  global:
+    implementation:
+      - androidx.core:core-ktx:1.12.0
+      - androidx.appcompat:appcompat:1.6.1
+    testImplementation:
+      - junit:junit:4.13.2
