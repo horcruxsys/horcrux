@@ -8,9 +8,12 @@
 #include <string_view>
 
 #include "build_executor.h"
+#include "clean_command.h"
 #include "doctor_command.h"
 #include "import_command.h"
 #include "logger.h"
+#include "query_command.h"
+#include "test_command.h"
 
 namespace horcrux::cli {
 
@@ -25,17 +28,18 @@ void print_usage() {
   std::cout << "Usage: horcrux [command] [options]\n\n";
   std::cout << "Commands:\n";
   std::cout << "  build <target>    Build the specified target (e.g., //examples/hello:app)\n";
+  std::cout << "  test <target>...  Execute tests for the specified target(s)\n";
+  std::cout << "  clean             Remove build outputs and/or local cache artifacts\n";
+  std::cout << "  query <target>    Query build graph metadata (deps, rdeps, topo order)\n";
   std::cout << "  import <path>     Import Gradle project and generate horcrux.yaml\n";
   std::cout << "  doctor <system>   Validate toolchain and system configuration\n";
-  std::cout << "  test              Run tests (not yet implemented)\n";
-  std::cout << "  clean             Remove build artifacts (not yet implemented)\n";
-  std::cout << "  query             Query the build graph (not yet implemented)\n";
   std::cout << "  version           Show version information\n";
   std::cout << "  help              Show this help message\n\n";
   std::cout << "Options:\n";
   std::cout << "  --verbose, -v     Enable verbose logging\n";
   std::cout << "  --cache-dir=DIR   Set cache directory (default: .horcrux-cache)\n";
-  std::cout << "  --output=FILE, -o Output file path for import command\n";
+  std::cout << "  --output=FILE, -o Output file path for import command\n\n";
+  std::cout << "Run 'horcrux <command> --help' for detailed usage of each command.\n";
 }
 
 auto handle_build_command(int argc, char* argv[], Logger& logger) -> int {
@@ -126,6 +130,18 @@ int main(int argc, char* argv[]) {
 
   if (command == "doctor") {
     return handle_doctor_command(argc, argv, global_logger);
+  }
+
+  if (command == "test") {
+    return handle_test_command(argc, argv, global_logger);
+  }
+
+  if (command == "clean") {
+    return handle_clean_command(argc, argv, global_logger);
+  }
+
+  if (command == "query") {
+    return handle_query_command(argc, argv, global_logger);
   }
 
   // Unknown command

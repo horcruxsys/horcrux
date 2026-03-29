@@ -7,6 +7,9 @@ add_library(horcrux_cli STATIC
     build_executor.cpp
     doctor_command.cpp
     import_command.cpp
+    test_command.cpp
+    clean_command.cpp
+    query_command.cpp
 )
 
 # Set library properties
