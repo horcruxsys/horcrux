@@ -94,6 +94,49 @@ auto BuildExecutor::create_workspace_graph() -> tl::expected<core::BuildGraph, B
                                    {"multi-module-app.apk"},
                                    {{"min_sdk_version", "21"}, {"target_sdk_version", "34"}}));
 
+  // ── Rust examples ─────────────────────────────────────────────────────
+  builder.add_node(core::BuildNode("//examples/rust:greet", "rust_library",
+                                   {"examples/rust/src/greet.rs"}, {"examples/rust/libgreet.rlib"},
+                                   {{"edition", "2021"}}));
+  builder.add_node(core::BuildNode("//examples/rust:hello", "rust_binary",
+                                   {"examples/rust/src/main.rs"}, {"examples/rust/hello"},
+                                   {{"edition", "2021"}}));
+  builder.add_node(core::BuildNode("//examples/rust:greet_test", "rust_test",
+                                   {"examples/rust/src/greet_test.rs"}, {}, {{"edition", "2021"}}));
+
+  // Rust deps
+  builder.add_edge(core::BuildEdge("//examples/rust:hello", "//examples/rust:greet"));
+  builder.add_edge(core::BuildEdge("//examples/rust:greet_test", "//examples/rust:greet"));
+
+  // ── Python examples ────────────────────────────────────────────────────
+  builder.add_node(core::BuildNode("//examples/python:greet", "py_library",
+                                   {"examples/python/src/greet.py"}, {}, {}));
+  builder.add_node(core::BuildNode("//examples/python:hello", "py_binary",
+                                   {"examples/python/src/main.py"}, {},
+                                   {{"main", "examples/python/src/main.py"}}));
+  builder.add_node(core::BuildNode("//examples/python:greet_test", "py_test",
+                                   {"examples/python/src/greet_test.py"}, {},
+                                   {{"main", "examples/python/src/greet_test.py"}}));
+
+  // Python deps
+  builder.add_edge(core::BuildEdge("//examples/python:hello", "//examples/python:greet"));
+  builder.add_edge(core::BuildEdge("//examples/python:greet_test", "//examples/python:greet"));
+
+  // ── Java examples (non-Android) ────────────────────────────────────────
+  builder.add_node(core::BuildNode("//examples/java:greeter", "java_library",
+                                   {"examples/java/src/com/example/Greeter.java"},
+                                   {"examples/java/greeter.jar"}, {}));
+  builder.add_node(core::BuildNode(
+      "//examples/java:hello", "java_binary", {"examples/java/src/com/example/Main.java"},
+      {"examples/java/hello.jar"}, {{"main_class", "com.example.Main"}}));
+  builder.add_node(core::BuildNode("//examples/java:greeter_test", "java_test",
+                                   {"examples/java/src/com/example/GreeterTest.java"}, {},
+                                   {{"main_class", "com.example.GreeterTest"}}));
+
+  // Java deps
+  builder.add_edge(core::BuildEdge("//examples/java:hello", "//examples/java:greeter"));
+  builder.add_edge(core::BuildEdge("//examples/java:greeter_test", "//examples/java:greeter"));
+
   auto graph_result = builder.build();
   if (!graph_result) {
     return tl::unexpected(BuildError::GraphError);
