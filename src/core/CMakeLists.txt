@@ -22,6 +22,9 @@ add_library(horcrux_core STATIC
     android_variant.cpp
     gradle_parser.cpp
     workspace_config_generator.cpp
+    adapter.cpp
+    adapter_registry.cpp
+    cpp_adapter.cpp
 )
 
 # Set library properties

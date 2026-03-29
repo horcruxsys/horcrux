@@ -39,31 +39,70 @@ auto BuildExecutor::create(const std::filesystem::path& cache_dir,
   return BuildExecutor{std::move(*cache_result), logger};
 }
 
-auto BuildExecutor::create_demo_graph() -> tl::expected<core::BuildGraph, BuildError> {
-  // Create a demonstration build graph
-  // In a real implementation, this would parse BUILD files
+auto BuildExecutor::create_workspace_graph() -> tl::expected<core::BuildGraph, BuildError> {
+  // Create a workspace build graph representing all known example targets.
+  // In a real implementation this would be populated by parsing BUILD files.
   auto builder = core::BuildGraph::builder();
 
-  // Add example targets
+  // ── C++ examples ────────────────────────────────────────────────────────
   builder.add_node(core::BuildNode("//examples/hello:app", "cc_binary", {"examples/hello/main.cpp"},
                                    {"examples/hello/app"}, {}));
-
   builder.add_node(core::BuildNode("//examples/hello:lib", "cc_library",
                                    {"examples/hello/lib.cpp", "examples/hello/lib.h"},
                                    {"examples/hello/libhello.a"}, {}));
-
   builder.add_node(core::BuildNode("//examples/simple:app", "cc_binary",
                                    {"examples/simple/main.cpp"}, {"examples/simple/app"}, {}));
 
-  // Add dependencies
+  // C++ dep: hello:app → hello:lib
   builder.add_edge(core::BuildEdge("//examples/hello:app", "//examples/hello:lib"));
+
+  // ── Android examples ────────────────────────────────────────────────────
+  // basic-xml-app
+  builder.add_node(core::BuildNode(
+      "//examples/android/basic-xml-app:app", "android_binary",
+      {"src/main/java", "src/main/AndroidManifest.xml", "src/main/res"}, {"basic-xml-app.apk"},
+      {{"min_sdk_version", "21"}, {"target_sdk_version", "34"}}));
+
+  // compose-app
+  builder.add_node(core::BuildNode("//examples/android/compose-app:app", "android_binary",
+                                   {"src/main/java", "src/main/AndroidManifest.xml"},
+                                   {"compose-app.apk"},
+                                   {{"min_sdk_version", "24"}, {"target_sdk_version", "34"}}));
+
+  // multi-flavor-app
+  builder.add_node(core::BuildNode(
+      "//examples/android/multi-flavor-app:app", "android_binary",
+      {"src/main/java", "src/main/AndroidManifest.xml", "src/main/res"}, {"multi-flavor-app.apk"},
+      {{"min_sdk_version", "21"}, {"target_sdk_version", "34"}}));
+
+  // ndk-app – native cc_library + android_binary
+  builder.add_node(
+      core::BuildNode("//examples/android/ndk-app:native_lib", "cc_library",
+                      {"src/main/cpp/native-lib.cpp"}, {"libnative_lib.so"},
+                      {{"copts", "-std=c++17 -Wall -Wextra -ffast-math"}, {"linkopts", "-llog"}}));
+  builder.add_node(
+      core::BuildNode("//examples/android/ndk-app:app", "android_binary",
+                      {"src/main/java", "src/main/AndroidManifest.xml", "src/main/res"},
+                      {"ndk-app.apk"}, {{"min_sdk_version", "21"}, {"target_sdk_version", "34"}}));
+  // ndk-app:app depends on ndk-app:native_lib
+  builder.add_edge(
+      core::BuildEdge("//examples/android/ndk-app:app", "//examples/android/ndk-app:native_lib"));
+
+  // multi-module-app (top-level app)
+  builder.add_node(core::BuildNode("//examples/android/multi-module-app:app", "android_binary",
+                                   {"app/src/main/java", "app/src/main/AndroidManifest.xml"},
+                                   {"multi-module-app.apk"},
+                                   {{"min_sdk_version", "21"}, {"target_sdk_version", "34"}}));
 
   auto graph_result = builder.build();
   if (!graph_result) {
     return tl::unexpected(BuildError::GraphError);
   }
-
   return std::move(*graph_result);
+}
+
+auto BuildExecutor::create_demo_graph() -> tl::expected<core::BuildGraph, BuildError> {
+  return create_workspace_graph();
 }
 
 auto BuildExecutor::check_cache(const Target& target) -> bool {
