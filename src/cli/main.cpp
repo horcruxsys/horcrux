@@ -13,7 +13,9 @@
 #include "doctor_command.h"
 #include "import_command.h"
 #include "logger.h"
+#include "plugin_command.h"
 #include "query_command.h"
+#include "registry_command.h"
 #include "test_command.h"
 
 namespace horcrux::cli {
@@ -34,6 +36,8 @@ void print_usage() {
   std::cout << "  query <target>    Query build graph metadata (deps, rdeps, topo order)\n";
   std::cout << "  import <path>     Import Gradle project and generate horcrux.yaml\n";
   std::cout << "  doctor <system>   Validate toolchain and system configuration\n";
+  std::cout << "  plugin <cmd>      Manage plugins (search/install/list/info/update/remove)\n";
+  std::cout << "  registry <cmd>    Manage registries (add/remove/list)\n";
   std::cout << "  version           Show version information\n";
   std::cout << "  help              Show this help message\n\n";
   std::cout << "Options:\n";
@@ -183,6 +187,14 @@ int main(int argc, char* argv[]) {
 
   if (command == "query") {
     return handle_query_command(argc, argv, global_logger);
+  }
+
+  if (command == "plugin") {
+    return handle_plugin_command(argc, argv, global_logger);
+  }
+
+  if (command == "registry") {
+    return handle_registry_command(argc, argv, global_logger);
   }
 
   // Unknown command

@@ -15,13 +15,20 @@ Horcrux is a universal build system written in C++23 with three primary goals:
 
 Based on the current codebase and tests, the following areas are implemented:
 
+- Plugin and Registry ecosystem (M5):
+  - `PluginManifest` schema with parser/validator, SemVer versioning, permission model.
+  - `PluginLoader` with lifecycle hooks (discover/initialize/shutdown) and deterministic alphabetical init order.
+  - `PluginVerifier` for SHA-256 checksum verification and permission enforcement.
+  - `RegistryClient` with in-memory package index, search, install/update/remove, and lockfile.
+  - `plugin` CLI command: search/install/list/info/update/remove subcommands.
+  - `registry` CLI command: add/remove/list subcommands.
 - Core graph model:
   - `BuildNode`, `BuildEdge`, and immutable `BuildGraph` primitives.
 - Caching:
   - Local cache implementation and tests.
   - Policy-fingerprinted cache keys (hermetic policy fingerprint mixed into every cache key).
 - CLI surface:
-  - `build`, `import`, `doctor`, `test`, `clean`, and `query` commands are wired in the CLI entry point.
+  - `build`, `import`, `doctor`, `test`, `clean`, `query`, `plugin`, and `registry` commands are wired in the CLI entry point.
   - `--hermetic`, `--sandbox=<mode>`, and `--repro-check` flags on the `build` command.
 - Hermetic sandboxing (M4):
   - `SandboxPolicy` model: modes (off/balanced/strict), network policy, env-var allowlist, path allowlist, resource limits, stable fingerprint.
@@ -54,6 +61,42 @@ Based on the current codebase and tests, the following areas are implemented:
 - **Adapter architecture:** Foundation (M3.1) + Rust/Python/Java adapters (M3.2) complete.
 - **Hermetic sandboxing:** M4 core policy, environment contract, repro-check, and cache integration complete.
 - **End-to-end product completeness:** M4 core complete.
+
+## M5 Completion — 2026-03-30
+
+### Completed
+
+- [x] `PluginManifest` schema: name, version (SemVer), author, license, description, min/max Horcrux version, permissions, extension points.
+- [x] `parse_plugin_manifest` parser: line-oriented TOML-like format, `[extension]` blocks, permission flags, optional checksum.
+- [x] `validate_plugin_manifest`: compatibility range check, extension kind validation.
+- [x] `PluginTrustPolicy`: default (fs_read/write/process_spawn, no network) and strict (fs_read/write only) policies.
+- [x] `verify_plugin_checksum`: SHA-256 checksum verification of plugin binary against manifest.
+- [x] `enforce_plugin_permissions`: gates permission declarations against active trust policy.
+- [x] `compute_file_sha256`: reads a file and returns its SHA-256 hash.
+- [x] `PluginLoader`: register/scan/initialize/shutdown lifecycle; deterministic alphabetical init order; fault isolation per plugin; compatibility and permission gates.
+- [x] `scan_directory`: discovers plugins in a directory tree by reading `manifest.toml` files.
+- [x] `RegistryClient`: in-memory package index; search (case-insensitive substring); package_info; install/update/remove with lockfile update.
+- [x] `PluginLockfile`: records exact installed plugin set with name, version, checksum, registry URL; roundtrip read/write.
+- [x] `RegistryConfig`: named registry entries with URL and trusted flag; persistent config file.
+- [x] `plugin` CLI command: `search`, `install`, `list`, `info`, `update`, `remove` subcommands with `--plugins-dir` and `--lockfile` options.
+- [x] `registry` CLI command: `add`, `remove`, `list` subcommands with `--config` option and `--trusted` flag.
+- [x] `main.cpp` wired with `plugin` and `registry` commands; help text updated.
+- [x] Unit tests: `plugin_manifest_test` (18), `plugin_loader_test` (13), `registry_client_test` (20), `plugin_command_test` (20) — 71 new tests.
+- [x] `tests/CMakeLists.txt` updated with 4 new test targets.
+- [x] `src/core/CMakeLists.txt` and `src/cli/CMakeLists.txt` updated with new source files.
+- [x] `docs/plugin-api.md` — Plugin API reference (manifest schema, lifecycle, versioning, permissions, extension points).
+- [x] `docs/registry-guide.md` — Registry and plugin command user guide.
+- [x] `docs/plugin-authoring.md` — Plugin authoring tutorial with manifest checklist, SDK skeleton, compatibility testing.
+- [x] `docs/project-status.md` updated with M5 completion entry.
+
+### Known Gaps for M5.1+
+
+- Real HTTP registry client (M5 uses in-memory index; network fetch is a future milestone).
+- Dynamic shared-library plugin loading (M5 is in-process only).
+- Per-plugin rule integration with BUILD file parser.
+- Marketplace UI beyond CLI.
+- Runtime remote execution plugins.
+- Enterprise policy management portal.
 
 ## M4 Completion — 2026-03-30
 

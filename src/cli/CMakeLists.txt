@@ -10,6 +10,8 @@ add_library(horcrux_cli STATIC
     test_command.cpp
     clean_command.cpp
     query_command.cpp
+    plugin_command.cpp
+    registry_command.cpp
 )
 
 # Set library properties
