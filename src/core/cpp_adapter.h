@@ -13,9 +13,9 @@ namespace horcrux::core {
 
 /// @brief Toolchain information for C++ compilation
 struct CppToolchain {
-  std::string compiler;     ///< Path to compiler (e.g., "/usr/bin/g++")
-  std::string archiver;     ///< Path to archiver (e.g., "/usr/bin/ar")
-  std::string compiler_id;  ///< Compiler identifier (e.g., "gcc", "clang")
+  std::string compiler;         ///< Path to compiler (e.g., "/usr/bin/g++")
+  std::string archiver;         ///< Path to archiver (e.g., "/usr/bin/ar")
+  std::string compiler_id;      ///< Compiler identifier (e.g., "gcc", "clang")
   std::string compiler_version; ///< Compiler version string
 };
 
@@ -41,9 +41,9 @@ public:
   [[nodiscard]] auto
   parse_target(const BuildNode& node) -> tl::expected<AdapterTarget, AdapterError> override;
 
-  [[nodiscard]] auto
-  plan_actions(const AdapterTarget& target, const BuildGraph& graph,
-               const std::string& output_root) -> tl::expected<std::vector<BuildAction>, AdapterError> override;
+  [[nodiscard]] auto plan_actions(const AdapterTarget& target, const BuildGraph& graph,
+                                  const std::string& output_root)
+      -> tl::expected<std::vector<BuildAction>, AdapterError> override;
 
   [[nodiscard]] auto
   compute_cache_key(const AdapterTarget& target) -> tl::expected<Hash, AdapterError> override;
@@ -65,23 +65,19 @@ private:
             std::optional<std::string> location = std::nullopt) const;
 
   /// @brief Plan compile actions for source files
-  auto plan_compile_actions(const AdapterTarget& target,
-                             const std::string& output_root,
-                             std::vector<std::string>& obj_files) const
+  auto plan_compile_actions(const AdapterTarget& target, const std::string& output_root,
+                            std::vector<std::string>& obj_files) const
       -> tl::expected<std::vector<BuildAction>, AdapterError>;
 
   /// @brief Plan archive action (for cc_library)
-  auto plan_archive_action(const AdapterTarget& target,
-                            const std::string& output_root,
-                            const std::vector<std::string>& obj_files) const
+  auto plan_archive_action(const AdapterTarget& target, const std::string& output_root,
+                           const std::vector<std::string>& obj_files) const
       -> tl::expected<BuildAction, AdapterError>;
 
   /// @brief Plan link action (for cc_binary / cc_test)
-  auto plan_link_action(const AdapterTarget& target,
-                         const BuildGraph& graph,
-                         const std::string& output_root,
-                         const std::vector<std::string>& obj_files) const
-      -> tl::expected<BuildAction, AdapterError>;
+  auto plan_link_action(
+      const AdapterTarget& target, const BuildGraph& graph, const std::string& output_root,
+      const std::vector<std::string>& obj_files) const -> tl::expected<BuildAction, AdapterError>;
 
   /// @brief Detect C++ toolchain from environment or PATH
   static auto detect_toolchain() -> tl::expected<CppToolchain, AdapterError>;

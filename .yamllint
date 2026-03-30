@@ -9,44 +9,44 @@ rules:
   line-length:
     max: 120
     level: warning
-    
+
   # Indentation
   indentation:
     spaces: 2
     indent-sequences: true
     check-multi-line-strings: false
-    
+
   # Comments
   comments:
     min-spaces-from-content: 1
-    
+
   # Document
   document-start: disable
   document-end: disable
-  
+
   # Empty lines
   empty-lines:
     max: 2
     max-start: 0
     max-end: 0
-    
+
   # Truthy values (allow yes/no for GitHub Actions)
   truthy:
     allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
     check-keys: false
-    
+
   # Brackets and braces
   brackets:
     min-spaces-inside: 0
     max-spaces-inside: 0
-    
+
   braces:
     min-spaces-inside: 0
     max-spaces-inside: 1
-    
+
   # Key ordering
   key-ordering: disable
-  
+
   # Quoted strings
   quoted-strings:
     quote-type: any

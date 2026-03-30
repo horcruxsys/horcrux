@@ -21,10 +21,13 @@ Based on the current codebase and tests, the following areas are implemented:
   - Local cache implementation and tests.
 - CLI surface:
   - `build`, `import`, `doctor`, `test`, `clean`, and `query` commands are wired in the CLI entry point.
-- Adapter architecture (M3.1):
+- Adapter architecture (M3.1 + M3.2):
   - Abstract `Adapter` interface with capability metadata, action planning, and cache key contracts.
   - `AdapterRegistry` for runtime adapter discovery and kind-based lookup.
   - `CppAdapter` MVP supporting `cc_library`, `cc_binary`, and `cc_test` target kinds.
+  - `RustAdapter` supporting `rust_library`, `rust_binary`, and `rust_test` target kinds.
+  - `PythonAdapter` supporting `py_library`, `py_binary`, and `py_test` target kinds.
+  - `JavaAdapter` (non-Android) supporting `java_library`, `java_binary`, and `java_test` target kinds.
 - Android pipeline components:
   - Toolchain detection, Java/Kotlin/Compose/DEX compilation helpers,
     manifest merger, resources processing, APK/AAB packaging, NDK support,
@@ -41,8 +44,33 @@ Based on the current codebase and tests, the following areas are implemented:
 - **Core build foundations:** Implemented and tested.
 - **Android build modules:** Broad module coverage with dedicated tests.
 - **CLI UX:** Full command surface for alpha workflows (`build`, `import`, `doctor`, `test`, `clean`, `query`).
-- **Adapter architecture:** Foundation established with C++ MVP adapter.
-- **End-to-end product completeness:** M3.1 complete; M3.2+ in progress.
+- **Adapter architecture:** Foundation (M3.1) + Rust/Python/Java adapters (M3.2) complete.
+- **End-to-end product completeness:** M3 complete.
+
+## M3.2 Completion — 2026-03-29
+
+### Completed
+
+- [x] `RustAdapter` MVP: `rust_library` (compile → rlib), `rust_binary` (compile), `rust_test` (compile + test run).
+- [x] `PythonAdapter` MVP: `py_library` (py_compile packaging), `py_binary` (packaging), `py_test` (packaging + unittest run).
+- [x] `JavaAdapter` MVP (non-Android): `java_library` (javac + jar), `java_binary` (javac + executable jar), `java_test` (javac + jar + test run).
+- [x] Toolchain detection for each adapter with env-var override (`HORCRUX_RUSTC`, `HORCRUX_PYTHON`, `HORCRUX_JAVAC`).
+- [x] Deterministic cache keys for all three adapters (label + kind + sources + flags + toolchain version).
+- [x] Structured diagnostics emitted on unsupported kind and planning errors.
+- [x] Cross-adapter conformance test suite (10 contracts verified across all 4 adapters).
+- [x] Per-adapter unit tests: 22 Rust, 20 Python, 22 Java tests.
+- [x] All adapters registered in `AdapterRegistry`; kind-based routing works across all 12 target kinds.
+- [x] Workspace graph updated with Rust/Python/Java example targets.
+- [x] Example projects added: `examples/rust/`, `examples/python/`, `examples/java/`.
+- [x] Per-language README with toolchain setup, build/test/query commands, and layout.
+- [x] `docs/project-status.md` updated with M3.2 completion entry.
+
+### Known Gaps for M3.3+
+
+- BUILD file parsing (currently uses demo workspace graph).
+- Real compiler invocation via adapters (currently plans actions only; execution simulated).
+- Distributed/remote caching.
+- IDE integrations.
 
 ## M3.1 Completion — 2026-03-29
 

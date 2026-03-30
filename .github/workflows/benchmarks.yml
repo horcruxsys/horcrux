@@ -139,17 +139,18 @@ jobs:
                   time = bench.get('cpu_time', 0)
                   unit = bench.get('time_unit', 'ns')
                   print(f'{name}: {time:.2f} {unit}')
-          " 2>/dev/null >> ../benchmark_summary.md || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
+          " 2>/dev/null >> ../benchmark_summary.md \
+            || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
           fi
           cd ..
-          
+
           {
             echo "\`\`\`"
             echo ""
             echo "### Cache Lookup"
             echo "\`\`\`"
           } >> benchmark_summary.md
-          
+
           cd build
           if [ -f cache_lookup_results.json ]; then
             python3 -c "
@@ -162,17 +163,18 @@ jobs:
                   time = bench.get('cpu_time', 0)
                   unit = bench.get('time_unit', 'ns')
                   print(f'{name}: {time:.2f} {unit}')
-          " 2>/dev/null >> ../benchmark_summary.md || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
+          " 2>/dev/null >> ../benchmark_summary.md \
+            || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
           fi
           cd ..
-          
+
           {
             echo "\`\`\`"
             echo ""
             echo "### Task Scheduling"
             echo "\`\`\`"
           } >> benchmark_summary.md
-          
+
           cd build
           if [ -f task_scheduling_results.json ]; then
             python3 -c "
@@ -185,7 +187,8 @@ jobs:
                   time = bench.get('cpu_time', 0)
                   unit = bench.get('time_unit', 'ns')
                   print(f'{name}: {time:.2f} {unit}')
-          " 2>/dev/null >> ../benchmark_summary.md || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
+          " 2>/dev/null >> ../benchmark_summary.md \
+            || echo "Results in JSON format (run locally for detailed view)" >> ../benchmark_summary.md
           fi
           cd ..
 

@@ -129,7 +129,7 @@ jobs:
             sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-18 main"
             sudo apt-get update
             sudo apt-get install -y ${{ matrix.compiler.cxx }}
-            
+
             # Install libc++ for optimal C++23 support
             sudo apt-get install -y libc++-18-dev libc++abi-18-dev
           fi

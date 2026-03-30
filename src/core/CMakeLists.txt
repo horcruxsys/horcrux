@@ -25,6 +25,9 @@ add_library(horcrux_core STATIC
     adapter.cpp
     adapter_registry.cpp
     cpp_adapter.cpp
+    rust_adapter.cpp
+    python_adapter.cpp
+    java_adapter.cpp
 )
 
 # Set library properties

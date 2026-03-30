@@ -15,11 +15,11 @@ namespace horcrux::cli {
 
 /// @brief Type of query to perform
 enum class QueryKind {
-  Deps,         ///< Direct dependencies of a target
-  TransDeps,    ///< Transitive dependencies (closure)
-  Rdeps,        ///< Direct reverse dependencies (dependents)
-  TopoOrder,    ///< Topological order of the full dependency closure
-  AllTargets,   ///< List all targets in the graph
+  Deps,       ///< Direct dependencies of a target
+  TransDeps,  ///< Transitive dependencies (closure)
+  Rdeps,      ///< Direct reverse dependencies (dependents)
+  TopoOrder,  ///< Topological order of the full dependency closure
+  AllTargets, ///< List all targets in the graph
 };
 
 /// @brief Output format for query results

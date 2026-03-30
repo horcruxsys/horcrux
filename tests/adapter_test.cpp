@@ -20,13 +20,10 @@ namespace horcrux::core::test {
 // ─────────────────────────────────────────────────────────────────────────────
 
 TEST(AdapterErrorTest, ToStringCoversAllValues) {
-  EXPECT_EQ(to_string(AdapterError::UnsupportedKind),
-            "Target kind not supported by this adapter");
-  EXPECT_EQ(to_string(AdapterError::InvalidConfig),
-            "Invalid or incomplete target configuration");
+  EXPECT_EQ(to_string(AdapterError::UnsupportedKind), "Target kind not supported by this adapter");
+  EXPECT_EQ(to_string(AdapterError::InvalidConfig), "Invalid or incomplete target configuration");
   EXPECT_EQ(to_string(AdapterError::PlanningError), "Failed to plan build actions");
-  EXPECT_EQ(to_string(AdapterError::ToolchainError),
-            "Toolchain not found or misconfigured");
+  EXPECT_EQ(to_string(AdapterError::ToolchainError), "Toolchain not found or misconfigured");
   EXPECT_EQ(to_string(AdapterError::CacheKeyError), "Failed to compute cache key");
 }
 
@@ -58,7 +55,7 @@ TEST(CppAdapterInfoTest, SupportedKinds) {
   const auto& kinds = adapter.info().supported_kinds;
   EXPECT_NE(std::find(kinds.begin(), kinds.end(), "cc_library"), kinds.end());
   EXPECT_NE(std::find(kinds.begin(), kinds.end(), "cc_binary"), kinds.end());
-  EXPECT_NE(std::find(kinds.begin(), kinds.end(), "cc_test"),   kinds.end());
+  EXPECT_NE(std::find(kinds.begin(), kinds.end(), "cc_test"), kinds.end());
 }
 
 TEST(CppAdapterInfoTest, SupportsKindHelper) {
@@ -76,21 +73,18 @@ TEST(CppAdapterInfoTest, SupportsKindHelper) {
 
 TEST(CppAdapterParseTest, ParsesLibraryNode) {
   auto adapter = make_cpp_adapter();
-  BuildNode node("//pkg:mylib", "cc_library",
-                 {"pkg/lib.cpp", "pkg/lib.h"},
-                 {"pkg/libmylib.a"},
+  BuildNode node("//pkg:mylib", "cc_library", {"pkg/lib.cpp", "pkg/lib.h"}, {"pkg/libmylib.a"},
                  {{"copts", "-Wall"}, {"includes", "pkg/include"}});
 
   auto result = adapter.parse_target(node);
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->label, "//pkg:mylib");
-  EXPECT_EQ(result->kind,  "cc_library");
+  EXPECT_EQ(result->kind, "cc_library");
 }
 
 TEST(CppAdapterParseTest, ParsesBinaryNode) {
   auto adapter = make_cpp_adapter();
-  BuildNode node("//pkg:mybin", "cc_binary",
-                 {"pkg/main.cpp"}, {"pkg/mybin"}, {});
+  BuildNode node("//pkg:mybin", "cc_binary", {"pkg/main.cpp"}, {"pkg/mybin"}, {});
 
   auto result = adapter.parse_target(node);
   ASSERT_TRUE(result.has_value());
@@ -99,8 +93,7 @@ TEST(CppAdapterParseTest, ParsesBinaryNode) {
 
 TEST(CppAdapterParseTest, ParsesTestNode) {
   auto adapter = make_cpp_adapter();
-  BuildNode node("//pkg:mytest", "cc_test",
-                 {"pkg/test_main.cpp"}, {"pkg/mytest"}, {});
+  BuildNode node("//pkg:mytest", "cc_test", {"pkg/test_main.cpp"}, {"pkg/mytest"}, {});
 
   auto result = adapter.parse_target(node);
   ASSERT_TRUE(result.has_value());
@@ -127,11 +120,10 @@ static auto build_empty_graph() -> BuildGraph {
 
 TEST(CppAdapterPlanTest, LibraryPlanHasCompileAndArchiveActions) {
   auto adapter = make_cpp_adapter();
-  BuildNode node("//pkg:mylib", "cc_library",
-                 {"pkg/lib.cpp"}, {"pkg/libmylib.a"}, {});
+  BuildNode node("//pkg:mylib", "cc_library", {"pkg/lib.cpp"}, {"pkg/libmylib.a"}, {});
 
   auto target = adapter.parse_target(node).value();
-  auto graph  = build_empty_graph();
+  auto graph = build_empty_graph();
   auto actions = adapter.plan_actions(target, graph, "/tmp/out");
 
   ASSERT_TRUE(actions.has_value());
@@ -141,8 +133,10 @@ TEST(CppAdapterPlanTest, LibraryPlanHasCompileAndArchiveActions) {
   bool has_compile = false;
   bool has_archive = false;
   for (const auto& a : *actions) {
-    if (a.kind == BuildAction::Kind::Compile) has_compile = true;
-    if (a.kind == BuildAction::Kind::Archive) has_archive = true;
+    if (a.kind == BuildAction::Kind::Compile)
+      has_compile = true;
+    if (a.kind == BuildAction::Kind::Archive)
+      has_archive = true;
   }
   EXPECT_TRUE(has_compile);
   EXPECT_TRUE(has_archive);
@@ -150,19 +144,20 @@ TEST(CppAdapterPlanTest, LibraryPlanHasCompileAndArchiveActions) {
 
 TEST(CppAdapterPlanTest, BinaryPlanHasCompileAndLinkActions) {
   auto adapter = make_cpp_adapter();
-  BuildNode node("//pkg:mybin", "cc_binary",
-                 {"pkg/main.cpp"}, {"pkg/mybin"}, {});
+  BuildNode node("//pkg:mybin", "cc_binary", {"pkg/main.cpp"}, {"pkg/mybin"}, {});
 
-  auto target  = adapter.parse_target(node).value();
-  auto graph   = build_empty_graph();
+  auto target = adapter.parse_target(node).value();
+  auto graph = build_empty_graph();
   auto actions = adapter.plan_actions(target, graph, "/tmp/out");
 
   ASSERT_TRUE(actions.has_value());
   bool has_compile = false;
-  bool has_link    = false;
+  bool has_link = false;
   for (const auto& a : *actions) {
-    if (a.kind == BuildAction::Kind::Compile) has_compile = true;
-    if (a.kind == BuildAction::Kind::Link)    has_link = true;
+    if (a.kind == BuildAction::Kind::Compile)
+      has_compile = true;
+    if (a.kind == BuildAction::Kind::Link)
+      has_link = true;
   }
   EXPECT_TRUE(has_compile);
   EXPECT_TRUE(has_link);
@@ -171,11 +166,10 @@ TEST(CppAdapterPlanTest, BinaryPlanHasCompileAndLinkActions) {
 TEST(CppAdapterPlanTest, HeaderOnlyLibraryProducesNoActions) {
   auto adapter = make_cpp_adapter();
   // No .cpp sources — header-only library
-  BuildNode node("//pkg:headers", "cc_library",
-                 {"pkg/lib.h"}, {}, {});
+  BuildNode node("//pkg:headers", "cc_library", {"pkg/lib.h"}, {}, {});
 
-  auto target  = adapter.parse_target(node).value();
-  auto graph   = build_empty_graph();
+  auto target = adapter.parse_target(node).value();
+  auto graph = build_empty_graph();
   auto actions = adapter.plan_actions(target, graph, "/tmp/out");
 
   ASSERT_TRUE(actions.has_value());
@@ -185,11 +179,10 @@ TEST(CppAdapterPlanTest, HeaderOnlyLibraryProducesNoActions) {
 
 TEST(CppAdapterPlanTest, CompileActionIncludesSourceFile) {
   auto adapter = make_cpp_adapter();
-  BuildNode node("//pkg:lib", "cc_library",
-                 {"pkg/lib.cpp"}, {"pkg/liblib.a"}, {});
+  BuildNode node("//pkg:lib", "cc_library", {"pkg/lib.cpp"}, {"pkg/liblib.a"}, {});
 
-  auto target  = adapter.parse_target(node).value();
-  auto graph   = build_empty_graph();
+  auto target = adapter.parse_target(node).value();
+  auto graph = build_empty_graph();
   auto actions = adapter.plan_actions(target, graph, "/tmp/out");
 
   ASSERT_TRUE(actions.has_value());
@@ -259,8 +252,7 @@ TEST(AdapterRegistryTest, InitiallyEmpty) {
 
 TEST(AdapterRegistryTest, RegisterAndFindByName) {
   AdapterRegistry registry;
-  registry.register_adapter(std::make_unique<CppAdapter>(
-      CppToolchain{"g++", "ar", "gcc", "13.0"}));
+  registry.register_adapter(std::make_unique<CppAdapter>(CppToolchain{"g++", "ar", "gcc", "13.0"}));
 
   EXPECT_EQ(registry.size(), 1u);
   const auto* adapter = registry.find_by_name("cpp");
@@ -275,8 +267,7 @@ TEST(AdapterRegistryTest, FindByNameReturnsNullForUnknown) {
 
 TEST(AdapterRegistryTest, FindForKindReturnsCorrectAdapter) {
   AdapterRegistry registry;
-  registry.register_adapter(std::make_unique<CppAdapter>(
-      CppToolchain{"g++", "ar", "gcc", "13.0"}));
+  registry.register_adapter(std::make_unique<CppAdapter>(CppToolchain{"g++", "ar", "gcc", "13.0"}));
 
   const auto* cpp_adapter = registry.find_for_kind("cc_library");
   ASSERT_NE(cpp_adapter, nullptr);
@@ -285,16 +276,14 @@ TEST(AdapterRegistryTest, FindForKindReturnsCorrectAdapter) {
 
 TEST(AdapterRegistryTest, FindForKindReturnsNullForUnsupportedKind) {
   AdapterRegistry registry;
-  registry.register_adapter(std::make_unique<CppAdapter>(
-      CppToolchain{"g++", "ar", "gcc", "13.0"}));
+  registry.register_adapter(std::make_unique<CppAdapter>(CppToolchain{"g++", "ar", "gcc", "13.0"}));
 
   EXPECT_EQ(registry.find_for_kind("java_library"), nullptr);
 }
 
 TEST(AdapterRegistryTest, AllAdaptersReturnsAll) {
   AdapterRegistry registry;
-  registry.register_adapter(std::make_unique<CppAdapter>(
-      CppToolchain{"g++", "ar", "gcc", "13.0"}));
+  registry.register_adapter(std::make_unique<CppAdapter>(CppToolchain{"g++", "ar", "gcc", "13.0"}));
 
   auto all = registry.all_adapters();
   EXPECT_EQ(all.size(), 1u);
