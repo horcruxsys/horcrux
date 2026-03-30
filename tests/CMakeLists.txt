@@ -719,10 +719,94 @@ target_compile_options(adapter_conformance_test PRIVATE
 
 gtest_discover_tests(adapter_conformance_test)
 
+# Sandbox policy tests (M4)
+add_executable(sandbox_policy_test
+    sandbox_policy_test.cpp
+)
+
+target_link_libraries(sandbox_policy_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(sandbox_policy_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(sandbox_policy_test)
+
+# Hermetic env tests (M4)
+add_executable(hermetic_env_test
+    hermetic_env_test.cpp
+)
+
+target_link_libraries(hermetic_env_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(hermetic_env_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(hermetic_env_test)
+
+# Repro checker tests (M4)
+add_executable(repro_checker_test
+    repro_checker_test.cpp
+)
+
+target_link_libraries(repro_checker_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(repro_checker_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(repro_checker_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test android_variant_test android_sandbox_test cli_commands_test adapter_test rust_adapter_test python_adapter_test java_adapter_test adapter_conformance_test
+    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test android_variant_test android_sandbox_test cli_commands_test adapter_test rust_adapter_test python_adapter_test java_adapter_test adapter_conformance_test sandbox_policy_test hermetic_env_test repro_checker_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )

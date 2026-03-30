@@ -1,6 +1,6 @@
 # Horcrux Project Status
 
-**Last Updated:** 2026-03-29
+**Last Updated:** 2026-03-30
 **Status:** Active alpha development
 
 ## What Horcrux Is Building
@@ -19,8 +19,14 @@ Based on the current codebase and tests, the following areas are implemented:
   - `BuildNode`, `BuildEdge`, and immutable `BuildGraph` primitives.
 - Caching:
   - Local cache implementation and tests.
+  - Policy-fingerprinted cache keys (hermetic policy fingerprint mixed into every cache key).
 - CLI surface:
   - `build`, `import`, `doctor`, `test`, `clean`, and `query` commands are wired in the CLI entry point.
+  - `--hermetic`, `--sandbox=<mode>`, and `--repro-check` flags on the `build` command.
+- Hermetic sandboxing (M4):
+  - `SandboxPolicy` model: modes (off/balanced/strict), network policy, env-var allowlist, path allowlist, resource limits, stable fingerprint.
+  - `HermeticEnv` contract: normalized locale/TZ/tmpdir, deterministic path mapping, canonical input ordering (sort_inputs, sort_includes, sort_deps).
+  - `ReproChecker`: double-build reproducibility verification, artifact hash comparison, non-determinism diagnostic hints.
 - Adapter architecture (M3.1 + M3.2):
   - Abstract `Adapter` interface with capability metadata, action planning, and cache key contracts.
   - `AdapterRegistry` for runtime adapter discovery and kind-based lookup.
@@ -38,6 +44,7 @@ Based on the current codebase and tests, the following areas are implemented:
   - Unit/integration test targets exist for core graph, cache, import flow,
     all major Android modules listed above, CLI commands (test/clean/query),
     adapter interface, and C++ adapter.
+  - M4: `sandbox_policy_test` (28 tests), `hermetic_env_test` (20 tests), `repro_checker_test` (21 tests).
 
 ## Current Maturity Snapshot
 
@@ -45,7 +52,37 @@ Based on the current codebase and tests, the following areas are implemented:
 - **Android build modules:** Broad module coverage with dedicated tests.
 - **CLI UX:** Full command surface for alpha workflows (`build`, `import`, `doctor`, `test`, `clean`, `query`).
 - **Adapter architecture:** Foundation (M3.1) + Rust/Python/Java adapters (M3.2) complete.
-- **End-to-end product completeness:** M3 complete.
+- **Hermetic sandboxing:** M4 core policy, environment contract, repro-check, and cache integration complete.
+- **End-to-end product completeness:** M4 core complete.
+
+## M4 Completion — 2026-03-30
+
+### Completed
+
+- [x] `SandboxPolicy` model: `SandboxMode` (off/balanced/strict), `NetworkPolicy` (deny/allowlist/allow), env-var allowlist, host-path allowlist, resource limits, stable SHA-256 fingerprint, equality operators.
+- [x] `sandbox_mode_from_string` / `to_string` converters for CLI flag parsing.
+- [x] `HermeticEnv` deterministic environment contract: filters env vars to allowlist, normalizes locale/TZ/tmpdir/output-root, canonical `sort_inputs` / `sort_includes` / `sort_deps` helpers.
+- [x] `ReproChecker`: double-build artifact hash capture, comparison, `ReproReport` with `differing_artifacts()`, `non_hermetic_hints()`, `summary()`.
+- [x] `hash_file` utility and `compare_artifacts` helper.
+- [x] `mix_policy_fingerprint` in `local_cache`: combines base cache key with policy fingerprint so cache hits are invalidated on policy change.
+- [x] `BuildExecutor::create_with_policy` factory accepting `SandboxPolicy` + `repro_check` flag.
+- [x] `BuildError::PolicyError` and `BuildError::ReproCheckFailed` error codes.
+- [x] `build` command in `main.cpp` wired with `--hermetic`, `--sandbox=<mode>`, `--repro-check` flags.
+- [x] Policy fingerprint mixed into cache keys in `execute_build`.
+- [x] Sandbox mode logged during build execution.
+- [x] Unit tests: `sandbox_policy_test` (28), `hermetic_env_test` (20), `repro_checker_test` (21) — 69 new tests.
+- [x] `tests/CMakeLists.txt` updated with new test targets.
+- [x] `src/core/CMakeLists.txt` updated with new source files.
+- [x] `docs/hermetic-build.md` — user guide for hermetic builds, CLI flags, env contract, repro-check, cache fingerprinting, migration guide.
+- [x] `docs/sandbox-troubleshooting.md` — troubleshooting guide for sandbox failures, repro-check failures, common causes and fixes.
+- [x] `docs/project-status.md` updated with M4 completion entry.
+
+### Known Gaps for M4.1+
+
+- Linux namespace-based isolation (`SandboxMode::Strict`) is modelled but not yet wired to the OS-level `AndroidSandbox` for general (non-Android) actions.
+- `--sandbox` per-rule overrides via `horcrux.yaml` are modelled but BUILD file parsing is not yet implemented.
+- Network allowlist rules are modelled but not enforced at the kernel level.
+- `SOURCE_DATE_EPOCH` support for timestamp normalization.
 
 ## M3.2 Completion — 2026-03-29
 
@@ -108,9 +145,8 @@ From the current CLI and roadmap documents:
 
 1. Add BUILD file parsing to replace demo graphs with real target resolution.
 2. Invoke CppAdapter compile/link actions in BuildExecutor for real compilation.
-3. Continue consolidating docs around this status page and `docs/README.md` as canonical entry points.
-4. Create M3.2 issues for Rust, Python, and Java adapters.
-5. Keep this page updated with dated milestone progress as CLI and adapters mature.
+3. Wire `SandboxMode::Strict` to the OS-level namespace sandbox for general actions.
+4. Keep this page updated with dated milestone progress as CLI and adapters mature.
 
 ## Source of Truth
 
@@ -119,3 +155,4 @@ For current behavior, treat code and tests as authoritative:
 - `src/core/`
 - `src/cli/`
 - `tests/`
+

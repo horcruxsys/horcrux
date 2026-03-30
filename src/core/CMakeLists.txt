@@ -28,6 +28,9 @@ add_library(horcrux_core STATIC
     rust_adapter.cpp
     python_adapter.cpp
     java_adapter.cpp
+    sandbox_policy.cpp
+    hermetic_env.cpp
+    repro_checker.cpp
 )
 
 # Set library properties

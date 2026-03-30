@@ -59,6 +59,17 @@ auto compute_sha256(std::span<const uint8_t> data) -> Hash;
 /// @return Hexadecimal string (64 characters)
 auto hash_to_string(const Hash& hash) -> std::string;
 
+/// Combines two hashes into a single hash by hashing their concatenation.
+///
+/// Used to mix a hermetic-policy fingerprint into an artifact cache key so
+/// that cache hits are only valid when the policy that produced an artifact
+/// matches the current policy.
+///
+/// @param base    Base cache key (e.g., from adapter's compute_cache_key)
+/// @param policy_fp  Policy fingerprint (from SandboxPolicy::fingerprint())
+/// @return Combined cache key
+auto mix_policy_fingerprint(const Hash& base, const Hash& policy_fp) -> Hash;
+
 /// LocalCache provides content-addressable storage for build artifacts
 ///
 /// The cache stores artifacts using SHA-256 hashes as keys. Each artifact

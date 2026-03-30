@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string_view>
 
+#include "../core/sandbox_policy.h"
 #include "build_executor.h"
 #include "clean_command.h"
 #include "doctor_command.h"
@@ -36,9 +37,12 @@ void print_usage() {
   std::cout << "  version           Show version information\n";
   std::cout << "  help              Show this help message\n\n";
   std::cout << "Options:\n";
-  std::cout << "  --verbose, -v     Enable verbose logging\n";
-  std::cout << "  --cache-dir=DIR   Set cache directory (default: .horcrux-cache)\n";
-  std::cout << "  --output=FILE, -o Output file path for import command\n\n";
+  std::cout << "  --verbose, -v          Enable verbose logging\n";
+  std::cout << "  --cache-dir=DIR        Set cache directory (default: .horcrux-cache)\n";
+  std::cout << "  --output=FILE, -o      Output file path for import command\n";
+  std::cout << "  --hermetic             Enable hermetic (balanced) sandboxing (default)\n";
+  std::cout << "  --sandbox=MODE         Sandbox mode: strict | balanced | off\n";
+  std::cout << "  --repro-check          Run double-build reproducibility check\n\n";
   std::cout << "Run 'horcrux <command> --help' for detailed usage of each command.\n";
 }
 
@@ -52,17 +56,51 @@ auto handle_build_command(int argc, char* argv[], Logger& logger) -> int {
 
   std::string target = argv[2];
 
-  // Determine cache directory
+  // Determine cache directory and sandbox options
   std::filesystem::path cache_dir = ".horcrux-cache";
+  bool hermetic_flag = false;
+  bool repro_check = false;
+  std::string sandbox_mode_str;
+
   for (int i = 3; i < argc; ++i) {
     std::string_view arg = argv[i];
     if (arg.starts_with("--cache-dir=")) {
       cache_dir = arg.substr(12);
+    } else if (arg == "--hermetic") {
+      hermetic_flag = true;
+    } else if (arg.starts_with("--sandbox=")) {
+      sandbox_mode_str = std::string(arg.substr(10));
+    } else if (arg == "--repro-check") {
+      repro_check = true;
     }
   }
 
-  // Create build executor
-  auto executor_result = BuildExecutor::create(cache_dir, logger);
+  // Resolve sandbox policy
+  core::SandboxPolicy policy = core::SandboxPolicy::default_hermetic();
+  if (!sandbox_mode_str.empty()) {
+    auto mode_result = core::sandbox_mode_from_string(sandbox_mode_str);
+    if (!mode_result) {
+      logger.error("Invalid --sandbox value: ", sandbox_mode_str,
+                   " (expected: strict | balanced | off)");
+      return 1;
+    }
+    switch (*mode_result) {
+    case core::SandboxMode::Off:
+      policy = core::SandboxPolicy::off();
+      break;
+    case core::SandboxMode::Strict:
+      policy = core::SandboxPolicy::strict_hermetic();
+      break;
+    case core::SandboxMode::Balanced:
+      policy = core::SandboxPolicy::default_hermetic();
+      break;
+    }
+  } else if (hermetic_flag) {
+    policy = core::SandboxPolicy::default_hermetic();
+  }
+
+  // Create build executor with policy
+  auto executor_result = BuildExecutor::create_with_policy(cache_dir, policy, repro_check, logger);
   if (!executor_result) {
     logger.error("Failed to create build executor: ", to_string(executor_result.error()));
     return 1;
@@ -72,6 +110,9 @@ auto handle_build_command(int argc, char* argv[], Logger& logger) -> int {
 
   // Execute build
   logger.info("Starting build...");
+  if (policy.mode != core::SandboxMode::Off) {
+    logger.info("Sandbox: ", core::to_string(policy.mode));
+  }
   auto build_result = executor.build(target);
   if (!build_result) {
     logger.error("Build failed: ", to_string(build_result.error()));
