@@ -175,6 +175,15 @@ auto hash_to_string(const Hash& hash) -> std::string {
   return oss.str();
 }
 
+auto mix_policy_fingerprint(const Hash& base, const Hash& policy_fp) -> Hash {
+  // Concatenate both hashes and hash the result
+  std::vector<uint8_t> combined;
+  combined.reserve(base.size() + policy_fp.size());
+  combined.insert(combined.end(), base.begin(), base.end());
+  combined.insert(combined.end(), policy_fp.begin(), policy_fp.end());
+  return compute_sha256(combined);
+}
+
 auto LocalCache::create(const std::filesystem::path& cache_dir)
     -> tl::expected<LocalCache, CacheError> {
   // Create cache directory if it doesn't exist
