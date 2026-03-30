@@ -26,8 +26,7 @@ public:
     // Use a monotonic counter for uniqueness across parallel test instances
     static std::atomic<int> counter{0};
     int id = counter.fetch_add(1);
-    path_ = std::filesystem::temp_directory_path() /
-            ("horcrux_repro_test_" + std::to_string(id));
+    path_ = std::filesystem::temp_directory_path() / ("horcrux_repro_test_" + std::to_string(id));
     std::filesystem::create_directories(path_);
   }
   ~TempDir() {
@@ -169,8 +168,8 @@ TEST(ReproCheckerTest, ArtifactPresentOnlyInRound2IsDetected) {
   Hash zero_hash{};
 
   ReproChecker checker;
-  checker.record_round_from_map({}, 1);                     // Round 1: no artifacts
-  checker.record_round_from_map({{"new_file", h}}, 2);      // Round 2: has artifact
+  checker.record_round_from_map({}, 1);                // Round 1: no artifacts
+  checker.record_round_from_map({{"new_file", h}}, 2); // Round 2: has artifact
 
   auto report = checker.check();
   // Artifact present only in round 2 means round 1 has a zero hash → not reproducible

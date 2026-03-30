@@ -18,8 +18,7 @@ namespace horcrux::core::test {
 // ─────────────────────────────────────────────────────────────────────────────
 
 static auto make_env(const SandboxPolicy& policy,
-                     const std::unordered_map<std::string, std::string>& host_env)
-    -> HermeticEnv {
+                     const std::unordered_map<std::string, std::string>& host_env) -> HermeticEnv {
   return HermeticEnv::build_from_map(policy, host_env, "/build/output");
 }
 
@@ -29,8 +28,8 @@ static auto make_env(const SandboxPolicy& policy,
 
 TEST(HermeticEnvTest, NormalizesLocale) {
   auto policy = SandboxPolicy::default_hermetic();
-  std::unordered_map<std::string, std::string> host = {
-      {"LANG", "ja_JP.UTF-8"}, {"PATH", "/usr/bin"}};
+  std::unordered_map<std::string, std::string> host = {{"LANG", "ja_JP.UTF-8"},
+                                                       {"PATH", "/usr/bin"}};
   auto env = make_env(policy, host);
 
   // Normalization must override the host locale
@@ -79,7 +78,7 @@ TEST(HermeticEnvTest, StripsVarsNotInAllowlist) {
 TEST(HermeticEnvTest, KeepsAllowedVarsFromHost) {
   auto policy = SandboxPolicy::default_hermetic();
   std::unordered_map<std::string, std::string> host = {{"HOME", "/home/builder"},
-                                                        {"PATH", "/usr/local/bin:/usr/bin"}};
+                                                       {"PATH", "/usr/local/bin:/usr/bin"}};
   auto env = make_env(policy, host);
   EXPECT_EQ(env.get("HOME").value_or(""), "/home/builder");
   EXPECT_EQ(env.get("PATH").value_or(""), "/usr/local/bin:/usr/bin");
@@ -87,8 +86,8 @@ TEST(HermeticEnvTest, KeepsAllowedVarsFromHost) {
 
 TEST(HermeticEnvTest, OffModePassesThroughAllHostVars) {
   auto policy = SandboxPolicy::off();
-  std::unordered_map<std::string, std::string> host = {
-      {"CUSTOM_VAR", "hello"}, {"ANOTHER", "world"}};
+  std::unordered_map<std::string, std::string> host = {{"CUSTOM_VAR", "hello"},
+                                                       {"ANOTHER", "world"}};
   auto env = make_env(policy, host);
 
   // In Off mode, all host vars pass through (normalizations still apply)
@@ -102,14 +101,13 @@ TEST(HermeticEnvTest, OffModePassesThroughAllHostVars) {
 
 TEST(HermeticEnvTest, AsSortedPairsIsSortedByKey) {
   auto policy = SandboxPolicy::default_hermetic();
-  std::unordered_map<std::string, std::string> host = {
-      {"HOME", "/home/user"}, {"PATH", "/usr/bin"}};
+  std::unordered_map<std::string, std::string> host = {{"HOME", "/home/user"},
+                                                       {"PATH", "/usr/bin"}};
   auto env = make_env(policy, host);
 
   const auto& pairs = env.as_sorted_pairs();
   for (size_t i = 1; i < pairs.size(); ++i) {
-    EXPECT_LT(pairs[i - 1].first, pairs[i].first)
-        << "env pairs not sorted at index " << i;
+    EXPECT_LT(pairs[i - 1].first, pairs[i].first) << "env pairs not sorted at index " << i;
   }
 }
 
@@ -122,8 +120,8 @@ TEST(HermeticEnvTest, GetReturnsNulloptForMissingKey) {
 
 TEST(HermeticEnvTest, SizeMatchesNumberOfPairs) {
   auto policy = SandboxPolicy::default_hermetic();
-  std::unordered_map<std::string, std::string> host = {
-      {"HOME", "/home/user"}, {"PATH", "/usr/bin"}};
+  std::unordered_map<std::string, std::string> host = {{"HOME", "/home/user"},
+                                                       {"PATH", "/usr/bin"}};
   auto env = make_env(policy, host);
   EXPECT_EQ(env.size(), env.as_sorted_pairs().size());
 }

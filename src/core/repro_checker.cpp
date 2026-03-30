@@ -65,8 +65,7 @@ auto ReproReport::non_hermetic_hints() const -> std::vector<std::string> {
     return hints;
   }
 
-  hints.push_back(
-      "Some build artifacts differed between rounds, suggesting non-hermetic inputs.");
+  hints.push_back("Some build artifacts differed between rounds, suggesting non-hermetic inputs.");
 
   // Heuristic: embedded timestamps are a common cause
   bool any_timestamp_suspect = false;
@@ -78,9 +77,8 @@ auto ReproReport::non_hermetic_hints() const -> std::vector<std::string> {
     }
   }
   if (any_timestamp_suspect) {
-    hints.push_back(
-        "Hint: Embedded timestamps detected in debug/dependency files. "
-        "Consider passing -ffile-prefix-map or SOURCE_DATE_EPOCH.");
+    hints.push_back("Hint: Embedded timestamps detected in debug/dependency files. "
+                    "Consider passing -ffile-prefix-map or SOURCE_DATE_EPOCH.");
   }
 
   hints.push_back(
@@ -124,7 +122,7 @@ auto hash_file(const std::filesystem::path& path) -> tl::expected<Hash, ReproErr
   }
 
   std::vector<uint8_t> content((std::istreambuf_iterator<char>(file)),
-                                std::istreambuf_iterator<char>());
+                               std::istreambuf_iterator<char>());
   if (file.bad()) {
     return tl::unexpected(ReproError::HashComputationError);
   }
@@ -136,8 +134,7 @@ auto hash_file(const std::filesystem::path& path) -> tl::expected<Hash, ReproErr
 // compare_artifacts
 // ─────────────────────────────────────────────────────────────────────────────
 
-auto compare_artifacts(const std::vector<std::string>& paths,
-                       const std::vector<Hash>& hashes1,
+auto compare_artifacts(const std::vector<std::string>& paths, const std::vector<Hash>& hashes1,
                        const std::vector<Hash>& hashes2) -> ReproReport {
   ReproReport report;
   report.reproducible = true;
@@ -171,8 +168,7 @@ auto ReproChecker::record_round(const std::filesystem::path& output_dir,
   std::vector<Hash> hashes;
 
   std::error_code ec;
-  for (const auto& entry :
-       std::filesystem::recursive_directory_iterator(output_dir, ec)) {
+  for (const auto& entry : std::filesystem::recursive_directory_iterator(output_dir, ec)) {
     if (ec) {
       return tl::unexpected(ReproError::IoError);
     }
@@ -194,9 +190,7 @@ auto ReproChecker::record_round(const std::filesystem::path& output_dir,
   // Sort by path for deterministic ordering
   std::vector<size_t> idx(paths.size());
   std::iota(idx.begin(), idx.end(), 0);
-  std::sort(idx.begin(), idx.end(), [&](size_t a, size_t b) {
-    return paths[a] < paths[b];
-  });
+  std::sort(idx.begin(), idx.end(), [&](size_t a, size_t b) { return paths[a] < paths[b]; });
 
   std::vector<std::string> sorted_paths;
   std::vector<Hash> sorted_hashes;
@@ -217,12 +211,11 @@ auto ReproChecker::record_round(const std::filesystem::path& output_dir,
   return {};
 }
 
-void ReproChecker::record_round_from_map(
-    const std::vector<std::pair<std::string, Hash>>& hashes, int round) {
+void ReproChecker::record_round_from_map(const std::vector<std::pair<std::string, Hash>>& hashes,
+                                         int round) {
   std::vector<std::pair<std::string, Hash>> sorted = hashes;
-  std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) {
-    return a.first < b.first;
-  });
+  std::sort(sorted.begin(), sorted.end(),
+            [](const auto& a, const auto& b) { return a.first < b.first; });
 
   std::vector<std::string> paths;
   std::vector<Hash> hs;

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string_view>
 
+#include "../core/sandbox_policy.h"
 #include "build_executor.h"
 #include "clean_command.h"
 #include "doctor_command.h"
@@ -14,7 +15,6 @@
 #include "logger.h"
 #include "query_command.h"
 #include "test_command.h"
-#include "../core/sandbox_policy.h"
 
 namespace horcrux::cli {
 

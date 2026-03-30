@@ -60,8 +60,8 @@ public:
   ///
   /// The vector is stable-sorted by key name so the result is deterministic
   /// across calls even when the host environment ordering differs.
-  [[nodiscard]] auto as_sorted_pairs() const
-      -> const std::vector<std::pair<std::string, std::string>>&;
+  [[nodiscard]] auto
+  as_sorted_pairs() const -> const std::vector<std::pair<std::string, std::string>>&;
 
   /// @brief Look up a single environment variable
   [[nodiscard]] auto get(std::string_view name) const -> std::optional<std::string>;
@@ -79,11 +79,12 @@ public:
   ///   3. Duplicates removed.
   ///
   /// Use this before hashing or passing to a compiler to ensure determinism.
-  [[nodiscard]] static auto sort_inputs(std::vector<std::string> inputs) -> std::vector<std::string>;
+  [[nodiscard]] static auto
+  sort_inputs(std::vector<std::string> inputs) -> std::vector<std::string>;
 
   /// @brief Sort and deduplicate include/classpath lists canonically
-  [[nodiscard]] static auto sort_includes(std::vector<std::string> includes)
-      -> std::vector<std::string>;
+  [[nodiscard]] static auto
+  sort_includes(std::vector<std::string> includes) -> std::vector<std::string>;
 
   /// @brief Sort and deduplicate a deps closure canonically (by label string)
   [[nodiscard]] static auto sort_deps(std::vector<std::string> deps) -> std::vector<std::string>;

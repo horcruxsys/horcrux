@@ -27,14 +27,14 @@ enum class SandboxMode {
 
 /// @brief Parse SandboxMode from string ("off", "balanced", "strict")
 /// @return Expected SandboxMode or error string
-[[nodiscard]] auto sandbox_mode_from_string(std::string_view s)
-    -> tl::expected<SandboxMode, std::string>;
+[[nodiscard]] auto
+sandbox_mode_from_string(std::string_view s) -> tl::expected<SandboxMode, std::string>;
 
 /// @brief Network access policy for hermetic actions
 enum class NetworkPolicy {
-  Deny,        ///< All network access is denied (default for hermetic builds)
-  AllowList,   ///< Only explicitly allowed hosts/rules are permitted
-  Allow,       ///< Unrestricted network access (non-hermetic; emits diagnostic)
+  Deny,      ///< All network access is denied (default for hermetic builds)
+  AllowList, ///< Only explicitly allowed hosts/rules are permitted
+  Allow,     ///< Unrestricted network access (non-hermetic; emits diagnostic)
 };
 
 /// @brief Convert NetworkPolicy to string
@@ -49,8 +49,8 @@ struct ResourceLimits {
 
 /// @brief A single explicit host-path allowlist entry
 struct PathAllowEntry {
-  std::string host_path;   ///< Absolute host path permitted for read access
-  bool writable = false;   ///< Whether write access is also permitted
+  std::string host_path; ///< Absolute host path permitted for read access
+  bool writable = false; ///< Whether write access is also permitted
 };
 
 /// @brief Complete policy configuration for hermetic build execution
@@ -101,10 +101,10 @@ struct SandboxPolicy {
 /// @brief Diagnostics emitted when a policy violation is detected
 struct PolicyViolation {
   enum class Kind {
-    UndeclaredEnvVar,   ///< Action read an env var not in the allowlist
-    UndeclaredPath,     ///< Action accessed a host path not in the allowlist
-    NetworkAccess,      ///< Action performed a network call that was denied
-    UndeclaredTool,     ///< Action used a host tool not declared in rule metadata
+    UndeclaredEnvVar,      ///< Action read an env var not in the allowlist
+    UndeclaredPath,        ///< Action accessed a host path not in the allowlist
+    NetworkAccess,         ///< Action performed a network call that was denied
+    UndeclaredTool,        ///< Action used a host tool not declared in rule metadata
     ResourceLimitBreached, ///< Action exceeded a resource limit
   };
 

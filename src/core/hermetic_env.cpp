@@ -59,10 +59,10 @@ auto to_sorted_pairs(const std::unordered_map<std::string, std::string>& map)
 // ─────────────────────────────────────────────────────────────────────────────
 
 HermeticEnv::HermeticEnv(std::vector<std::pair<std::string, std::string>> env)
-    : env_(std::move(env)) {}
+    : env_(std::move(env)) {
+}
 
-auto HermeticEnv::build(const SandboxPolicy& policy,
-                        std::string_view output_root) -> HermeticEnv {
+auto HermeticEnv::build(const SandboxPolicy& policy, std::string_view output_root) -> HermeticEnv {
   // Collect host environment
   std::unordered_map<std::string, std::string> host_map;
 #ifndef _WIN32
@@ -72,8 +72,7 @@ auto HermeticEnv::build(const SandboxPolicy& policy,
       std::string_view entry(*ep);
       auto eq = entry.find('=');
       if (eq != std::string_view::npos) {
-        host_map.emplace(std::string(entry.substr(0, eq)),
-                         std::string(entry.substr(eq + 1)));
+        host_map.emplace(std::string(entry.substr(0, eq)), std::string(entry.substr(eq + 1)));
       }
     }
   }
@@ -81,10 +80,9 @@ auto HermeticEnv::build(const SandboxPolicy& policy,
   return build_from_map(policy, host_map, output_root);
 }
 
-auto HermeticEnv::build_from_map(
-    const SandboxPolicy& policy,
-    const std::unordered_map<std::string, std::string>& host_env,
-    std::string_view output_root) -> HermeticEnv {
+auto HermeticEnv::build_from_map(const SandboxPolicy& policy,
+                                 const std::unordered_map<std::string, std::string>& host_env,
+                                 std::string_view output_root) -> HermeticEnv {
   std::unordered_map<std::string, std::string> filtered;
 
   if (policy.mode == SandboxMode::Off) {
@@ -117,8 +115,8 @@ auto HermeticEnv::as_sorted_pairs() const
 
 auto HermeticEnv::get(std::string_view name) const -> std::optional<std::string> {
   // Binary search since env_ is sorted
-  auto it = std::lower_bound(env_.begin(), env_.end(), std::pair<std::string, std::string>{
-                                                            std::string(name), {}});
+  auto it = std::lower_bound(env_.begin(), env_.end(),
+                             std::pair<std::string, std::string>{std::string(name), {}});
   if (it != env_.end() && it->first == name) {
     return it->second;
   }

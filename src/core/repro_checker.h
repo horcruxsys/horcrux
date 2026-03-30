@@ -28,10 +28,10 @@ enum class ReproError {
 
 /// @brief Per-artifact comparison result
 struct ArtifactDiff {
-  std::string path;    ///< Relative artifact path
-  Hash hash1;          ///< Hash from build round 1
-  Hash hash2;          ///< Hash from build round 2
-  bool match;          ///< true iff hash1 == hash2
+  std::string path; ///< Relative artifact path
+  Hash hash1;       ///< Hash from build round 1
+  Hash hash2;       ///< Hash from build round 2
+  bool match;       ///< true iff hash1 == hash2
 
   /// Human-readable hex strings
   [[nodiscard]] auto hash1_hex() const -> std::string;
@@ -40,8 +40,8 @@ struct ArtifactDiff {
 
 /// @brief Summary report produced by a repro-check run
 struct ReproReport {
-  bool reproducible;                   ///< true iff all artifacts matched
-  std::vector<ArtifactDiff> diffs;     ///< Per-artifact comparison results
+  bool reproducible;               ///< true iff all artifacts matched
+  std::vector<ArtifactDiff> diffs; ///< Per-artifact comparison results
 
   /// Paths of artifacts that differed between builds
   [[nodiscard]] auto differing_artifacts() const -> std::vector<std::string>;
@@ -57,8 +57,7 @@ struct ReproReport {
 ///
 /// @param path Path to the file
 /// @return Hash or ReproError on failure
-[[nodiscard]] auto hash_file(const std::filesystem::path& path)
-    -> tl::expected<Hash, ReproError>;
+[[nodiscard]] auto hash_file(const std::filesystem::path& path) -> tl::expected<Hash, ReproError>;
 
 /// @brief Compares two sets of artifact hashes and builds a diff report
 ///
@@ -90,8 +89,8 @@ public:
   /// @param output_dir  Directory containing build outputs
   /// @param round       Build round index (1 or 2)
   /// @return Expected void or ReproError
-  auto record_round(const std::filesystem::path& output_dir, int round)
-      -> tl::expected<void, ReproError>;
+  auto record_round(const std::filesystem::path& output_dir,
+                    int round) -> tl::expected<void, ReproError>;
 
   /// @brief Record hashes directly from an in-memory map (useful for testing)
   ///

@@ -48,8 +48,8 @@ public:
   /// @param policy      Hermetic sandbox policy to apply
   /// @param repro_check If true, enable double-build reproducibility check
   /// @param logger      Logger instance
-  static auto create_with_policy(const std::filesystem::path& cache_dir,
-                                 core::SandboxPolicy policy, bool repro_check,
+  static auto create_with_policy(const std::filesystem::path& cache_dir, core::SandboxPolicy policy,
+                                 bool repro_check,
                                  Logger& logger) -> tl::expected<BuildExecutor, BuildError>;
 
   /// @brief Build a target
@@ -74,7 +74,8 @@ private:
   BuildExecutor(core::LocalCache cache, core::SandboxPolicy policy, bool repro_check,
                 Logger& logger)
       : cache_(std::move(cache)), policy_(std::move(policy)), repro_check_(repro_check),
-        logger_(logger) {}
+        logger_(logger) {
+  }
 
   /// @brief Internal alias for create_workspace_graph() (kept for backward compat)
   auto create_demo_graph() -> tl::expected<core::BuildGraph, BuildError>;

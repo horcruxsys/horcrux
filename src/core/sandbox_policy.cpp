@@ -125,10 +125,9 @@ auto SandboxPolicy::fingerprint() const -> Hash {
 
   // Paths – sort for stability
   std::vector<PathAllowEntry> sorted_paths = allowed_paths;
-  std::sort(sorted_paths.begin(), sorted_paths.end(),
-            [](const PathAllowEntry& a, const PathAllowEntry& b) {
-              return a.host_path < b.host_path;
-            });
+  std::sort(
+      sorted_paths.begin(), sorted_paths.end(),
+      [](const PathAllowEntry& a, const PathAllowEntry& b) { return a.host_path < b.host_path; });
   for (const auto& p : sorted_paths) {
     oss << "path=" << p.host_path << ':' << (p.writable ? "rw" : "ro") << '\n';
   }
