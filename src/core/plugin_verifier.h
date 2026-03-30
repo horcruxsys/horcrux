@@ -34,7 +34,9 @@ struct PluginTrustPolicy {
   bool allow_process_spawn = true;    ///< Permit plugins to declare process_spawn
 
   /// @brief Default permissive policy (all except network)
-  [[nodiscard]] static auto default_policy() -> PluginTrustPolicy { return {}; }
+  [[nodiscard]] static auto default_policy() -> PluginTrustPolicy {
+    return {};
+  }
 
   /// @brief Strict policy: no network, no process spawn
   [[nodiscard]] static auto strict_policy() -> PluginTrustPolicy {
@@ -54,24 +56,24 @@ struct PluginTrustPolicy {
 /// @param plugin_path Path to the plugin binary or archive
 /// @param manifest    Parsed plugin manifest
 /// @return std::nullopt on success, VerifierError on failure
-[[nodiscard]] auto verify_plugin_checksum(const std::filesystem::path& plugin_path,
-                                          const PluginManifest& manifest)
-    -> tl::expected<void, VerifierError>;
+[[nodiscard]] auto
+verify_plugin_checksum(const std::filesystem::path& plugin_path,
+                       const PluginManifest& manifest) -> tl::expected<void, VerifierError>;
 
 /// @brief Enforce that a plugin's declared permissions are allowed by policy
 ///
 /// @param manifest Plugin manifest containing requested permissions
 /// @param policy   Trust policy enforced by the runtime
 /// @return std::nullopt on success, description of violation on failure
-[[nodiscard]] auto enforce_plugin_permissions(const PluginManifest& manifest,
-                                              const PluginTrustPolicy& policy)
-    -> std::optional<std::string>;
+[[nodiscard]] auto
+enforce_plugin_permissions(const PluginManifest& manifest,
+                           const PluginTrustPolicy& policy) -> std::optional<std::string>;
 
 /// @brief Compute SHA-256 of a file on disk
 ///
 /// @param path File to hash
 /// @return Hash on success, VerifierError on failure
-[[nodiscard]] auto compute_file_sha256(const std::filesystem::path& path)
-    -> tl::expected<Hash, VerifierError>;
+[[nodiscard]] auto
+compute_file_sha256(const std::filesystem::path& path) -> tl::expected<Hash, VerifierError>;
 
 } // namespace horcrux::core

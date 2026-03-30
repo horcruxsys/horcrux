@@ -25,8 +25,7 @@ struct PluginVersion {
   auto operator<=>(const PluginVersion&) const = default;
 
   /// @brief Parse "MAJOR.MINOR.PATCH" string; returns error if malformed
-  [[nodiscard]] static auto parse(std::string_view s)
-      -> tl::expected<PluginVersion, std::string>;
+  [[nodiscard]] static auto parse(std::string_view s) -> tl::expected<PluginVersion, std::string>;
 };
 
 /// @brief Declared permissions a plugin requires
@@ -39,8 +38,8 @@ struct PluginPermissions {
 
 /// @brief Exposed extension point declared in the manifest
 struct PluginExtension {
-  std::string kind;  ///< "rule", "adapter", "toolchain"
-  std::string name;  ///< e.g., "wasm_binary", "zig", "ndk-r26"
+  std::string kind; ///< "rule", "adapter", "toolchain"
+  std::string name; ///< e.g., "wasm_binary", "zig", "ndk-r26"
 };
 
 /// @brief Parsed and validated plugin manifest
@@ -48,10 +47,10 @@ struct PluginExtension {
 /// Corresponds to the plugin's manifest.toml / manifest.yaml file.
 struct PluginManifest {
   // Identity
-  std::string name;       ///< Unique plugin name (e.g., "horcrux-wasm")
-  PluginVersion version;  ///< Plugin version
-  std::string author;     ///< Author name or contact
-  std::string license;    ///< SPDX license identifier (e.g., "MIT")
+  std::string name;      ///< Unique plugin name (e.g., "horcrux-wasm")
+  PluginVersion version; ///< Plugin version
+  std::string author;    ///< Author name or contact
+  std::string license;   ///< SPDX license identifier (e.g., "MIT")
   std::string description;
 
   // Compatibility
@@ -98,16 +97,16 @@ enum class ManifestError {
 ///
 /// @param text Raw manifest content
 /// @return Parsed PluginManifest or error
-[[nodiscard]] auto parse_plugin_manifest(std::string_view text)
-    -> tl::expected<PluginManifest, ManifestError>;
+[[nodiscard]] auto
+parse_plugin_manifest(std::string_view text) -> tl::expected<PluginManifest, ManifestError>;
 
 /// @brief Validate a parsed manifest against the running Horcrux version
 ///
 /// @param manifest Parsed manifest to validate
 /// @param horcrux_version Current Horcrux core version
 /// @return std::nullopt on success, error string on failure
-[[nodiscard]] auto validate_plugin_manifest(const PluginManifest& manifest,
-                                            const PluginVersion& horcrux_version)
-    -> std::optional<std::string>;
+[[nodiscard]] auto
+validate_plugin_manifest(const PluginManifest& manifest,
+                         const PluginVersion& horcrux_version) -> std::optional<std::string>;
 
 } // namespace horcrux::core

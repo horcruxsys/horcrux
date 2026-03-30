@@ -30,8 +30,8 @@ struct RegistryPackage {
 struct LockfileEntry {
   std::string name;
   PluginVersion version;
-  std::string checksum;         ///< SHA-256 of the installed archive
-  std::string registry_url;     ///< Registry this package was resolved from
+  std::string checksum;     ///< SHA-256 of the installed archive
+  std::string registry_url; ///< Registry this package was resolved from
 };
 
 /// @brief Plugin lockfile: records the exact resolved set of plugins
@@ -44,22 +44,22 @@ struct PluginLockfile {
 
 /// @brief Registry configuration entry
 struct RegistryConfig {
-  std::string name;   ///< Human-readable registry name (e.g., "official")
-  std::string url;    ///< Base URL of the registry
+  std::string name;     ///< Human-readable registry name (e.g., "official")
+  std::string url;      ///< Base URL of the registry
   bool trusted = false; ///< Whether this registry is implicitly trusted
 };
 
 /// @brief Error types for registry operations
 enum class RegistryError {
-  NetworkUnavailable,  ///< Cannot reach registry (offline mode)
-  PackageNotFound,     ///< Package not found in registry index
-  VersionNotFound,     ///< Requested version not in registry
-  DownloadFailed,      ///< Archive download failed
-  ChecksumMismatch,    ///< Downloaded archive checksum mismatch
-  InstallFailed,       ///< Failed to unpack or install plugin
-  AlreadyInstalled,    ///< Plugin is already installed at requested version
-  LockfileError,       ///< Failed to read/write lockfile
-  InvalidConfig,       ///< Registry config is malformed
+  NetworkUnavailable, ///< Cannot reach registry (offline mode)
+  PackageNotFound,    ///< Package not found in registry index
+  VersionNotFound,    ///< Requested version not in registry
+  DownloadFailed,     ///< Archive download failed
+  ChecksumMismatch,   ///< Downloaded archive checksum mismatch
+  InstallFailed,      ///< Failed to unpack or install plugin
+  AlreadyInstalled,   ///< Plugin is already installed at requested version
+  LockfileError,      ///< Failed to read/write lockfile
+  InvalidConfig,      ///< Registry config is malformed
 };
 
 /// @brief Convert RegistryError to human-readable string
@@ -75,8 +75,7 @@ enum class RegistryError {
 /// transparently in a future milestone.
 class RegistryClient {
 public:
-  explicit RegistryClient(std::filesystem::path plugins_dir,
-                          std::filesystem::path lockfile_path);
+  explicit RegistryClient(std::filesystem::path plugins_dir, std::filesystem::path lockfile_path);
 
   // Non-copyable
   RegistryClient(const RegistryClient&) = delete;
@@ -102,12 +101,10 @@ public:
   void seed_package(RegistryPackage package);
 
   /// @brief Search packages by name substring (case-insensitive)
-  [[nodiscard]] auto search(std::string_view query) const
-      -> std::vector<RegistryPackage>;
+  [[nodiscard]] auto search(std::string_view query) const -> std::vector<RegistryPackage>;
 
   /// @brief Get metadata for a specific package
-  [[nodiscard]] auto package_info(std::string_view name) const
-      -> std::optional<RegistryPackage>;
+  [[nodiscard]] auto package_info(std::string_view name) const -> std::optional<RegistryPackage>;
 
   // ── Install / update / remove ────────────────────────────────────────────
 
@@ -119,14 +116,13 @@ public:
   /// @param name    Package name
   /// @param version Optional explicit version; latest if empty
   /// @param prompt_trust If true, print a trust prompt before installing
-  [[nodiscard]] auto install(std::string_view name,
-                              std::optional<PluginVersion> version = std::nullopt,
-                              bool prompt_trust = false)
-      -> tl::expected<LockfileEntry, RegistryError>;
+  [[nodiscard]] auto
+  install(std::string_view name, std::optional<PluginVersion> version = std::nullopt,
+          bool prompt_trust = false) -> tl::expected<LockfileEntry, RegistryError>;
 
   /// @brief Update an installed package to the latest (or given) version
   [[nodiscard]] auto update(std::string_view name,
-                             std::optional<PluginVersion> version = std::nullopt)
+                            std::optional<PluginVersion> version = std::nullopt)
       -> tl::expected<LockfileEntry, RegistryError>;
 
   /// @brief Remove an installed package
@@ -138,8 +134,8 @@ public:
   [[nodiscard]] auto read_lockfile() const -> PluginLockfile;
 
   /// @brief Write the lockfile to disk
-  [[nodiscard]] auto write_lockfile(const PluginLockfile& lockfile) const
-      -> tl::expected<void, RegistryError>;
+  [[nodiscard]] auto
+  write_lockfile(const PluginLockfile& lockfile) const -> tl::expected<void, RegistryError>;
 
   /// @brief List all installed plugins (from the plugins directory)
   [[nodiscard]] auto list_installed() const -> std::vector<LockfileEntry>;
@@ -151,13 +147,13 @@ private:
   std::vector<RegistryPackage> index_; ///< In-memory package index
 
   /// Find best matching package (latest version first)
-  [[nodiscard]] auto resolve_package(std::string_view name,
-                                      std::optional<PluginVersion> version) const
-      -> std::optional<RegistryPackage>;
+  [[nodiscard]] auto
+  resolve_package(std::string_view name,
+                  std::optional<PluginVersion> version) const -> std::optional<RegistryPackage>;
 
   /// Write a synthetic manifest.toml for an installed package
-  [[nodiscard]] auto write_installed_manifest(const RegistryPackage& pkg) const
-      -> tl::expected<void, RegistryError>;
+  [[nodiscard]] auto
+  write_installed_manifest(const RegistryPackage& pkg) const -> tl::expected<void, RegistryError>;
 };
 
 } // namespace horcrux::core

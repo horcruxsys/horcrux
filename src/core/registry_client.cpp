@@ -59,9 +59,9 @@ auto PluginLockfile::find(std::string_view name) const -> const LockfileEntry* {
 // ─────────────────────────────────────────────────────────────────────────────
 
 RegistryClient::RegistryClient(std::filesystem::path plugins_dir,
-                                std::filesystem::path lockfile_path)
-    : plugins_dir_(std::move(plugins_dir)),
-      lockfile_path_(std::move(lockfile_path)) {}
+                               std::filesystem::path lockfile_path)
+    : plugins_dir_(std::move(plugins_dir)), lockfile_path_(std::move(lockfile_path)) {
+}
 
 // ── Registry management ──────────────────────────────────────────────────────
 
@@ -71,7 +71,7 @@ void RegistryClient::add_registry(RegistryConfig config) {
 
 auto RegistryClient::remove_registry(std::string_view name) -> bool {
   auto it = std::remove_if(registries_.begin(), registries_.end(),
-                            [name](const RegistryConfig& r) { return r.name == name; });
+                           [name](const RegistryConfig& r) { return r.name == name; });
   if (it == registries_.end()) {
     return false;
   }
@@ -93,8 +93,7 @@ auto RegistryClient::search(std::string_view query) const -> std::vector<Registr
   std::vector<RegistryPackage> results;
 
   auto to_lower = [](std::string s) -> std::string {
-    std::transform(s.begin(), s.end(), s.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
     return s;
   };
 
@@ -112,8 +111,7 @@ auto RegistryClient::search(std::string_view query) const -> std::vector<Registr
   return results;
 }
 
-auto RegistryClient::package_info(std::string_view name) const
-    -> std::optional<RegistryPackage> {
+auto RegistryClient::package_info(std::string_view name) const -> std::optional<RegistryPackage> {
   for (const auto& pkg : index_) {
     if (pkg.name == name) {
       return pkg;
@@ -124,9 +122,8 @@ auto RegistryClient::package_info(std::string_view name) const
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
-auto RegistryClient::resolve_package(std::string_view name,
-                                      std::optional<PluginVersion> version) const
-    -> std::optional<RegistryPackage> {
+auto RegistryClient::resolve_package(std::string_view name, std::optional<PluginVersion> version)
+    const -> std::optional<RegistryPackage> {
   std::optional<RegistryPackage> best;
   for (const auto& pkg : index_) {
     if (pkg.name != name) {
@@ -146,9 +143,8 @@ auto RegistryClient::resolve_package(std::string_view name,
 auto RegistryClient::write_installed_manifest(const RegistryPackage& pkg) const
     -> tl::expected<void, RegistryError> {
   // Safety: reject names containing path separators or parent traversal
-  if (pkg.name.find('/') != std::string::npos ||
-      pkg.name.find('\\') != std::string::npos || pkg.name.find("..") != std::string::npos ||
-      pkg.name.empty()) {
+  if (pkg.name.find('/') != std::string::npos || pkg.name.find('\\') != std::string::npos ||
+      pkg.name.find("..") != std::string::npos || pkg.name.empty()) {
     return tl::unexpected(RegistryError::InstallFailed);
   }
 
@@ -178,10 +174,8 @@ auto RegistryClient::write_installed_manifest(const RegistryPackage& pkg) const
 
 // ── Install / update / remove ────────────────────────────────────────────────
 
-auto RegistryClient::install(std::string_view name,
-                              std::optional<PluginVersion> version,
-                              bool prompt_trust)
-    -> tl::expected<LockfileEntry, RegistryError> {
+auto RegistryClient::install(std::string_view name, std::optional<PluginVersion> version,
+                             bool prompt_trust) -> tl::expected<LockfileEntry, RegistryError> {
   auto pkg = resolve_package(name, version);
   if (!pkg.has_value()) {
     if (version.has_value()) {
@@ -228,13 +222,11 @@ auto RegistryClient::install(std::string_view name,
   return entry;
 }
 
-auto RegistryClient::update(std::string_view name,
-                             std::optional<PluginVersion> version)
+auto RegistryClient::update(std::string_view name, std::optional<PluginVersion> version)
     -> tl::expected<LockfileEntry, RegistryError> {
   // Safety: reject names containing path separators or parent traversal
   const std::string name_str(name);
-  if (name_str.find('/') != std::string::npos ||
-      name_str.find('\\') != std::string::npos ||
+  if (name_str.find('/') != std::string::npos || name_str.find('\\') != std::string::npos ||
       name_str.find("..") != std::string::npos || name_str.empty()) {
     return tl::unexpected(RegistryError::PackageNotFound);
   }
@@ -284,8 +276,7 @@ auto RegistryClient::update(std::string_view name,
 auto RegistryClient::remove(std::string_view name) -> tl::expected<void, RegistryError> {
   // Safety: reject names containing path separators or parent traversal
   const std::string name_str(name);
-  if (name_str.find('/') != std::string::npos ||
-      name_str.find('\\') != std::string::npos ||
+  if (name_str.find('/') != std::string::npos || name_str.find('\\') != std::string::npos ||
       name_str.find("..") != std::string::npos || name_str.empty()) {
     return tl::unexpected(RegistryError::PackageNotFound);
   }

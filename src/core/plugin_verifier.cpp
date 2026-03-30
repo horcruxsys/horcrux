@@ -33,8 +33,7 @@ auto to_string(VerifierError error) -> std::string {
 // compute_file_sha256
 // ─────────────────────────────────────────────────────────────────────────────
 
-auto compute_file_sha256(const std::filesystem::path& path)
-    -> tl::expected<Hash, VerifierError> {
+auto compute_file_sha256(const std::filesystem::path& path) -> tl::expected<Hash, VerifierError> {
   if (!std::filesystem::exists(path)) {
     return tl::unexpected(VerifierError::MissingFile);
   }
@@ -45,7 +44,7 @@ auto compute_file_sha256(const std::filesystem::path& path)
   }
 
   std::vector<uint8_t> content{std::istreambuf_iterator<char>(file),
-                                std::istreambuf_iterator<char>()};
+                               std::istreambuf_iterator<char>()};
   return compute_sha256(std::span<const uint8_t>(content));
 }
 
@@ -54,8 +53,7 @@ auto compute_file_sha256(const std::filesystem::path& path)
 // ─────────────────────────────────────────────────────────────────────────────
 
 auto verify_plugin_checksum(const std::filesystem::path& plugin_path,
-                             const PluginManifest& manifest)
-    -> tl::expected<void, VerifierError> {
+                            const PluginManifest& manifest) -> tl::expected<void, VerifierError> {
   // If no checksum declared, skip verification
   if (!manifest.checksum.has_value()) {
     return {};
@@ -79,8 +77,7 @@ auto verify_plugin_checksum(const std::filesystem::path& plugin_path,
 // ─────────────────────────────────────────────────────────────────────────────
 
 auto enforce_plugin_permissions(const PluginManifest& manifest,
-                                 const PluginTrustPolicy& policy)
-    -> std::optional<std::string> {
+                                const PluginTrustPolicy& policy) -> std::optional<std::string> {
   if (manifest.permissions.filesystem_read && !policy.allow_filesystem_read) {
     return "Plugin '" + manifest.name +
            "' requests filesystem_read which is not allowed by trust policy";

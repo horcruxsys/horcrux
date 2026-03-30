@@ -68,8 +68,7 @@ auto default_registry_config() -> std::filesystem::path {
 
 /// Persist a list of registry configs to a file
 auto save_registries(const std::filesystem::path& config_path,
-                      const std::vector<core::RegistryConfig>& registries)
-    -> bool {
+                     const std::vector<core::RegistryConfig>& registries) -> bool {
   auto parent = config_path.parent_path();
   if (!parent.empty()) {
     std::error_code ec;
@@ -85,8 +84,8 @@ auto save_registries(const std::filesystem::path& config_path,
   }
   file << "# Horcrux Registry Configuration\n";
   for (const auto& r : registries) {
-    file << "name=" << r.name << " url=" << r.url
-         << " trusted=" << (r.trusted ? "true" : "false") << "\n";
+    file << "name=" << r.name << " url=" << r.url << " trusted=" << (r.trusted ? "true" : "false")
+         << "\n";
   }
   return true;
 }

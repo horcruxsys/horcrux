@@ -28,8 +28,12 @@ public:
       ptrs_.push_back(const_cast<char*>(a.c_str())); // NOLINT
     }
   }
-  auto argc() const -> int { return static_cast<int>(ptrs_.size()); }
-  auto argv() -> char** { return ptrs_.data(); }
+  auto argc() const -> int {
+    return static_cast<int>(ptrs_.size());
+  }
+  auto argv() -> char** {
+    return ptrs_.data();
+  }
 
 private:
   std::vector<std::string> args_;
@@ -41,12 +45,9 @@ private:
 // ─────────────────────────────────────────────────────────────────────────────
 
 TEST(PluginCommandErrorTest, ToStringCoversAllValues) {
-  EXPECT_EQ(to_string(PluginCommandError::NoSubcommand),
-            "No plugin subcommand provided");
-  EXPECT_EQ(to_string(PluginCommandError::InvalidSubcommand),
-            "Invalid plugin subcommand");
-  EXPECT_EQ(to_string(PluginCommandError::MissingArgument),
-            "Missing required argument");
+  EXPECT_EQ(to_string(PluginCommandError::NoSubcommand), "No plugin subcommand provided");
+  EXPECT_EQ(to_string(PluginCommandError::InvalidSubcommand), "Invalid plugin subcommand");
+  EXPECT_EQ(to_string(PluginCommandError::MissingArgument), "Missing required argument");
   EXPECT_EQ(to_string(PluginCommandError::OperationFailed), "Plugin operation failed");
 }
 
@@ -55,14 +56,10 @@ TEST(PluginCommandErrorTest, ToStringCoversAllValues) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 TEST(RegistryCommandErrorTest, ToStringCoversAllValues) {
-  EXPECT_EQ(to_string(RegistryCommandError::NoSubcommand),
-            "No registry subcommand provided");
-  EXPECT_EQ(to_string(RegistryCommandError::InvalidSubcommand),
-            "Invalid registry subcommand");
-  EXPECT_EQ(to_string(RegistryCommandError::MissingArgument),
-            "Missing required argument");
-  EXPECT_EQ(to_string(RegistryCommandError::OperationFailed),
-            "Registry operation failed");
+  EXPECT_EQ(to_string(RegistryCommandError::NoSubcommand), "No registry subcommand provided");
+  EXPECT_EQ(to_string(RegistryCommandError::InvalidSubcommand), "Invalid registry subcommand");
+  EXPECT_EQ(to_string(RegistryCommandError::MissingArgument), "Missing required argument");
+  EXPECT_EQ(to_string(RegistryCommandError::OperationFailed), "Registry operation failed");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -108,8 +105,7 @@ TEST(PluginCommandTest, SearchEmptyRegistryReturnsZero) {
   const fs::path lockfile = tmp / "plugins.lock";
   fs::create_directories(plugins_dir);
 
-  FakeArgv args({"horcrux", "plugin", "search", "wasm",
-                 "--plugins-dir=" + plugins_dir.string(),
+  FakeArgv args({"horcrux", "plugin", "search", "wasm", "--plugins-dir=" + plugins_dir.string(),
                  "--lockfile=" + lockfile.string()});
   int rc = handle_plugin_command(args.argc(), args.argv(), logger);
   EXPECT_EQ(rc, 0);
@@ -159,8 +155,7 @@ TEST(PluginCommandTest, InstallUnknownPackageReturnsNonZero) {
   fs::create_directories(plugins_dir);
 
   FakeArgv args({"horcrux", "plugin", "install", "nonexistent-package",
-                 "--plugins-dir=" + plugins_dir.string(),
-                 "--lockfile=" + lockfile.string()});
+                 "--plugins-dir=" + plugins_dir.string(), "--lockfile=" + lockfile.string()});
   int rc = handle_plugin_command(args.argc(), args.argv(), logger);
   EXPECT_NE(rc, 0);
 
@@ -238,8 +233,8 @@ TEST(RegistryCommandTest, AddAndListRegistry) {
   const fs::path config = tmp / "registries.conf";
 
   {
-    FakeArgv args({"horcrux", "registry", "add", "myregistry",
-                   "https://registry.example.com", "--config=" + config.string()});
+    FakeArgv args({"horcrux", "registry", "add", "myregistry", "https://registry.example.com",
+                   "--config=" + config.string()});
     int rc = handle_registry_command(args.argc(), args.argv(), logger);
     EXPECT_EQ(rc, 0);
   }
@@ -259,8 +254,7 @@ TEST(RegistryCommandTest, RemoveNonexistentRegistryReturnsNonZero) {
   fs::create_directories(tmp);
   const fs::path config = tmp / "registries.conf";
 
-  FakeArgv args(
-      {"horcrux", "registry", "remove", "nonexistent", "--config=" + config.string()});
+  FakeArgv args({"horcrux", "registry", "remove", "nonexistent", "--config=" + config.string()});
   int rc = handle_registry_command(args.argc(), args.argv(), logger);
   EXPECT_NE(rc, 0);
 

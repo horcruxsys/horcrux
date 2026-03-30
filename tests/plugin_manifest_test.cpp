@@ -60,10 +60,8 @@ TEST(ManifestErrorTest, ToStringCoversAllValues) {
   EXPECT_EQ(to_string(ManifestError::ParseError), "Manifest parse error");
   EXPECT_EQ(to_string(ManifestError::MissingField), "Required manifest field is missing");
   EXPECT_EQ(to_string(ManifestError::InvalidVersion), "Invalid version string in manifest");
-  EXPECT_EQ(to_string(ManifestError::InvalidLicense),
-            "Invalid or unrecognized license identifier");
-  EXPECT_EQ(to_string(ManifestError::InvalidExtension),
-            "Malformed extension entry in manifest");
+  EXPECT_EQ(to_string(ManifestError::InvalidLicense), "Invalid or unrecognized license identifier");
+  EXPECT_EQ(to_string(ManifestError::InvalidExtension), "Malformed extension entry in manifest");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -164,8 +162,7 @@ checksum = "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
   auto result = parse_plugin_manifest(manifest);
   ASSERT_TRUE(result.has_value());
   ASSERT_TRUE(result->checksum.has_value());
-  EXPECT_EQ(*result->checksum,
-            "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890");
+  EXPECT_EQ(*result->checksum, "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

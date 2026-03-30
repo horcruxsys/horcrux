@@ -53,11 +53,11 @@ auto to_string(PluginLoaderError error) -> std::string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 PluginLoader::PluginLoader(PluginVersion horcrux_version, PluginTrustPolicy trust_policy)
-    : horcrux_version_(std::move(horcrux_version)),
-      trust_policy_(std::move(trust_policy)) {}
+    : horcrux_version_(std::move(horcrux_version)), trust_policy_(std::move(trust_policy)) {
+}
 
 auto PluginLoader::validate_candidate(const PluginManifest& manifest,
-                                       const std::filesystem::path& install_path)
+                                      const std::filesystem::path& install_path)
     -> tl::expected<void, PluginLoaderError> {
   // Compatibility gate
   auto compat_error = validate_plugin_manifest(manifest, horcrux_version_);
@@ -84,8 +84,7 @@ auto PluginLoader::validate_candidate(const PluginManifest& manifest,
   return {};
 }
 
-auto PluginLoader::register_plugin(PluginManifest manifest,
-                                    std::filesystem::path install_path)
+auto PluginLoader::register_plugin(PluginManifest manifest, std::filesystem::path install_path)
     -> tl::expected<size_t, PluginLoaderError> {
   // Duplicate check
   for (const auto& existing : plugins_) {
@@ -111,8 +110,7 @@ auto PluginLoader::register_plugin(PluginManifest manifest,
 }
 
 auto PluginLoader::scan_directory(const std::filesystem::path& plugins_dir) -> size_t {
-  if (!std::filesystem::exists(plugins_dir) ||
-      !std::filesystem::is_directory(plugins_dir)) {
+  if (!std::filesystem::exists(plugins_dir) || !std::filesystem::is_directory(plugins_dir)) {
     return 0;
   }
 
@@ -136,8 +134,7 @@ auto PluginLoader::scan_directory(const std::filesystem::path& plugins_dir) -> s
       continue;
     }
 
-    std::string content{std::istreambuf_iterator<char>(file),
-                        std::istreambuf_iterator<char>()};
+    std::string content{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
     auto manifest_result = parse_plugin_manifest(content);
     if (!manifest_result) {
       continue; // Skip invalid manifests
@@ -154,10 +151,9 @@ auto PluginLoader::scan_directory(const std::filesystem::path& plugins_dir) -> s
 
 void PluginLoader::initialize_all() {
   // Sort plugins alphabetically by name for deterministic init order
-  std::sort(plugins_.begin(), plugins_.end(),
-            [](const PluginRecord& a, const PluginRecord& b) {
-              return a.manifest.name < b.manifest.name;
-            });
+  std::sort(plugins_.begin(), plugins_.end(), [](const PluginRecord& a, const PluginRecord& b) {
+    return a.manifest.name < b.manifest.name;
+  });
 
   for (auto& plugin : plugins_) {
     if (plugin.state != PluginState::Unloaded) {

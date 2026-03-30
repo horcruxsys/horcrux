@@ -17,8 +17,7 @@ namespace fs = std::filesystem;
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-static auto make_package(std::string name, PluginVersion version = {1, 0, 0})
-    -> RegistryPackage {
+static auto make_package(std::string name, PluginVersion version = {1, 0, 0}) -> RegistryPackage {
   RegistryPackage pkg;
   pkg.name = std::move(name);
   pkg.version = version;
@@ -39,7 +38,9 @@ protected:
     fs::create_directories(plugins_dir_);
   }
 
-  void TearDown() override { fs::remove_all(tmp_dir_); }
+  void TearDown() override {
+    fs::remove_all(tmp_dir_);
+  }
 
   fs::path tmp_dir_;
   fs::path plugins_dir_;
@@ -53,16 +54,13 @@ protected:
 TEST(RegistryErrorTest, ToStringCoversAllValues) {
   EXPECT_EQ(to_string(RegistryError::NetworkUnavailable), "Registry network unavailable");
   EXPECT_EQ(to_string(RegistryError::PackageNotFound), "Package not found in registry");
-  EXPECT_EQ(to_string(RegistryError::VersionNotFound),
-            "Requested version not found in registry");
+  EXPECT_EQ(to_string(RegistryError::VersionNotFound), "Requested version not found in registry");
   EXPECT_EQ(to_string(RegistryError::DownloadFailed), "Package download failed");
-  EXPECT_EQ(to_string(RegistryError::ChecksumMismatch),
-            "Downloaded package checksum mismatch");
+  EXPECT_EQ(to_string(RegistryError::ChecksumMismatch), "Downloaded package checksum mismatch");
   EXPECT_EQ(to_string(RegistryError::InstallFailed), "Package installation failed");
   EXPECT_EQ(to_string(RegistryError::AlreadyInstalled),
             "Package is already installed at this version");
-  EXPECT_EQ(to_string(RegistryError::LockfileError),
-            "Failed to read or write plugin lockfile");
+  EXPECT_EQ(to_string(RegistryError::LockfileError), "Failed to read or write plugin lockfile");
   EXPECT_EQ(to_string(RegistryError::InvalidConfig), "Registry configuration is invalid");
 }
 

@@ -19,10 +19,10 @@ namespace horcrux::core {
 
 /// @brief Runtime state of an installed plugin
 enum class PluginState {
-  Unloaded,      ///< Manifest parsed but plugin not yet initialized
-  Initialized,   ///< Lifecycle init hook completed successfully
-  Failed,        ///< Init or registration hook returned an error
-  ShutDown,      ///< Shutdown hook completed; plugin is inactive
+  Unloaded,    ///< Manifest parsed but plugin not yet initialized
+  Initialized, ///< Lifecycle init hook completed successfully
+  Failed,      ///< Init or registration hook returned an error
+  ShutDown,    ///< Shutdown hook completed; plugin is inactive
 };
 
 /// @brief Convert PluginState to human-readable string
@@ -42,13 +42,13 @@ struct PluginRecord {
 
 /// @brief Error types for plugin loading operations
 enum class PluginLoaderError {
-  ManifestNotFound,     ///< manifest file missing from install path
-  ManifestInvalid,      ///< Manifest failed parse or validation
-  CompatibilityFailed,  ///< Plugin not compatible with current Horcrux version
-  ChecksumFailed,       ///< Checksum verification failed
-  PermissionViolation,  ///< Plugin requests disallowed permissions
-  AlreadyLoaded,        ///< Plugin with this name is already registered
-  InitFailed,           ///< Plugin lifecycle init hook returned error
+  ManifestNotFound,    ///< manifest file missing from install path
+  ManifestInvalid,     ///< Manifest failed parse or validation
+  CompatibilityFailed, ///< Plugin not compatible with current Horcrux version
+  ChecksumFailed,      ///< Checksum verification failed
+  PermissionViolation, ///< Plugin requests disallowed permissions
+  AlreadyLoaded,       ///< Plugin with this name is already registered
+  InitFailed,          ///< Plugin lifecycle init hook returned error
 };
 
 /// @brief Convert PluginLoaderError to human-readable string
@@ -79,8 +79,7 @@ public:
   /// @param manifest  Plugin manifest
   /// @param install_path Directory where plugin is installed
   /// @return Plugin index on success, error on failure
-  [[nodiscard]] auto register_plugin(PluginManifest manifest,
-                                     std::filesystem::path install_path)
+  [[nodiscard]] auto register_plugin(PluginManifest manifest, std::filesystem::path install_path)
       -> tl::expected<size_t, PluginLoaderError>;
 
   /// @brief Scan a directory for plugins and register them all
@@ -104,8 +103,7 @@ public:
   [[nodiscard]] auto plugins() const -> const std::vector<PluginRecord>&;
 
   /// @brief Find a plugin record by name (case-sensitive)
-  [[nodiscard]] auto find_plugin(std::string_view name) const
-      -> const PluginRecord*;
+  [[nodiscard]] auto find_plugin(std::string_view name) const -> const PluginRecord*;
 
   /// @brief Get the count of plugins in a given state
   [[nodiscard]] auto count_in_state(PluginState state) const -> size_t;

@@ -106,8 +106,7 @@ auto parse_bool(std::string_view s) -> std::optional<bool> {
 // parse_plugin_manifest
 // ─────────────────────────────────────────────────────────────────────────────
 
-auto parse_plugin_manifest(std::string_view text)
-    -> tl::expected<PluginManifest, ManifestError> {
+auto parse_plugin_manifest(std::string_view text) -> tl::expected<PluginManifest, ManifestError> {
   PluginManifest manifest;
   PluginExtension current_extension;
   bool in_extension_block = false;
@@ -206,8 +205,7 @@ auto parse_plugin_manifest(std::string_view text)
   }
 
   // Flush last extension block
-  if (in_extension_block && !current_extension.kind.empty() &&
-      !current_extension.name.empty()) {
+  if (in_extension_block && !current_extension.kind.empty() && !current_extension.name.empty()) {
     manifest.extensions.push_back(current_extension);
   }
 
@@ -231,23 +229,21 @@ auto parse_plugin_manifest(std::string_view text)
 // ─────────────────────────────────────────────────────────────────────────────
 
 auto validate_plugin_manifest(const PluginManifest& manifest,
-                               const PluginVersion& horcrux_version)
-    -> std::optional<std::string> {
+                              const PluginVersion& horcrux_version) -> std::optional<std::string> {
   // Check compatibility range
   if (horcrux_version < manifest.min_horcrux_version) {
-    return "Plugin '" + manifest.name + "' requires Horcrux >= " +
-           manifest.min_horcrux_version.to_string() + " (current: " +
-           horcrux_version.to_string() + ")";
+    return "Plugin '" + manifest.name +
+           "' requires Horcrux >= " + manifest.min_horcrux_version.to_string() +
+           " (current: " + horcrux_version.to_string() + ")";
   }
 
   // Only check max if it was explicitly set (non-zero)
-  if (manifest.max_horcrux_version.ver_major > 0 ||
-      manifest.max_horcrux_version.ver_minor > 0 ||
+  if (manifest.max_horcrux_version.ver_major > 0 || manifest.max_horcrux_version.ver_minor > 0 ||
       manifest.max_horcrux_version.ver_patch > 0) {
     if (horcrux_version > manifest.max_horcrux_version) {
       return "Plugin '" + manifest.name + "' is only compatible up to Horcrux " +
-             manifest.max_horcrux_version.to_string() + " (current: " +
-             horcrux_version.to_string() + ")";
+             manifest.max_horcrux_version.to_string() +
+             " (current: " + horcrux_version.to_string() + ")";
     }
   }
 

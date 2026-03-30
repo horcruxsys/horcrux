@@ -18,8 +18,7 @@ namespace fs = std::filesystem;
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Build a minimal valid manifest
-static auto make_manifest(std::string name, PluginVersion version = {1, 0, 0})
-    -> PluginManifest {
+static auto make_manifest(std::string name, PluginVersion version = {1, 0, 0}) -> PluginManifest {
   PluginManifest m;
   m.name = std::move(name);
   m.version = version;
@@ -53,8 +52,7 @@ TEST(PluginLoaderErrorTest, ToStringCoversAllValues) {
   EXPECT_EQ(to_string(PluginLoaderError::ManifestInvalid), "Plugin manifest is invalid");
   EXPECT_EQ(to_string(PluginLoaderError::CompatibilityFailed),
             "Plugin is not compatible with this version of Horcrux");
-  EXPECT_EQ(to_string(PluginLoaderError::ChecksumFailed),
-            "Plugin checksum verification failed");
+  EXPECT_EQ(to_string(PluginLoaderError::ChecksumFailed), "Plugin checksum verification failed");
   EXPECT_EQ(to_string(PluginLoaderError::PermissionViolation),
             "Plugin requests permissions not allowed by trust policy");
   EXPECT_EQ(to_string(PluginLoaderError::AlreadyLoaded),

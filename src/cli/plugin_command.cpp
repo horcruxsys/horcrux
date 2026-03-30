@@ -85,8 +85,7 @@ auto default_lockfile_path() -> std::filesystem::path {
 // Subcommand handlers
 // ─────────────────────────────────────────────────────────────────────────────
 
-auto cmd_search(const std::string& query, core::RegistryClient& client,
-                Logger& logger) -> int {
+auto cmd_search(const std::string& query, core::RegistryClient& client, Logger& logger) -> int {
   auto results = client.search(query);
   if (results.empty()) {
     logger.info("No plugins found matching: ", query.empty() ? "(all)" : query);
@@ -94,16 +93,14 @@ auto cmd_search(const std::string& query, core::RegistryClient& client,
   }
   std::cout << "Found " << results.size() << " plugin(s):\n";
   for (const auto& pkg : results) {
-    std::cout << "  " << pkg.name << " v" << pkg.version.to_string() << " - "
-              << pkg.description << " [" << pkg.license << "]\n";
+    std::cout << "  " << pkg.name << " v" << pkg.version.to_string() << " - " << pkg.description
+              << " [" << pkg.license << "]\n";
   }
   return 0;
 }
 
-auto cmd_install(const std::string& name,
-                  std::optional<core::PluginVersion> version,
-                  core::RegistryClient& client,
-                  Logger& logger) -> int {
+auto cmd_install(const std::string& name, std::optional<core::PluginVersion> version,
+                 core::RegistryClient& client, Logger& logger) -> int {
   logger.info("Installing plugin: ", name);
   auto result = client.install(name, version, /*prompt_trust=*/true);
   if (!result) {
@@ -131,8 +128,7 @@ auto cmd_list(core::RegistryClient& client, Logger& logger) -> int {
   return 0;
 }
 
-auto cmd_info(const std::string& name, core::RegistryClient& client,
-               Logger& logger) -> int {
+auto cmd_info(const std::string& name, core::RegistryClient& client, Logger& logger) -> int {
   auto info = client.package_info(name);
   if (!info.has_value()) {
     logger.error("Plugin not found in registry: ", name);
@@ -149,10 +145,8 @@ auto cmd_info(const std::string& name, core::RegistryClient& client,
   return 0;
 }
 
-auto cmd_update(const std::string& name,
-                 std::optional<core::PluginVersion> version,
-                 core::RegistryClient& client,
-                 Logger& logger) -> int {
+auto cmd_update(const std::string& name, std::optional<core::PluginVersion> version,
+                core::RegistryClient& client, Logger& logger) -> int {
   logger.info("Updating plugin: ", name);
   auto result = client.update(name, version);
   if (!result) {
@@ -163,8 +157,7 @@ auto cmd_update(const std::string& name,
   return 0;
 }
 
-auto cmd_remove(const std::string& name, core::RegistryClient& client,
-                 Logger& logger) -> int {
+auto cmd_remove(const std::string& name, core::RegistryClient& client, Logger& logger) -> int {
   logger.info("Removing plugin: ", name);
   auto result = client.remove(name);
   if (!result) {
