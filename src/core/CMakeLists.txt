@@ -31,6 +31,10 @@ add_library(horcrux_core STATIC
     sandbox_policy.cpp
     hermetic_env.cpp
     repro_checker.cpp
+    plugin_manifest.cpp
+    plugin_verifier.cpp
+    plugin_loader.cpp
+    registry_client.cpp
 )
 
 # Set library properties

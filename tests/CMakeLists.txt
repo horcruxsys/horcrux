@@ -803,10 +803,123 @@ target_compile_options(repro_checker_test PRIVATE
 
 gtest_discover_tests(repro_checker_test)
 
+# Plugin manifest tests (M5)
+add_executable(plugin_manifest_test
+    plugin_manifest_test.cpp
+)
+
+target_link_libraries(plugin_manifest_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(plugin_manifest_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(plugin_manifest_test)
+
+# Plugin loader tests (M5)
+add_executable(plugin_loader_test
+    plugin_loader_test.cpp
+)
+
+target_link_libraries(plugin_loader_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(plugin_loader_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(plugin_loader_test)
+
+# Registry client tests (M5)
+add_executable(registry_client_test
+    registry_client_test.cpp
+)
+
+target_link_libraries(registry_client_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(registry_client_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(registry_client_test)
+
+# Plugin & registry CLI command tests (M5)
+add_executable(plugin_command_test
+    plugin_command_test.cpp
+)
+
+target_link_libraries(plugin_command_test
+    PRIVATE
+    horcrux_cli
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(plugin_command_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(plugin_command_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test android_variant_test android_sandbox_test cli_commands_test adapter_test rust_adapter_test python_adapter_test java_adapter_test adapter_conformance_test sandbox_policy_test hermetic_env_test repro_checker_test
+    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test android_variant_test android_sandbox_test cli_commands_test adapter_test rust_adapter_test python_adapter_test java_adapter_test adapter_conformance_test sandbox_policy_test hermetic_env_test repro_checker_test plugin_manifest_test plugin_loader_test registry_client_test plugin_command_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )
