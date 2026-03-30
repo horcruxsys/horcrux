@@ -17,17 +17,13 @@ constexpr std::string_view kAdapterName = "cpp";
 constexpr std::string_view kAdapterVersion = "1.0.0";
 
 /// Candidate compiler executables in priority order
-constexpr std::array<std::string_view, 4> kCompilerCandidates = {
-    "g++", "clang++", "c++", "cc"
-};
+constexpr std::array<std::string_view, 4> kCompilerCandidates = {"g++", "clang++", "c++", "cc"};
 
 /// Minimum depth for an absolute path to be considered safe for removal
 constexpr int MIN_SAFE_ABSOLUTE_PATH_DEPTH = 3;
 
 /// C++ source file extensions considered for compilation
-constexpr std::array<std::string_view, 4> kCppSourceExtensions = {
-    ".cpp", ".cc", ".cxx", ".c"
-};
+constexpr std::array<std::string_view, 4> kCppSourceExtensions = {".cpp", ".cc", ".cxx", ".c"};
 
 /// Check if an executable exists on PATH using POSIX access()
 auto executable_exists(std::string_view name) -> bool {
@@ -159,8 +155,7 @@ auto CppAdapter::create() -> tl::expected<CppAdapter, AdapterError> {
 // CppAdapter constructor
 // ─────────────────────────────────────────────────────────────────────────────
 
-CppAdapter::CppAdapter(CppToolchain toolchain)
-    : toolchain_(std::move(toolchain)) {
+CppAdapter::CppAdapter(CppToolchain toolchain) : toolchain_(std::move(toolchain)) {
   info_.name = std::string(kAdapterName);
   info_.version = std::string(kAdapterVersion);
   info_.supported_kinds = {"cc_library", "cc_binary", "cc_test"};
@@ -198,7 +193,7 @@ auto CppAdapter::parse_target(const BuildNode& node) -> tl::expected<AdapterTarg
 
   AdapterTarget target;
   target.label = node.label();
-  target.kind  = kind;
+  target.kind = kind;
 
   // Map inputs → srcs (source + header files)
   for (const auto& inp : node.inputs()) {
@@ -220,8 +215,7 @@ auto CppAdapter::parse_target(const BuildNode& node) -> tl::expected<AdapterTarg
   }
 
   // Merge node inputs as srcs if srcs not explicitly provided
-  if (target.attrs.find("srcs") == target.attrs.end() ||
-      target.attrs.at("srcs").empty()) {
+  if (target.attrs.find("srcs") == target.attrs.end() || target.attrs.at("srcs").empty()) {
     auto sources = filter_sources(target.attrs["inputs"]);
     if (!sources.empty()) {
       target.attrs["srcs"] = std::move(sources);
@@ -230,8 +224,7 @@ auto CppAdapter::parse_target(const BuildNode& node) -> tl::expected<AdapterTarg
 
   // Validate: cc_binary and cc_test must have at least one source
   if ((kind == "cc_binary" || kind == "cc_test") &&
-      (target.attrs.find("srcs") == target.attrs.end() ||
-       target.attrs.at("srcs").empty())) {
+      (target.attrs.find("srcs") == target.attrs.end() || target.attrs.at("srcs").empty())) {
     emit(Diagnostic::Level::Warning,
          "Target " + target.label + " has no source files; build may be empty");
   }
@@ -244,7 +237,7 @@ auto CppAdapter::parse_target(const BuildNode& node) -> tl::expected<AdapterTarg
 // ─────────────────────────────────────────────────────────────────────────────
 
 auto CppAdapter::plan_actions(const AdapterTarget& target, const BuildGraph& graph,
-                               const std::string& output_root)
+                              const std::string& output_root)
     -> tl::expected<std::vector<BuildAction>, AdapterError> {
   diagnostics_.clear();
   std::vector<BuildAction> actions;
@@ -289,9 +282,8 @@ auto CppAdapter::plan_actions(const AdapterTarget& target, const BuildGraph& gra
 // plan_compile_actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-auto CppAdapter::plan_compile_actions(const AdapterTarget& target,
-                                       const std::string& output_root,
-                                       std::vector<std::string>& obj_files) const
+auto CppAdapter::plan_compile_actions(const AdapterTarget& target, const std::string& output_root,
+                                      std::vector<std::string>& obj_files) const
     -> tl::expected<std::vector<BuildAction>, AdapterError> {
   std::vector<BuildAction> actions;
 
@@ -325,10 +317,8 @@ auto CppAdapter::plan_compile_actions(const AdapterTarget& target,
     auto obj_name = safe_label + "__" + src_path.stem().string() + ".o";
     auto obj_path = std::filesystem::path(output_root) / obj_name;
 
-    std::vector<std::string> cmd = {
-        toolchain_.compiler, "-std=c++23", "-c", src,
-        "-o", obj_path.string()
-    };
+    std::vector<std::string> cmd = {toolchain_.compiler, "-std=c++23", "-c", src, "-o",
+                                    obj_path.string()};
     for (const auto& flag : include_flags) {
       cmd.push_back(flag);
     }
@@ -354,9 +344,8 @@ auto CppAdapter::plan_compile_actions(const AdapterTarget& target,
 // plan_archive_action
 // ─────────────────────────────────────────────────────────────────────────────
 
-auto CppAdapter::plan_archive_action(const AdapterTarget& target,
-                                      const std::string& output_root,
-                                      const std::vector<std::string>& obj_files) const
+auto CppAdapter::plan_archive_action(const AdapterTarget& target, const std::string& output_root,
+                                     const std::vector<std::string>& obj_files) const
     -> tl::expected<BuildAction, AdapterError> {
   auto target_name = extract_target_name(target.label);
   auto lib_name = "lib" + target_name + ".a";
@@ -381,11 +370,9 @@ auto CppAdapter::plan_archive_action(const AdapterTarget& target,
 // plan_link_action
 // ─────────────────────────────────────────────────────────────────────────────
 
-auto CppAdapter::plan_link_action(const AdapterTarget& target,
-                                   const BuildGraph& graph,
-                                   const std::string& output_root,
-                                   const std::vector<std::string>& obj_files) const
-    -> tl::expected<BuildAction, AdapterError> {
+auto CppAdapter::plan_link_action(
+    const AdapterTarget& target, const BuildGraph& graph, const std::string& output_root,
+    const std::vector<std::string>& obj_files) const -> tl::expected<BuildAction, AdapterError> {
   auto target_name = extract_target_name(target.label);
   auto bin_path = std::filesystem::path(output_root) / target_name;
 

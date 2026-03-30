@@ -67,7 +67,7 @@ auto is_safe_path(const std::filesystem::path& path) -> bool {
 
 /// Remove a directory with proper error handling
 auto remove_directory(const std::filesystem::path& dir, bool dry_run, bool verbose,
-                       Logger& logger) -> tl::expected<void, CleanError> {
+                      Logger& logger) -> tl::expected<void, CleanError> {
   if (!std::filesystem::exists(dir)) {
     if (verbose) {
       logger.info("  Skip (not found): ", dir.string());

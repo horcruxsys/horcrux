@@ -47,9 +47,9 @@ void print_test_summary(const TestResult& result) {
   std::cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
   std::cout << "Test Summary\n";
   std::cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-  std::cout << "  Total:   " << result.total   << "\n";
-  std::cout << "  Passed:  " << result.passed  << "\n";
-  std::cout << "  Failed:  " << result.failed  << "\n";
+  std::cout << "  Total:   " << result.total << "\n";
+  std::cout << "  Passed:  " << result.passed << "\n";
+  std::cout << "  Failed:  " << result.failed << "\n";
   std::cout << "  Skipped: " << result.skipped << "\n";
   std::cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
 
@@ -100,8 +100,7 @@ auto handle_test_command(int argc, char* argv[], Logger& logger) -> int {
   // Create build executor (reuse existing infrastructure)
   auto executor_result = BuildExecutor::create(opts.cache_dir, logger);
   if (!executor_result) {
-    logger.error("Failed to initialize build executor: ",
-                 to_string(executor_result.error()));
+    logger.error("Failed to initialize build executor: ", to_string(executor_result.error()));
     return 1;
   }
 
@@ -125,8 +124,7 @@ auto handle_test_command(int argc, char* argv[], Logger& logger) -> int {
     logger.info("Building test target: ", target_spec);
     auto build_result = executor.build(target_spec);
     if (!build_result) {
-      logger.error("Build failed for ", target_spec, ": ",
-                   to_string(build_result.error()));
+      logger.error("Build failed for ", target_spec, ": ", to_string(build_result.error()));
       ++summary.failed;
       continue;
     }

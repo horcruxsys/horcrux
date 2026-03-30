@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <string_view>
-#include <vector>
 #include <unordered_map>
-#include <optional>
+#include <vector>
 
 #include <tl/expected.hpp>
 
@@ -28,9 +28,12 @@ struct Diagnostic {
 
   [[nodiscard]] auto level_string() const -> std::string_view {
     switch (level) {
-    case Level::Info:    return "INFO";
-    case Level::Warning: return "WARNING";
-    case Level::Error:   return "ERROR";
+    case Level::Info:
+      return "INFO";
+    case Level::Warning:
+      return "WARNING";
+    case Level::Error:
+      return "ERROR";
     }
     return "UNKNOWN";
   }
@@ -38,16 +41,16 @@ struct Diagnostic {
 
 /// @brief Identity and capability metadata for an adapter
 struct AdapterInfo {
-  std::string name;                        ///< e.g., "cpp", "android"
-  std::string version;                     ///< e.g., "1.0.0"
+  std::string name;                         ///< e.g., "cpp", "android"
+  std::string version;                      ///< e.g., "1.0.0"
   std::vector<std::string> supported_kinds; ///< e.g., {"cc_library", "cc_binary"}
 };
 
 /// @brief A parsed and validated target configuration from an adapter
 struct AdapterTarget {
-  std::string label;                                                   ///< e.g., "//pkg:name"
-  std::string kind;                                                    ///< e.g., "cc_library"
-  std::unordered_map<std::string, std::vector<std::string>> attrs;    ///< e.g., srcs, hdrs, deps
+  std::string label;                                               ///< e.g., "//pkg:name"
+  std::string kind;                                                ///< e.g., "cc_library"
+  std::unordered_map<std::string, std::vector<std::string>> attrs; ///< e.g., srcs, hdrs, deps
 };
 
 /// @brief A single build action planned by an adapter
@@ -56,18 +59,23 @@ struct BuildAction {
 
   Kind kind;
   std::string description;
-  std::vector<std::string> inputs;  ///< Input files/paths
-  std::vector<std::string> outputs; ///< Output files/paths
-  std::vector<std::string> command; ///< Command to execute (argv)
+  std::vector<std::string> inputs;                  ///< Input files/paths
+  std::vector<std::string> outputs;                 ///< Output files/paths
+  std::vector<std::string> command;                 ///< Command to execute (argv)
   std::unordered_map<std::string, std::string> env; ///< Environment variables
 
   [[nodiscard]] auto kind_string() const -> std::string_view {
     switch (kind) {
-    case Kind::Compile: return "compile";
-    case Kind::Archive: return "archive";
-    case Kind::Link:    return "link";
-    case Kind::Test:    return "test";
-    case Kind::Custom:  return "custom";
+    case Kind::Compile:
+      return "compile";
+    case Kind::Archive:
+      return "archive";
+    case Kind::Link:
+      return "link";
+    case Kind::Test:
+      return "test";
+    case Kind::Custom:
+      return "custom";
     }
     return "unknown";
   }
@@ -75,11 +83,11 @@ struct BuildAction {
 
 /// @brief Error types for adapter operations
 enum class AdapterError {
-  UnsupportedKind,   ///< Target kind not supported by this adapter
-  InvalidConfig,     ///< Target configuration is invalid or missing required fields
-  PlanningError,     ///< Failed to plan build actions
-  ToolchainError,    ///< Toolchain not found or misconfigured
-  CacheKeyError,     ///< Failed to compute cache key
+  UnsupportedKind, ///< Target kind not supported by this adapter
+  InvalidConfig,   ///< Target configuration is invalid or missing required fields
+  PlanningError,   ///< Failed to plan build actions
+  ToolchainError,  ///< Toolchain not found or misconfigured
+  CacheKeyError,   ///< Failed to compute cache key
 };
 
 /// @brief Convert AdapterError to human-readable string
@@ -124,9 +132,9 @@ public:
   /// @param graph  The build graph (for dependency information)
   /// @param output_root Root directory for build outputs
   /// @return Ordered list of build actions or error
-  [[nodiscard]] virtual auto
-  plan_actions(const AdapterTarget& target, const BuildGraph& graph,
-               const std::string& output_root) -> tl::expected<std::vector<BuildAction>, AdapterError> = 0;
+  [[nodiscard]] virtual auto plan_actions(const AdapterTarget& target, const BuildGraph& graph,
+                                          const std::string& output_root)
+      -> tl::expected<std::vector<BuildAction>, AdapterError> = 0;
 
   /// @brief Compute a deterministic cache key for a target's inputs
   ///

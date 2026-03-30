@@ -1,5 +1,7 @@
 name: 🧩 General Issue
-description: Use this template to report a bug, request a feature, or suggest an improvement.
+description: >-
+  Use this template to report a bug, request a feature,
+  or suggest an improvement.
 title: "[ISSUE]: "
 labels: ["needs-triage"]
 assignees: []
@@ -7,7 +9,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for contributing to Horcrux! Please fill out this form to help us understand and address your issue effectively.
+          Thank you for contributing to Horcrux!
+          Please fill out this form to help us understand and address your issue effectively.
 
   - type: dropdown
     id: issue-type
@@ -74,10 +77,10 @@ body:
         - CMake version: [e.g., 3.28]
         - Horcrux version/commit: [e.g., v0.1.0 or commit hash]
       value: |
-        - OS: 
-        - Compiler: 
-        - CMake version: 
-        - Horcrux version: 
+        - OS:
+        - Compiler:
+        - CMake version:
+        - Horcrux version:
     validations:
       required: false
 
@@ -90,9 +93,9 @@ body:
         ```cpp
         // Your code here
         ```
-        
+
         or
-        
+
         ```python
         # Your BUILD file here
         ```
@@ -136,7 +139,8 @@ body:
       options:
         - label: I have searched existing issues to avoid duplicates
           required: true
-        - label: I have read the [Contributing Guidelines](https://github.com/horcruxsys/horcrux/blob/main/CONTRIBUTING.md)
+        - label: >-
+              I have read the [Contributing Guidelines](https://github.com/horcruxsys/horcrux/blob/main/CONTRIBUTING.md)
           required: true
         - label: I have read the [Code of Conduct](https://github.com/horcruxsys/horcrux/blob/main/CODE_OF_CONDUCT.md)
           required: true
