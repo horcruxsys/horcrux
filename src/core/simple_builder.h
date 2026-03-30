@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <tl/expected.hpp>
 
@@ -25,14 +26,23 @@ enum class BuildError {
 /// @brief Convert BuildError to human-readable string
 [[nodiscard]] auto to_string(BuildError error) -> std::string;
 
-/// @brief Simple builder for bootstrapping with caching support
-/// This implementation demonstrates end-to-end builds with LocalCache integration
-/// for significant performance improvements
+/// @brief Represents a parsed BUILD rule target
+struct ParsedTarget {
+  std::string rule_type;         ///< e.g. "cc_binary", "java_binary", "py_binary", "rust_binary"
+  std::string name;              ///< BUILD target name
+  std::vector<std::string> srcs; ///< Source file paths (relative to package)
+  std::vector<std::string> deps; ///< Dependency target labels (e.g. ":greeter")
+  std::string main_class;        ///< Java: main_class attribute
+  std::string main_file;         ///< Python: main attribute
+  std::string edition;           ///< Rust: edition attribute
+};
+
+/// @brief Simple builder with real multi-language support
 class SimpleBuilder {
 public:
   SimpleBuilder();
 
-  /// @brief Build a target (optimized with caching)
+  /// @brief Build a target
   /// @param target Target label (e.g., "//examples/hello:hello")
   /// @return Success or error
   [[nodiscard]] auto build(std::string_view target) -> tl::expected<void, BuildError>;
@@ -42,7 +52,6 @@ public:
   [[nodiscard]] auto clean() -> tl::expected<void, BuildError>;
 
 private:
-  /// @brief Parse target label into package and name
   struct TargetInfo {
     std::string package_path;
     std::string target_name;
@@ -50,24 +59,40 @@ private:
 
   [[nodiscard]] auto parse_target(std::string_view target) -> tl::expected<TargetInfo, BuildError>;
 
-  /// @brief Check if BUILD file exists
   [[nodiscard]] auto build_file_exists(std::string_view package_path) -> bool;
 
-  /// @brief Optimized compile for cc_binary targets with caching
+  /// @brief Parse all named targets from a BUILD file
   [[nodiscard]] auto
-  compile_cc_binary(const TargetInfo& target_info) -> tl::expected<void, BuildError>;
+  parse_all_targets(const std::filesystem::path& build_file) -> std::vector<ParsedTarget>;
 
-  /// @brief Get cached compiler path (avoids repeated system calls)
+  /// @brief Collect all source files for a target, resolving local package deps recursively
+  [[nodiscard]] auto collect_all_sources(
+      const ParsedTarget& target, const std::vector<ParsedTarget>& all_targets,
+      const std::filesystem::path& package_dir) -> std::vector<std::filesystem::path>;
+
+  /// @brief Build a cc_binary target
+  [[nodiscard]] auto compile_cc_binary(const TargetInfo& info, const ParsedTarget& target)
+      -> tl::expected<void, BuildError>;
+
+  /// @brief Build a java_binary target (compiles all sources + creates launcher script)
+  [[nodiscard]] auto
+  build_java_binary(const TargetInfo& info, const ParsedTarget& target,
+                    const std::vector<ParsedTarget>& all_targets) -> tl::expected<void, BuildError>;
+
+  /// @brief Build a py_binary target (creates a launcher script with PYTHONPATH set)
+  [[nodiscard]] auto build_py_binary(const TargetInfo& info,
+                                     const ParsedTarget& target) -> tl::expected<void, BuildError>;
+
+  /// @brief Build a rust_binary target (compiles with rustc)
+  [[nodiscard]] auto build_rust_binary(const TargetInfo& info, const ParsedTarget& target)
+      -> tl::expected<void, BuildError>;
+
   [[nodiscard]] auto get_compiler() -> const std::string&;
 
-  /// @brief Check if source has changed (for incremental builds)
   [[nodiscard]] auto source_changed(const std::filesystem::path& source_file,
                                     const std::filesystem::path& output_binary) -> bool;
 
-  // Cache the compiler path to avoid repeated system() calls
   std::optional<std::string> cached_compiler_;
-
-  // Build cache for storing compiled artifacts
   std::optional<LocalCache> build_cache_;
 };
 

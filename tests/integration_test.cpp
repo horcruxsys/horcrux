@@ -240,6 +240,51 @@ TEST_F(IntegrationTest, RunBuiltBinary) {
       << "Expected output not found. Got: " << run_result.output;
 }
 
+// Test: Build and run the Java example
+TEST_F(IntegrationTest, BuildAndRunJavaExample) {
+  auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                      " build //examples/java:hello");
+  ASSERT_EQ(build_result.exit_code, 0) << "Java build failed: " << build_result.output;
+
+  auto launcher_path = repo_root_ / "bazel-bin" / "examples" / "java" / "hello";
+  ASSERT_TRUE(fs::exists(launcher_path)) << "Java launcher not found at: " << launcher_path;
+
+  auto run_result = execute_command(launcher_path.string());
+  EXPECT_EQ(run_result.exit_code, 0);
+  EXPECT_TRUE(run_result.output.find("Hello, World!") != std::string::npos)
+      << "Expected Java output not found. Got: " << run_result.output;
+}
+
+// Test: Build and run the Python example
+TEST_F(IntegrationTest, BuildAndRunPythonExample) {
+  auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                      " build //examples/python:hello");
+  ASSERT_EQ(build_result.exit_code, 0) << "Python build failed: " << build_result.output;
+
+  auto launcher_path = repo_root_ / "bazel-bin" / "examples" / "python" / "hello";
+  ASSERT_TRUE(fs::exists(launcher_path)) << "Python launcher not found at: " << launcher_path;
+
+  auto run_result = execute_command(launcher_path.string());
+  EXPECT_EQ(run_result.exit_code, 0);
+  EXPECT_TRUE(run_result.output.find("Hello, World!") != std::string::npos)
+      << "Expected Python output not found. Got: " << run_result.output;
+}
+
+// Test: Build and run the Rust example
+TEST_F(IntegrationTest, BuildAndRunRustExample) {
+  auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
+                                      " build //examples/rust:hello");
+  ASSERT_EQ(build_result.exit_code, 0) << "Rust build failed: " << build_result.output;
+
+  auto binary_path = repo_root_ / "bazel-bin" / "examples" / "rust" / "hello";
+  ASSERT_TRUE(fs::exists(binary_path)) << "Rust binary not found at: " << binary_path;
+
+  auto run_result = execute_command(binary_path.string());
+  EXPECT_EQ(run_result.exit_code, 0);
+  EXPECT_TRUE(run_result.output.find("Hello, World!") != std::string::npos)
+      << "Expected Rust output not found. Got: " << run_result.output;
+}
+
 // Test: Doctor command help
 TEST_F(IntegrationTest, DoctorCommandHelp) {
   auto result = execute_command(horcrux_cli_bin_.string() + " doctor");
@@ -262,6 +307,27 @@ TEST_F(IntegrationTest, DoctorAndroidWithoutSdk) {
   EXPECT_TRUE(result.output.find("Android SDK not found") != std::string::npos ||
               result.output.find("Android Toolchain Detection Failed") != std::string::npos)
       << "Expected error message not found. Got: " << result.output;
+}
+
+// Test: Doctor android command with a configured SDK, when available on the host
+TEST_F(IntegrationTest, DoctorAndroidWithConfiguredSdk) {
+  const auto sdk_root = fs::path("/usr/lib/android-sdk");
+  if (!fs::exists(sdk_root)) {
+    GTEST_SKIP() << "Android SDK not installed on this host";
+  }
+
+  const auto java_home = fs::path("/usr/lib/jvm/java-21-openjdk-amd64");
+  if (!fs::exists(java_home / "bin" / "javac")) {
+    GTEST_SKIP() << "JAVA_HOME path not available on this host";
+  }
+
+  auto result = execute_command(
+      "cd " + repo_root_.string() + " && ANDROID_HOME=" + sdk_root.string() +
+      " JAVA_HOME=" + java_home.string() + " " + horcrux_cli_bin_.string() + " doctor android");
+
+  EXPECT_EQ(result.exit_code, 0) << "Android doctor failed: " << result.output;
+  EXPECT_TRUE(result.output.find("Android Toolchain Detected") != std::string::npos)
+      << "Expected toolchain success not found. Got: " << result.output;
 }
 
 // Placeholder test to demonstrate structure until build is implemented
