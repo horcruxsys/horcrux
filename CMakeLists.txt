@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 project(Horcrux
-    VERSION 0.1.0
+    VERSION 2026.0401.0
     DESCRIPTION "The Next-Generation Universal Build System"
     LANGUAGES CXX
 )

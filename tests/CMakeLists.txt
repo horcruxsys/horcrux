@@ -916,10 +916,165 @@ target_compile_options(plugin_command_test PRIVATE
 
 gtest_discover_tests(plugin_command_test)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# M6 Release-critical regression suites
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Graph resolution regression tests (M6)
+add_executable(graph_regression_test
+    graph_regression_test.cpp
+)
+
+target_link_libraries(graph_regression_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(graph_regression_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(graph_regression_test)
+
+# Cache correctness regression tests (M6)
+add_executable(cache_regression_test
+    cache_regression_test.cpp
+)
+
+target_link_libraries(cache_regression_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(cache_regression_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(cache_regression_test)
+
+# Sandbox enforcement regression tests (M6)
+add_executable(sandbox_regression_test
+    sandbox_regression_test.cpp
+)
+
+target_link_libraries(sandbox_regression_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(sandbox_regression_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(sandbox_regression_test)
+
+# Adapter conformance regression tests (M6)
+add_executable(adapter_regression_test
+    adapter_regression_test.cpp
+)
+
+target_link_libraries(adapter_regression_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(adapter_regression_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(adapter_regression_test)
+
+# Plugin lifecycle regression tests (M6)
+add_executable(plugin_lifecycle_regression_test
+    plugin_lifecycle_regression_test.cpp
+)
+
+target_link_libraries(plugin_lifecycle_regression_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(plugin_lifecycle_regression_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(plugin_lifecycle_regression_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS build_graph_test local_cache_test integration_test android_toolchain_test android_ndk_compiler_test android_java_compiler_test android_kotlin_compiler_test android_compose_compiler_test android_resources_test android_manifest_merger_test android_dex_compiler_test android_apk_packager_test android_aab_packager_test gradle_parser_test workspace_config_generator_test import_command_test android_variant_test android_sandbox_test cli_commands_test adapter_test rust_adapter_test python_adapter_test java_adapter_test adapter_conformance_test sandbox_policy_test hermetic_env_test repro_checker_test plugin_manifest_test plugin_loader_test registry_client_test plugin_command_test
+    DEPENDS
+        build_graph_test local_cache_test integration_test
+        android_toolchain_test android_ndk_compiler_test android_java_compiler_test
+        android_kotlin_compiler_test android_compose_compiler_test android_resources_test
+        android_manifest_merger_test android_dex_compiler_test android_apk_packager_test
+        android_aab_packager_test gradle_parser_test workspace_config_generator_test
+        import_command_test android_variant_test android_sandbox_test cli_commands_test
+        adapter_test rust_adapter_test python_adapter_test java_adapter_test
+        adapter_conformance_test sandbox_policy_test hermetic_env_test repro_checker_test
+        plugin_manifest_test plugin_loader_test registry_client_test plugin_command_test
+        graph_regression_test cache_regression_test sandbox_regression_test
+        adapter_regression_test plugin_lifecycle_regression_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )
