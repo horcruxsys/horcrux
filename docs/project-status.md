@@ -1,7 +1,7 @@
 # Horcrux Project Status
 
-**Last Updated:** 2026-03-30
-**Status:** Active alpha development
+**Last Updated:** 2026-04-01
+**Status:** v2026.0401.0 — Stable Release
 
 ## What Horcrux Is Building
 
@@ -61,6 +61,42 @@ Based on the current codebase and tests, the following areas are implemented:
 - **Adapter architecture:** Foundation (M3.1) + Rust/Python/Java adapters (M3.2) complete.
 - **Hermetic sandboxing:** M4 core policy, environment contract, repro-check, and cache integration complete.
 - **End-to-end product completeness:** M4 core complete.
+
+## M6 Completion — 2026-04-01
+
+### Completed
+
+- [x] Version updated from `0.1.0` to `2026.0401.0` in `CMakeLists.txt`.
+- [x] `CHANGELOG.md` created with full release history.
+- [x] Release governance: `docs/release-process.md` — CalVer policy, branch strategy, freeze windows, blocker rubric, go/no-go criteria.
+- [x] Release checklist: `docs/release-checklist.md` — signed-off gate covering CI, sanitizers, smoke tests, benchmarks, docs, and publication.
+- [x] Expanded regression suites for critical paths:
+  - `graph_regression_test` (graph resolution: transitive deps, cycle detection, topo order, diamond dedup, large graphs, stable hashes).
+  - `cache_regression_test` (cache correctness: round-trip, miss, collision-free, overwrite, policy fingerprint mixing, large artifacts).
+  - `sandbox_regression_test` (sandbox enforcement: mode round-trips, fingerprint determinism, policy-change differentiation, equality operators).
+  - `adapter_regression_test` (adapter conformance: info, kind routing, foreign rejection, deterministic cache keys, action planning, diagnostic clearing, registry routing).
+  - `plugin_lifecycle_regression_test` (plugin lifecycle: register, init, shutdown, version compat, permission gates, registry client round-trips).
+- [x] Sanitizer toolchain files: `cmake/toolchains/asan.cmake`, `cmake/toolchains/ubsan.cmake`, `cmake/toolchains/tsan.cmake`.
+- [x] Release workflow: `.github/workflows/release.yml` — triggered on version tags, builds multi-platform artifacts, runs sanitizer gate, publishes GitHub Release with checksums.
+- [x] `scripts/package-release.sh` — reproducible local release packaging with SHA-256 checksums.
+- [x] `docs/quick-start.md` — installation, first build, hermetic builds, plugin management, next-steps navigation.
+- [x] `docs/migration-guide.md` — migration from CMake/Ninja, Bazel, Buck2, Gradle, and alpha.
+- [x] `docs/troubleshooting.md` — general troubleshooting playbook (install, build, cache, plugins, tests, Gradle, doctor).
+- [x] `docs/benchmark-methodology.md` — reference hardware, workload definitions (WL-1 to WL-8), measurement procedure, baseline comparisons, regression threshold policy.
+- [x] `docs/README.md` updated with new documentation entries.
+- [x] `docs/project-status.md` updated with M6 completion entry (this entry).
+- [x] `README.md` roadmap updated: all milestones M1–M6 marked complete.
+
+### Known Gaps for v2026.07xx+
+
+- Real HTTP registry client (M5 uses in-memory index).
+- Dynamic shared-library plugin loading (M5 is in-process only).
+- BUILD file parsing (replacing demo workspace graphs).
+- Real compiler invocation via adapters (currently plans actions only).
+- Remote/distributed caching.
+- Linux namespace isolation for `SandboxMode::Strict` on general (non-Android) actions.
+- `SOURCE_DATE_EPOCH` timestamp normalisation.
+- IDE integrations.
 
 ## M5 Completion — 2026-03-30
 

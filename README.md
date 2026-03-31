@@ -450,10 +450,10 @@ Results are automatically collected and posted on pull requests.
 | M2 | Implement dependency graph & caching layer | ✅ |
 | M2.5 | CLI interface with build command | ✅ |
 | M3.1 | CLI completeness (test/clean/query) + adapter foundation + C++ MVP | ✅ |
-| M3 | Add language adapters (C++, Rust, Python, Java) | ⏳ |
-| M4 | Introduce sandboxing and hermetic builds | ⏳ |
-| M5 | Integrate plugin and registry system | ⏳ |
-| M6 | Release v1.0 stable with public benchmarks | ⏳ |
+| M3 | Add language adapters (C++, Rust, Python, Java) | ✅ |
+| M4 | Introduce sandboxing and hermetic builds | ✅ |
+| M5 | Integrate plugin and registry system | ✅ |
+| M6 | Release v2026.0401.0 stable with public benchmarks | ✅ |
 
 ## 🤝 Contributing
 

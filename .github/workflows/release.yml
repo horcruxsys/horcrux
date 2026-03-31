@@ -1,0 +1,201 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-artifacts:
+    name: Build Release Artifacts (${{ matrix.target.name }})
+    runs-on: ${{ matrix.target.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: linux-x86_64
+            os: ubuntu-24.04
+            compiler_cc: gcc-14
+            compiler_cxx: g++-14
+            artifact_ext: tar.gz
+          - name: linux-x86_64-clang
+            os: ubuntu-24.04
+            compiler_cc: clang-18
+            compiler_cxx: clang++-18
+            artifact_ext: tar.gz
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build git libssl-dev
+
+          if [ "${{ matrix.target.compiler_cxx }}" = "g++-14" ]; then
+            sudo apt-get install -y g++-14
+          else
+            wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | \
+              sudo tee /etc/apt/trusted.gpg.d/llvm.asc
+            sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-18 main"
+            sudo apt-get update
+            sudo apt-get install -y clang-18 libc++-18-dev libc++abi-18-dev
+          fi
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Configure CMake
+        env:
+          CC: ${{ matrix.target.compiler_cc }}
+          CXX: ${{ matrix.target.compiler_cxx }}
+        run: |
+          cmake -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE="${{ env.BUILD_TYPE }}" \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ci.cmake \
+            -DCMAKE_CXX_COMPILER="${{ matrix.target.compiler_cxx }}" \
+            -DCMAKE_C_COMPILER="${{ matrix.target.compiler_cc }}" \
+            -DCMAKE_INSTALL_PREFIX=dist/horcrux-${{ steps.version.outputs.VERSION }}-${{ matrix.target.name }}
+
+      - name: Build
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} -j "$(nproc)"
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure --build-config ${{ env.BUILD_TYPE }}
+
+      - name: Install to staging directory
+        run: cmake --install build
+
+      - name: Package artifact
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          ARTIFACT_NAME="horcrux-${VERSION}-${{ matrix.target.name }}"
+          tar -czf "${ARTIFACT_NAME}.${{ matrix.target.artifact_ext }}" \
+            -C dist "${ARTIFACT_NAME}"
+          sha256sum "${ARTIFACT_NAME}.${{ matrix.target.artifact_ext }}" \
+            >> "horcrux-${VERSION}-checksums.txt"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: horcrux-${{ steps.version.outputs.VERSION }}-${{ matrix.target.name }}
+          path: |
+            horcrux-*.${{ matrix.target.artifact_ext }}
+            horcrux-*-checksums.txt
+          retention-days: 90
+
+  sanitizer-gate:
+    name: Sanitizer Gate (${{ matrix.san.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        san:
+          - name: asan
+            toolchain: cmake/toolchains/asan.cmake
+          - name: ubsan
+            toolchain: cmake/toolchains/ubsan.cmake
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++-14 libssl-dev
+
+      - name: Configure with sanitizer toolchain
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: |
+          cmake -B "build-${{ matrix.san.name }}" \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_TOOLCHAIN_FILE="${{ matrix.san.toolchain }}" \
+            -DCMAKE_CXX_COMPILER=g++-14 \
+            -DCMAKE_C_COMPILER=gcc-14
+
+      - name: Build with sanitizer
+        run: cmake --build "build-${{ matrix.san.name }}" -j "$(nproc)"
+
+      - name: Run tests under sanitizer
+        run: |
+          cd "build-${{ matrix.san.name }}"
+          ctest --output-on-failure
+
+  publish-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-24.04
+    needs: [build-artifacts, sanitizer-gate]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: Merge checksum files
+        run: |
+          cat release-artifacts/horcrux-*-checksums.txt \
+            > "horcrux-${{ steps.version.outputs.VERSION }}-checksums.txt" 2>/dev/null || true
+
+      - name: Extract release notes from CHANGELOG
+        id: release_notes
+        run: |
+          python3 - <<'EOF'
+          import re, sys
+
+          with open("CHANGELOG.md") as f:
+              content = f.read()
+
+          # Extract the first release section
+          pattern = r"## \[[\d.]+\][^\n]*\n(.*?)(?=\n## \[|$)"
+          match = re.search(pattern, content, re.DOTALL)
+          notes = match.group(1).strip() if match else "See CHANGELOG.md for details."
+
+          with open("release_notes.md", "w") as f:
+              f.write(notes)
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release_notes.md
+          files: |
+            release-artifacts/horcrux-*.tar.gz
+            release-artifacts/horcrux-*.zip
+            horcrux-${{ steps.version.outputs.VERSION }}-checksums.txt
+          draft: false
+          prerelease: >-
+            ${{ contains(github.ref_name, '-rc') ||
+                contains(github.ref_name, '-alpha') ||
+                contains(github.ref_name, '-beta') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
