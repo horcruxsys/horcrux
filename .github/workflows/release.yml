@@ -193,6 +193,9 @@ jobs:
             release-artifacts/horcrux-*.zip
             horcrux-${{ steps.version.outputs.VERSION }}-checksums.txt
           draft: false
-          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
+          prerelease: >-
+            ${{ contains(github.ref_name, '-rc') ||
+                contains(github.ref_name, '-alpha') ||
+                contains(github.ref_name, '-beta') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

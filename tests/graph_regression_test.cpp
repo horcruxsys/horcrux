@@ -33,8 +33,7 @@ static auto make_chain(int depth) -> BuildGraph {
     b.add_node(make_node("//pkg:lib" + std::to_string(i)));
   }
   for (int i = 1; i < depth; ++i) {
-    b.add_edge(BuildEdge{"//pkg:lib" + std::to_string(i),
-                         "//pkg:lib" + std::to_string(i - 1)});
+    b.add_edge(BuildEdge{"//pkg:lib" + std::to_string(i), "//pkg:lib" + std::to_string(i - 1)});
   }
   return b.build().value();
 }
