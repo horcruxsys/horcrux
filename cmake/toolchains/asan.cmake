@@ -10,7 +10,7 @@
 
 set(CMAKE_SYSTEM_NAME Linux)
 
-# Disable optimisations so ASan stack traces are readable
+# Disable optimizations so ASan stack traces are readable
 set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -fno-omit-frame-pointer -march=x86-64 -mtune=generic")
 set(CMAKE_CXX_FLAGS_RELEASE "-O1 -g -fno-omit-frame-pointer -march=x86-64 -mtune=generic -DNDEBUG")
 

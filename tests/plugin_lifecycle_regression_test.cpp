@@ -3,7 +3,7 @@
 // Licensed under the MIT License
 //
 // Release-critical regression suite: verifies that the plugin system
-// correctly registers, initialises, and shuts down plugins, enforces
+// correctly registers, initializes, and shuts down plugins, enforces
 // version compatibility and permission policies, and maintains consistent
 // state across the full lifecycle.
 
@@ -220,14 +220,14 @@ private:
   std::filesystem::path lockfile_;
 };
 
-static auto make_package(std::string name, std::string ver = "1.0.0") -> RegistryPackage {
+static auto make_package(std::string name) -> RegistryPackage {
   RegistryPackage pkg;
   pkg.name = std::move(name);
   pkg.version = {1, 0, 0};
   pkg.author = "Test";
   pkg.description = "Test package";
   pkg.license = "MIT";
-  pkg.download_url = "https://example.com/" + pkg.name + "-" + ver + ".tar.gz";
+  pkg.download_url = "https://example.com/" + pkg.name + ".tar.gz";
   pkg.checksum = "";
   return pkg;
 }
