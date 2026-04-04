@@ -80,6 +80,11 @@ benchmark_summary.md
 *.tar.gz
 *.zip
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
 # Temporary files
 *.tmp
 *.bak
