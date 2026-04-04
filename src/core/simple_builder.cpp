@@ -522,6 +522,8 @@ auto SimpleBuilder::build(std::string_view target) -> tl::expected<void, BuildEr
 
   const auto& parsed = *it;
 
+  std::cout << "Building target: " << target << "\n";
+
   if (parsed.rule_type == "cc_binary") {
     return compile_cc_binary(*target_info, parsed);
   }
