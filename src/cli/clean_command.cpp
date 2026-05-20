@@ -20,10 +20,6 @@ auto to_string(CleanError error) -> std::string {
   return "Unknown clean error";
 }
 
-namespace {
-
-/// Minimum number of path components required for an absolute path
-/// to be considered safe for removal (e.g., /tmp/horcrux/something = depth 3)
 constexpr int MIN_SAFE_ABSOLUTE_PATH_DEPTH = 3;
 
 void print_clean_usage() {
@@ -44,7 +40,6 @@ void print_clean_usage() {
   std::cout << "  horcrux clean --dry-run\n";
 }
 
-/// Validate a path to prevent accidental removal of system directories
 auto is_safe_path(const std::filesystem::path& path) -> bool {
   // Reject empty paths, root paths, and home directory root
   if (path.empty() || path == "/" || path == std::filesystem::path{"~"}) {
@@ -94,8 +89,6 @@ auto remove_directory(const std::filesystem::path& dir, bool dry_run, bool verbo
   }
   return {};
 }
-
-} // anonymous namespace
 
 auto handle_clean_command(int argc, char* argv[], Logger& logger) -> int {
   CleanOptions opts;

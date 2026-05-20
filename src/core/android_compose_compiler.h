@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_COMPOSE_COMPILER_H_
-#define HORCRUX_CORE_ANDROID_COMPOSE_COMPILER_H_
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -148,5 +147,3 @@ auto parse_stability_config(const std::filesystem::path& config_path)
 } // namespace compose_compiler
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_COMPOSE_COMPILER_H_

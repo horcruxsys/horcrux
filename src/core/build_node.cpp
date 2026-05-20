@@ -5,8 +5,10 @@
 #include "build_node.h"
 
 #include <algorithm>
-#include <functional>
+#include <cstdint>
 #include <sstream>
+
+#include "local_cache.h"
 
 namespace horcrux::core {
 
@@ -60,14 +62,10 @@ auto BuildNode::compute_hash() const -> Hash {
     }
   }
 
-  // Fast hash computation using std::hash (production would use crypto hash)
-  std::hash<std::string> hasher;
-  size_t hash_value = hasher(content);
-
-  // Efficient hex conversion
-  std::ostringstream hash_stream;
-  hash_stream << std::hex << hash_value;
-  return hash_stream.str();
+  // Use SHA-256 for content-based addressing
+  auto raw_hash = compute_sha256(
+      std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(content.data()), content.size()));
+  return hash_to_string(raw_hash);
 }
 
 auto BuildNode::operator==(const BuildNode& other) const -> bool {

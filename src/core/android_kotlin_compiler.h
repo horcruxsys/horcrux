@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_KOTLIN_COMPILER_H_
-#define HORCRUX_CORE_ANDROID_KOTLIN_COMPILER_H_
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -235,5 +234,3 @@ auto load_compilation_state(const std::filesystem::path& state_file) -> std::opt
 } // namespace kotlin_incremental
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_KOTLIN_COMPILER_H_

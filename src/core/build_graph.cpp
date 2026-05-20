@@ -8,6 +8,10 @@
 #include <queue>
 #include <sstream>
 
+#include <nlohmann/json.hpp>
+
+#include "build_edge.h"
+
 namespace horcrux::core {
 
 auto to_string(GraphError error) -> std::string {
@@ -292,75 +296,101 @@ auto BuildGraph::edge_count() const -> size_t {
 }
 
 auto BuildGraph::serialize() const -> tl::expected<std::string, GraphError> {
-  // Simple JSON-like serialization
-  // In production, use a proper JSON library like nlohmann/json
-  std::ostringstream oss;
-  oss << "{\n  \"nodes\": [\n";
+  nlohmann::json j;
 
-  bool first_node = true;
+  // Serialize nodes
+  auto& nodes_arr = j["nodes"] = nlohmann::json::array();
   for (const auto& it : nodes_) {
     const auto& node = it.second;
-    if (!first_node) {
-      oss << ",\n";
-    }
-    first_node = false;
-
-    oss << "    {\n";
-    oss << "      \"label\": \"" << node->label() << "\",\n";
-    oss << "      \"type\": \"" << node->node_type() << "\",\n";
-    oss << "      \"inputs\": [";
-
-    bool first_input = true;
-    for (const auto& input : node->inputs()) {
-      if (!first_input)
-        oss << ", ";
-      first_input = false;
-      oss << "\"" << input << "\"";
-    }
-    oss << "],\n";
-
-    oss << "      \"outputs\": [";
-    bool first_output = true;
-    for (const auto& output : node->outputs()) {
-      if (!first_output)
-        oss << ", ";
-      first_output = false;
-      oss << "\"" << output << "\"";
-    }
-    oss << "]\n";
-    oss << "    }";
+    nlohmann::json node_obj;
+    node_obj["label"] = node->label();
+    node_obj["type"] = node->node_type();
+    node_obj["inputs"] = node->inputs();
+    node_obj["outputs"] = node->outputs();
+    node_obj["attributes"] = node->attributes();
+    nodes_arr.push_back(std::move(node_obj));
   }
 
-  oss << "\n  ],\n  \"edges\": [\n";
-
-  bool first_edge = true;
+  // Serialize edges
+  auto& edges_arr = j["edges"] = nlohmann::json::array();
   for (const auto& it : outgoing_edges_) {
-    const auto& edges = it.second;
-    for (const auto& edge : edges) {
-      if (!first_edge) {
-        oss << ",\n";
-      }
-      first_edge = false;
-
-      oss << "    {\n";
-      oss << "      \"from\": \"" << edge->from() << "\",\n";
-      oss << "      \"to\": \"" << edge->to() << "\",\n";
-      oss << "      \"type\": " << static_cast<int>(edge->dependency_type()) << "\n";
-      oss << "    }";
+    for (const auto& edge : it.second) {
+      nlohmann::json edge_obj;
+      edge_obj["from"] = edge->from();
+      edge_obj["to"] = edge->to();
+      edge_obj["type"] = static_cast<int>(edge->dependency_type());
+      edges_arr.push_back(std::move(edge_obj));
     }
   }
 
-  oss << "\n  ]\n}\n";
-
-  return oss.str();
+  return j.dump(2);
 }
 
-auto BuildGraph::deserialize(const std::string& json) -> tl::expected<BuildGraph, GraphError> {
-  // Simplified deserialization - in production use a proper JSON library
-  // For now, return an error as this is a placeholder
-  // TODO: Implement proper JSON deserialization
-  [[maybe_unused]] auto json_ref = json; // Avoid unused parameter warning
-  return tl::unexpected(GraphError::SerializationError);
+auto BuildGraph::deserialize(const std::string& json_str) -> tl::expected<BuildGraph, GraphError> {
+  nlohmann::json j;
+  try {
+    j = nlohmann::json::parse(json_str);
+  } catch (const nlohmann::json::parse_error&) {
+    return tl::unexpected(GraphError::SerializationError);
+  }
+
+  auto builder = Builder{};
+
+  // Deserialize nodes
+  auto nodes_it = j.find("nodes");
+  if (nodes_it == j.end() || !nodes_it->is_array()) {
+    return tl::unexpected(GraphError::SerializationError);
+  }
+
+  for (const auto& node_obj : *nodes_it) {
+    auto label = node_obj.value("label", std::string{});
+    if (label.empty()) {
+      return tl::unexpected(GraphError::SerializationError);
+    }
+
+    auto node_type = node_obj.value("type", std::string{});
+
+    std::vector<std::string> inputs;
+    if (auto in = node_obj.find("inputs"); in != node_obj.end() && in->is_array()) {
+      inputs = in->get<std::vector<std::string>>();
+    }
+
+    std::vector<std::string> outputs;
+    if (auto out = node_obj.find("outputs"); out != node_obj.end() && out->is_array()) {
+      outputs = out->get<std::vector<std::string>>();
+    }
+
+    std::unordered_map<std::string, std::string> attributes;
+    if (auto attrs = node_obj.find("attributes"); attrs != node_obj.end() && attrs->is_object()) {
+      for (auto it = attrs->begin(); it != attrs->end(); ++it) {
+        attributes[it.key()] = it->get<std::string>();
+      }
+    }
+
+    auto result =
+        builder.add_node(BuildNode(std::move(label), std::move(node_type), std::move(inputs),
+                                   std::move(outputs), std::move(attributes)));
+    if (!result) {
+      return tl::unexpected(result.error());
+    }
+  }
+
+  // Deserialize edges
+  auto edges_it = j.find("edges");
+  if (edges_it != j.end() && edges_it->is_array()) {
+    for (const auto& edge_obj : *edges_it) {
+      auto from = edge_obj.value("from", std::string{});
+      auto to = edge_obj.value("to", std::string{});
+      auto type = static_cast<BuildEdge::DependencyType>(edge_obj.value("type", 0));
+
+      auto result = builder.add_edge(BuildEdge(std::move(from), std::move(to), type));
+      if (!result) {
+        return tl::unexpected(result.error());
+      }
+    }
+  }
+
+  return builder.build();
 }
 
 } // namespace horcrux::core

@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_MANIFEST_MERGER_H_
-#define HORCRUX_CORE_ANDROID_MANIFEST_MERGER_H_
+#pragma once
 
 #include <filesystem>
 #include <map>
@@ -181,5 +180,3 @@ auto string_to_merge_action(const std::string& str) -> MergeAction;
 } // namespace manifest_utils
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_MANIFEST_MERGER_H_

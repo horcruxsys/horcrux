@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_NDK_COMPILER_H_
-#define HORCRUX_CORE_ANDROID_NDK_COMPILER_H_
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -181,5 +180,3 @@ auto detect_all_ndk_toolchains(const AndroidNdk& ndk, const std::string& api_lev
     -> tl::expected<std::vector<AndroidNdkCompiler>, NdkCompilerError>;
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_NDK_COMPILER_H_

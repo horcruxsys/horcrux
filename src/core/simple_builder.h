@@ -92,6 +92,22 @@ private:
   [[nodiscard]] auto source_changed(const std::filesystem::path& source_file,
                                     const std::filesystem::path& output_binary) -> bool;
 
+  // Test accessors -----------------------------------------------------------
+public:
+  [[nodiscard]] auto
+  parse_target_for_test(std::string_view target) -> tl::expected<TargetInfo, BuildError> {
+    return parse_target(target);
+  }
+  [[nodiscard]] auto
+  parse_all_targets_for_test(const std::filesystem::path& build_file) -> std::vector<ParsedTarget> {
+    return parse_all_targets(build_file);
+  }
+  [[nodiscard]] auto collect_all_sources_for_test(
+      const ParsedTarget& target, const std::vector<ParsedTarget>& all_targets,
+      const std::filesystem::path& package_dir) -> std::vector<std::filesystem::path> {
+    return collect_all_sources(target, all_targets, package_dir);
+  }
+
   std::optional<std::string> cached_compiler_;
   std::optional<LocalCache> build_cache_;
 };
