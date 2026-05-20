@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_DEX_COMPILER_H_
-#define HORCRUX_CORE_ANDROID_DEX_COMPILER_H_
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -291,5 +290,3 @@ auto merge_proguard_configs(const std::vector<ProguardConfig>& configs) -> Progu
 } // namespace proguard_utils
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_DEX_COMPILER_H_

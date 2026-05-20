@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_RESOURCES_H_
-#define HORCRUX_CORE_ANDROID_RESOURCES_H_
+#pragma once
 
 #include <chrono>
 #include <filesystem>
@@ -311,5 +310,3 @@ auto load_compilation_state(const std::filesystem::path& state_file)
 } // namespace resource_incremental
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_RESOURCES_H_

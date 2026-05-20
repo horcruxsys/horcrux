@@ -9,6 +9,7 @@
 #include <cstring>
 #include <fstream>
 #include <iomanip>
+#include <mutex>
 #include <sstream>
 
 #include <tl/expected.hpp>
@@ -184,6 +185,34 @@ auto mix_policy_fingerprint(const Hash& base, const Hash& policy_fp) -> Hash {
   return compute_sha256(combined);
 }
 
+// ── Portable integer I/O helpers (big-endian wire format) ──────────────
+
+namespace {
+
+void write_uint64_be(std::ostream& out, uint64_t value) {
+  for (int i = 7; i >= 0; --i) {
+    out.put(static_cast<char>((value >> (i * 8)) & 0xff));
+  }
+}
+
+auto read_uint64_be(std::istream& in) -> uint64_t {
+  uint64_t value = 0;
+  for (int i = 7; i >= 0; --i) {
+    value = (value << 8) | static_cast<uint8_t>(in.get());
+  }
+  return value;
+}
+
+void write_int64_be(std::ostream& out, int64_t value) {
+  write_uint64_be(out, static_cast<uint64_t>(value));
+}
+
+auto read_int64_be(std::istream& in) -> int64_t {
+  return static_cast<int64_t>(read_uint64_be(in));
+}
+
+} // anonymous namespace
+
 auto LocalCache::create(const std::filesystem::path& cache_dir)
     -> tl::expected<LocalCache, CacheError> {
   // Create cache directory if it doesn't exist
@@ -197,7 +226,8 @@ auto LocalCache::create(const std::filesystem::path& cache_dir)
   return LocalCache(cache_dir);
 }
 
-LocalCache::LocalCache(const std::filesystem::path& cache_dir) : cache_dir_(cache_dir) {
+LocalCache::LocalCache(const std::filesystem::path& cache_dir)
+    : cache_dir_(cache_dir), mutex_(std::make_unique<std::mutex>()) {
 }
 
 auto LocalCache::get_cache_path(const Hash& hash) const -> std::filesystem::path {
@@ -210,14 +240,10 @@ auto LocalCache::get_cache_path(const Hash& hash) const -> std::filesystem::path
 
 auto LocalCache::store(const Hash& hash,
                        const Artifact& artifact) -> tl::expected<void, CacheError> {
-  // Store in memory cache
-  memory_cache_[hash] = artifact;
-
-  // Store to disk for persistence
+  // Write to disk first (lock-free: unique path per hash)
   auto file_path = get_cache_path(hash);
   auto dir_path = file_path.parent_path();
 
-  // Create subdirectory if needed
   std::error_code ec;
   if (!std::filesystem::exists(dir_path, ec)) {
     if (!std::filesystem::create_directories(dir_path, ec)) {
@@ -225,20 +251,14 @@ auto LocalCache::store(const Hash& hash,
     }
   }
 
-  // Write artifact to file
   std::ofstream out(file_path, std::ios::binary);
   if (!out) {
     return tl::unexpected(CacheError::WriteFailure);
   }
 
-  // Write timestamp
-  out.write(reinterpret_cast<const char*>(&artifact.timestamp), sizeof(artifact.timestamp));
-
-  // Write content size
-  size_t content_size = artifact.content.size();
-  out.write(reinterpret_cast<const char*>(&content_size), sizeof(content_size));
-
-  // Write content
+  // Portable big-endian wire format
+  write_int64_be(out, artifact.timestamp);
+  write_uint64_be(out, artifact.content.size());
   out.write(reinterpret_cast<const char*>(artifact.content.data()),
             static_cast<std::streamsize>(artifact.content.size()));
 
@@ -246,17 +266,26 @@ auto LocalCache::store(const Hash& hash,
     return tl::unexpected(CacheError::WriteFailure);
   }
 
+  // Update memory cache under lock
+  {
+    std::scoped_lock lock(*mutex_);
+    memory_cache_[hash] = artifact;
+  }
+
   return {};
 }
 
 auto LocalCache::lookup(const Hash& hash) const -> std::optional<Artifact> {
-  // Check memory cache first
-  auto it = memory_cache_.find(hash);
-  if (it != memory_cache_.end()) {
-    return it->second;
+  // Check memory cache first (under lock)
+  {
+    std::scoped_lock lock(*mutex_);
+    auto it = memory_cache_.find(hash);
+    if (it != memory_cache_.end()) {
+      return it->second;
+    }
   }
 
-  // Try loading from disk
+  // Try loading from disk (lock-free)
   auto file_path = get_cache_path(hash);
   if (!std::filesystem::exists(file_path)) {
     return std::nullopt;
@@ -269,50 +298,57 @@ auto LocalCache::lookup(const Hash& hash) const -> std::optional<Artifact> {
 
   Artifact artifact;
 
-  // Read timestamp
-  in.read(reinterpret_cast<char*>(&artifact.timestamp), sizeof(artifact.timestamp));
+  // Portable big-endian wire format
+  artifact.timestamp = read_int64_be(in);
   if (!in) {
     return std::nullopt;
   }
 
-  // Read content size
-  size_t content_size;
-  in.read(reinterpret_cast<char*>(&content_size), sizeof(content_size));
+  auto content_size = read_uint64_be(in);
   if (!in) {
     return std::nullopt;
   }
 
-  // Read content
-  artifact.content.resize(content_size);
+  artifact.content.resize(static_cast<size_t>(content_size));
   in.read(reinterpret_cast<char*>(artifact.content.data()),
           static_cast<std::streamsize>(content_size));
   if (!in) {
     return std::nullopt;
   }
 
-  // Cache in memory for future lookups
-  memory_cache_[hash] = artifact;
+  // Cache in memory for future lookups (under lock)
+  {
+    std::scoped_lock lock(*mutex_);
+    memory_cache_[hash] = artifact;
+  }
 
   return artifact;
 }
 
 auto LocalCache::contains(const Hash& hash) const -> bool {
-  // Check memory cache first
-  if (memory_cache_.find(hash) != memory_cache_.end()) {
-    return true;
+  // Check memory cache first (under lock)
+  {
+    std::scoped_lock lock(*mutex_);
+    if (memory_cache_.find(hash) != memory_cache_.end()) {
+      return true;
+    }
   }
 
-  // Check disk
+  // Check disk (lock-free)
   auto file_path = get_cache_path(hash);
   return std::filesystem::exists(file_path);
 }
 
 auto LocalCache::size() const -> size_t {
+  std::scoped_lock lock(*mutex_);
   return memory_cache_.size();
 }
 
 auto LocalCache::clear() -> tl::expected<void, CacheError> {
-  memory_cache_.clear();
+  {
+    std::scoped_lock lock(*mutex_);
+    memory_cache_.clear();
+  }
 
   // Remove all cache files
   std::error_code ec;

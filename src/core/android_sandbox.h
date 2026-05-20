@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_SANDBOX_H_
-#define HORCRUX_CORE_ANDROID_SANDBOX_H_
+#pragma once
 
 #include <chrono>
 #include <filesystem>
@@ -237,5 +236,3 @@ private:
 };
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_SANDBOX_H_

@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_TOOLCHAIN_H_
-#define HORCRUX_CORE_ANDROID_TOOLCHAIN_H_
+#pragma once
 
 #include <filesystem>
 #include <optional>
@@ -167,5 +166,3 @@ public:
 };
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_TOOLCHAIN_H_

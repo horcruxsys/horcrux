@@ -7,6 +7,8 @@
 #include <array>
 #include <cstdint>
 #include <filesystem>
+#include <memory>
+#include <mutex>
 #include <optional>
 #include <span>
 #include <string>
@@ -76,7 +78,9 @@ auto mix_policy_fingerprint(const Hash& base, const Hash& policy_fp) -> Hash;
 /// is stored at a path derived from its hash, ensuring deterministic
 /// storage and retrieval.
 ///
-/// Thread-safety: All methods are thread-safe and can be called concurrently.
+/// Thread-safety: All public methods are thread-safe and can be called
+/// concurrently. Internal mutation of the in-memory cache is serialized via
+/// a mutex; file I/O is lock-free because each hash maps to a unique path.
 class LocalCache {
 public:
   /// Creates a new LocalCache with the specified cache directory
@@ -134,6 +138,7 @@ private:
 
   std::filesystem::path cache_dir_;
   mutable std::unordered_map<Hash, Artifact, HashHasher> memory_cache_;
+  mutable std::unique_ptr<std::mutex> mutex_;
 };
 
 } // namespace horcrux::core

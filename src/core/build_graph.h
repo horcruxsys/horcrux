@@ -45,8 +45,10 @@ enum class GraphError {
 /// @brief Immutable directed acyclic graph (DAG) for build dependencies
 ///
 /// BuildGraph represents the complete dependency graph for a build.
-/// It is immutable once constructed, ensuring thread-safety and deterministic
-/// behavior. The graph enforces DAG properties (no cycles).
+/// It is immutable once constructed, enabling safe concurrent reads and
+/// deterministic behavior. The graph enforces DAG properties (no cycles).
+/// Construction is single-threaded via the Builder; all read-only accessors
+/// are safe to call concurrently after construction.
 class BuildGraph {
 public:
   using Label = BuildNode::Label;

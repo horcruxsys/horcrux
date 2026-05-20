@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CLI_DOCTOR_COMMAND_H_
-#define HORCRUX_CLI_DOCTOR_COMMAND_H_
+#pragma once
 
 #include "logger.h"
 
@@ -16,5 +15,3 @@ auto handle_doctor_command(int argc, char* argv[], Logger& logger) -> int;
 auto handle_doctor_android(Logger& logger) -> int;
 
 } // namespace horcrux::cli
-
-#endif // HORCRUX_CLI_DOCTOR_COMMAND_H_

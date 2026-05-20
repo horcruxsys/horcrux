@@ -2,8 +2,7 @@
 // Copyright (C) 2025 Horcrux Project Contributors
 // Licensed under the MIT License
 
-#ifndef HORCRUX_CORE_ANDROID_APK_PACKAGER_H_
-#define HORCRUX_CORE_ANDROID_APK_PACKAGER_H_
+#pragma once
 
 #include <chrono>
 #include <filesystem>
@@ -160,5 +159,3 @@ auto get_apk_info(const std::filesystem::path& apk_path)
 } // namespace apk_utils
 
 } // namespace horcrux::core
-
-#endif // HORCRUX_CORE_ANDROID_APK_PACKAGER_H_
