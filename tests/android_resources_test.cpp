@@ -17,13 +17,13 @@ using namespace horcrux::core;
 class ResourceTestFixture : public ::testing::Test {
 protected:
   void SetUp() override {
-    // Create temporary test directory
-    test_dir_ = std::filesystem::temp_directory_path() / "horcrux_resource_test";
+    auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+    test_dir_ = std::filesystem::temp_directory_path() / "horcrux_resource_test" /
+                (test_info ? test_info->name() : "default");
     std::filesystem::create_directories(test_dir_);
   }
 
   void TearDown() override {
-    // Clean up test directory
     if (std::filesystem::exists(test_dir_)) {
       std::filesystem::remove_all(test_dir_);
     }

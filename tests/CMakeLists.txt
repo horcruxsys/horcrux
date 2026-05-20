@@ -110,7 +110,7 @@ target_compile_options(integration_test PRIVATE
 )
 
 # Register test with CTest
-gtest_discover_tests(integration_test)
+gtest_discover_tests(integration_test PROPERTIES RUN_SERIAL TRUE)
 
 # Android toolchain tests
 add_executable(android_toolchain_test
