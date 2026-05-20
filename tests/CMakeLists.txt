@@ -1060,6 +1060,63 @@ target_compile_options(plugin_lifecycle_regression_test PRIVATE
 
 gtest_discover_tests(plugin_lifecycle_regression_test)
 
+# SimpleBuilder tests (M6+)
+add_executable(simple_builder_test
+    simple_builder_test.cpp
+)
+
+target_link_libraries(simple_builder_test
+    PRIVATE
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(simple_builder_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(simple_builder_test)
+
+# CLI command regression tests (M6+)
+add_executable(cli_regression_test
+    cli_regression_test.cpp
+)
+
+target_link_libraries(cli_regression_test
+    PRIVATE
+    horcrux_cli
+    horcrux_core
+    gtest
+    gtest_main
+)
+
+target_compile_options(cli_regression_test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:
+        -std=c++23
+        -Wall -Wextra
+    >
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /W4
+    >
+)
+
+gtest_discover_tests(cli_regression_test)
+
 # Custom target to run all tests
 add_custom_target(run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
@@ -1075,6 +1132,7 @@ add_custom_target(run_tests
         plugin_manifest_test plugin_loader_test registry_client_test plugin_command_test
         graph_regression_test cache_regression_test sandbox_regression_test
         adapter_regression_test plugin_lifecycle_regression_test
+        simple_builder_test cli_regression_test
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests"
 )

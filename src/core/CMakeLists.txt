@@ -49,8 +49,9 @@ target_include_directories(horcrux_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Link with tl::expected for C++23 std::expected polyfill and tinyxml2 for XML parsing
-target_link_libraries(horcrux_core PUBLIC tl::expected OpenSSL::Crypto tinyxml2)
+# Link with tl::expected for C++23 std::expected polyfill, tinyxml2 for XML parsing,
+# and nlohmann_json for JSON serialization/deserialization
+target_link_libraries(horcrux_core PUBLIC tl::expected OpenSSL::Crypto tinyxml2 nlohmann_json::nlohmann_json)
 
 # Library-specific optimizations (global flags already applied)
 # No additional flags needed - using global settings

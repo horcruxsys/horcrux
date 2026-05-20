@@ -11,6 +11,8 @@
 #include <sstream>
 #include <system_error>
 
+#include <nlohmann/json.hpp>
+
 #include "local_cache.h" // For SHA-256 hashing
 
 namespace horcrux::core {
@@ -92,75 +94,103 @@ auto to_string(AndroidToolchainError error) -> std::string {
 }
 
 auto AndroidToolchain::to_json() const -> std::string {
-  std::ostringstream json;
-  json << "{\n";
-  json << "  \"sdk_root\": \"" << sdk_root.string() << "\",\n";
+  nlohmann::json j;
+
+  j["sdk_root"] = sdk_root.string();
 
   if (ndk_root) {
-    json << "  \"ndk_root\": \"" << ndk_root->string() << "\",\n";
+    j["ndk_root"] = ndk_root->string();
   }
 
   if (java_sdk) {
-    json << "  \"java_sdk\": {\n";
-    json << "    \"version\": \"" << java_sdk->version << "\",\n";
-    json << "    \"java_home\": \"" << java_sdk->java_home.string() << "\"\n";
-    json << "  },\n";
+    j["java_sdk"]["version"] = java_sdk->version;
+    j["java_sdk"]["java_home"] = java_sdk->java_home.string();
   }
 
-  json << "  \"build_tools\": [\n";
-  for (size_t i = 0; i < build_tools.size(); ++i) {
-    const auto& bt = build_tools[i];
-    json << "    {\n";
-    json << "      \"version\": \"" << bt.version << "\",\n";
-    json << "      \"path\": \"" << bt.path.string() << "\"\n";
-    json << "    }";
-    if (i + 1 < build_tools.size()) {
-      json << ",";
-    }
-    json << "\n";
+  auto& bt_arr = j["build_tools"] = nlohmann::json::array();
+  for (const auto& bt : build_tools) {
+    nlohmann::json obj;
+    obj["version"] = bt.version;
+    obj["path"] = bt.path.string();
+    bt_arr.push_back(std::move(obj));
   }
-  json << "  ],\n";
 
-  json << "  \"platforms\": [\n";
-  for (size_t i = 0; i < platforms.size(); ++i) {
-    const auto& p = platforms[i];
-    json << "    {\n";
-    json << "      \"api_level\": \"" << p.api_level << "\",\n";
-    json << "      \"version\": \"" << p.version << "\",\n";
-    json << "      \"path\": \"" << p.path.string() << "\"\n";
-    json << "    }";
-    if (i + 1 < platforms.size()) {
-      json << ",";
-    }
-    json << "\n";
+  auto& plat_arr = j["platforms"] = nlohmann::json::array();
+  for (const auto& p : platforms) {
+    nlohmann::json obj;
+    obj["api_level"] = p.api_level;
+    obj["version"] = p.version;
+    obj["path"] = p.path.string();
+    plat_arr.push_back(std::move(obj));
   }
-  json << "  ],\n";
 
-  json << "  \"ndks\": [\n";
-  for (size_t i = 0; i < ndks.size(); ++i) {
-    const auto& ndk = ndks[i];
-    json << "    {\n";
-    json << "      \"version\": \"" << ndk.version << "\",\n";
-    json << "      \"path\": \"" << ndk.path.string() << "\"\n";
-    json << "    }";
-    if (i + 1 < ndks.size()) {
-      json << ",";
-    }
-    json << "\n";
+  auto& ndk_arr = j["ndks"] = nlohmann::json::array();
+  for (const auto& ndk : ndks) {
+    nlohmann::json obj;
+    obj["version"] = ndk.version;
+    obj["path"] = ndk.path.string();
+    ndk_arr.push_back(std::move(obj));
   }
-  json << "  ],\n";
 
-  json << "  \"merkle_hash\": \"" << merkle_hash << "\"\n";
-  json << "}\n";
+  j["merkle_hash"] = merkle_hash;
 
-  return json.str();
+  return j.dump(2);
 }
 
-auto AndroidToolchain::from_json(const std::string& /*json*/)
+auto AndroidToolchain::from_json(const std::string& json_str)
     -> tl::expected<AndroidToolchain, AndroidToolchainError> {
-  // TODO: Implement JSON parsing
-  // For now, return error to indicate not implemented
-  return tl::unexpected(AndroidToolchainError::UnknownError);
+  nlohmann::json j;
+  try {
+    j = nlohmann::json::parse(json_str);
+  } catch (const nlohmann::json::parse_error&) {
+    return tl::unexpected(AndroidToolchainError::UnknownError);
+  }
+
+  AndroidToolchain tc;
+  tc.sdk_root = j.value("sdk_root", std::string{});
+
+  if (auto it = j.find("ndk_root"); it != j.end() && !it->is_null()) {
+    tc.ndk_root = it->get<std::string>();
+  }
+
+  if (auto it = j.find("java_sdk"); it != j.end() && it->is_object()) {
+    JavaSdk js;
+    js.version = it->value("version", std::string{});
+    js.java_home = it->value("java_home", std::string{});
+    tc.java_sdk = std::move(js);
+  }
+
+  if (auto bt_it = j.find("build_tools"); bt_it != j.end() && bt_it->is_array()) {
+    for (const auto& obj : *bt_it) {
+      AndroidBuildTools bt;
+      bt.version = obj.value("version", std::string{});
+      bt.path = obj.value("path", std::string{});
+      tc.build_tools.push_back(std::move(bt));
+    }
+  }
+
+  if (auto plat_it = j.find("platforms"); plat_it != j.end() && plat_it->is_array()) {
+    for (const auto& obj : *plat_it) {
+      AndroidPlatform plat;
+      plat.api_level = obj.value("api_level", std::string{});
+      plat.version = obj.value("version", std::string{});
+      plat.path = obj.value("path", std::string{});
+      tc.platforms.push_back(std::move(plat));
+    }
+  }
+
+  if (auto ndk_it = j.find("ndks"); ndk_it != j.end() && ndk_it->is_array()) {
+    for (const auto& obj : *ndk_it) {
+      AndroidNdk ndk;
+      ndk.version = obj.value("version", std::string{});
+      ndk.path = obj.value("path", std::string{});
+      tc.ndks.push_back(std::move(ndk));
+    }
+  }
+
+  tc.merkle_hash = j.value("merkle_hash", std::string{});
+
+  return tc;
 }
 
 auto AndroidToolchainDetector::detect() -> tl::expected<AndroidToolchain, AndroidToolchainError> {

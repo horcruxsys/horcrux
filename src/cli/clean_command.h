@@ -38,6 +38,11 @@ enum class CleanError {
 /// @brief Convert CleanError to human-readable string
 [[nodiscard]] auto to_string(CleanError error) -> std::string;
 
+/// @brief Validate a path to prevent accidental removal of system directories
+/// @param path The path to validate
+/// @return true if the path is safe to remove, false otherwise
+[[nodiscard]] auto is_safe_path(const std::filesystem::path& path) -> bool;
+
 /// @brief Handle the `horcrux clean` command
 /// @param argc Argument count
 /// @param argv Argument vector
