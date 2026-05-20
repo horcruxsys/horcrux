@@ -15,7 +15,9 @@ namespace horcrux::cli::test {
 class ImportCommandTestFixture : public ::testing::Test {
 protected:
   void SetUp() override {
-    test_dir_ = std::filesystem::temp_directory_path() / "horcrux_import_test";
+    auto* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+    test_dir_ = std::filesystem::temp_directory_path() / "horcrux_import_test" /
+                (test_info ? test_info->name() : "default");
     std::filesystem::create_directories(test_dir_);
     logger_ = std::make_unique<Logger>();
   }

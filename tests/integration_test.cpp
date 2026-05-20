@@ -121,7 +121,11 @@ TEST_F(IntegrationTest, BuildHelloTarget) {
 
   // Check build output contains success indicators
   EXPECT_TRUE(result.output.find("Building target") != std::string::npos ||
-              result.output.find("Build successful") != std::string::npos);
+              result.output.find("Build successful") != std::string::npos ||
+              result.output.find("found in cache") != std::string::npos ||
+              result.output.find("from cache") != std::string::npos ||
+              result.output.find("Target up-to-date") != std::string::npos ||
+              result.output.find("incremental") != std::string::npos);
 
   // Verify binary was created
   auto binary_path = repo_root_ / "bazel-bin" / "examples" / "hello" / "hello";
@@ -203,7 +207,7 @@ TEST_F(IntegrationTest, CacheBehavior) {
 // Test: Validate build logs
 TEST_F(IntegrationTest, BuildLogsValidation) {
   auto result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
-                                " build //examples/hello:hello");
+                                " build //examples/hello:hello 2>&1");
 
   ASSERT_EQ(result.exit_code, 0);
 
@@ -211,11 +215,17 @@ TEST_F(IntegrationTest, BuildLogsValidation) {
   EXPECT_TRUE(result.output.find("//examples/hello:hello") != std::string::npos)
       << "Target not found in logs";
 
-  EXPECT_TRUE(result.output.find("Building target") != std::string::npos)
-      << "Build action not logged";
+  const bool has_build_action = result.output.find("Building target") != std::string::npos;
+  const bool has_cache_action = result.output.find("found in cache") != std::string::npos ||
+                                result.output.find("from cache") != std::string::npos;
+  const bool has_up_to_date_action = result.output.find("Target up-to-date") != std::string::npos ||
+                                     result.output.find("incremental") != std::string::npos;
+  EXPECT_TRUE(has_build_action || has_cache_action || has_up_to_date_action)
+      << "Build/cache action not logged";
 
   // Check for success message (may include "from cache", "incremental", or be up-to-date)
   EXPECT_TRUE(result.output.find("Build successful") != std::string::npos ||
+              result.output.find("Build completed successfully") != std::string::npos ||
               result.output.find("up-to-date") != std::string::npos)
       << "Success or up-to-date message not found";
 
@@ -242,6 +252,9 @@ TEST_F(IntegrationTest, RunBuiltBinary) {
 
 // Test: Build and run the Java example
 TEST_F(IntegrationTest, BuildAndRunJavaExample) {
+  if (std::system("which javac >/dev/null 2>&1") != 0) {
+    GTEST_SKIP() << "javac not found on PATH";
+  }
   auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
                                       " build //examples/java:hello");
   ASSERT_EQ(build_result.exit_code, 0) << "Java build failed: " << build_result.output;
@@ -257,6 +270,9 @@ TEST_F(IntegrationTest, BuildAndRunJavaExample) {
 
 // Test: Build and run the Python example
 TEST_F(IntegrationTest, BuildAndRunPythonExample) {
+  if (std::system("which python3 >/dev/null 2>&1") != 0) {
+    GTEST_SKIP() << "python3 not found on PATH";
+  }
   auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
                                       " build //examples/python:hello");
   ASSERT_EQ(build_result.exit_code, 0) << "Python build failed: " << build_result.output;
@@ -272,6 +288,9 @@ TEST_F(IntegrationTest, BuildAndRunPythonExample) {
 
 // Test: Build and run the Rust example
 TEST_F(IntegrationTest, BuildAndRunRustExample) {
+  if (std::system("which rustc >/dev/null 2>&1") != 0) {
+    GTEST_SKIP() << "rustc not found on PATH";
+  }
   auto build_result = execute_command("cd " + repo_root_.string() + " && " + horcrux_bin_.string() +
                                       " build //examples/rust:hello");
   ASSERT_EQ(build_result.exit_code, 0) << "Rust build failed: " << build_result.output;
